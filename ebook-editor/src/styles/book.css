@@ -1,0 +1,200 @@
+
+.content-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  gap: var(--spacing-lg);
+  align-items: start;
+  width: 100%;
+}
+
+/* Base Card Styles */
+.content-card {
+  background: var(--main-dkl-color);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  border: 1px solid var(--main-lh-color);
+  position: relative;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.content-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+  border-color: var(--color-blue);
+  background: var(--main-dk-color);
+}
+
+/* Media Section (Cover/Preview) */
+.content-media {
+  width: 100%;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Book cover image styles */
+.content-media-book {
+  padding: 0;
+}
+
+.book-cover-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.content-card:hover .book-cover-image {
+  transform: scale(1.05);
+}
+
+.content-media::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent 30%, var(--main-lhl-color) 50%, transparent 70%);
+  transform: translateX(-100%);
+  transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.content-card:hover .content-media::before {
+  transform: translateX(100%);
+}
+
+.content-media-icon {
+  font-size: 42px;
+  color: var(--font-color);
+  z-index: 1;
+  position: relative;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+/* Info Section */
+.content-info {
+  padding: 16px;
+  background: var(--main-dk-color);
+}
+
+.content-title {
+  font-size: 15px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--font-color-active);
+  margin: 0 0 6px 0;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.content-description {
+  font-size: var(--font-size-xs);
+  color: var(--main-lhl-color);
+  margin: 0;
+  letter-spacing: -0.01em;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-height: 2.8em; /* 2 lines * 1.4 line-height */
+}
+
+.content-meta {
+  font-size: var(--font-size-xs);
+  color: var(--main-lhl-color);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+
+.template-badge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: var(--color-accent);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.02em;
+  box-shadow: 0 4px 12px rgba(74, 140, 135, 0.4);
+}
+
+/* Tertiary accent styles */
+.content-accent-tertiary {
+  color: var(--tertiary-color) !important;
+  border-color: var(--tertiary-color) !important;
+  background: var(--tertiary-color) !important;
+}
+
+.content-accent-quaternary {
+  color: var(--quaternary-color) !important;
+  border-color: var(--quaternary-color) !important;
+  background: var(--quaternary-color) !important;
+}
+
+/* Hover effects with tertiary/quaternary colors */
+.content-card:hover {
+  border-color: var(--tertiary-color);
+}
+
+.btn-accent-tertiary {
+  background: var(--tertiary-color) !important;
+  border-color: var(--tertiary-color) !important;
+  color: white !important;
+}
+
+.btn-accent-tertiary:hover {
+  background: var(--tertiary-color) !important;
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.btn-accent-quaternary {
+  background: var(--quaternary-color) !important;
+  border-color: var(--quaternary-color) !important;
+  color: white !important;
+}
+
+.btn-accent-quaternary:hover {
+  background: var(--quaternary-color) !important;
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.content-card-create {
+  border: 2px dashed var(--main-lh-color) !important;
+  background: var(--soft-lh-color) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+}
+
+.content-media-create {
+  background: var(--main-dkl-color) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+}
+
+.content-media-create .content-media-icon {
+  color: var(--main-lhl-color) !important;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3)) !important;
+}
+
+.content-info-create {
+  background: var(--main-dk-color) !important;
+}
+
