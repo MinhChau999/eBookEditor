@@ -9,7 +9,11 @@ import { SimpleTextarea } from '../components/Textarea';
 import { SimpleCheckbox } from '../components/Checkbox';
 import { SimpleButton } from '../components/Button';
 import { SimpleRange } from '../components/Range';
+import { SimpleSwitch } from '../components/Switch';
+import { SimpleColorPicker } from '../components/ColorPicker';
 import { SimpleModal, ModalFooter } from '../components/Modal';
+import { ToastManager } from '../components/Toast/SimpleToast';
+import { useToast } from '../components/Toast/useSimpleToast';
 import '../../styles/theme.css';
 import '../../styles/book.css';
 
@@ -22,7 +26,68 @@ export const Custom: React.FC = () => {
   const [checkboxValue2, setCheckboxValue2] = useState(true);
   const [checkboxValue3, setCheckboxValue3] = useState(false);
   const [rangeValue, setRangeValue] = useState(50);
+  const [switchValue1, setSwitchValue1] = useState(false);
+  const [switchValue2, setSwitchValue2] = useState(true);
+  const [colorValue, setColorValue] = useState('#3498db');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Toast hook
+  const {
+    toasts,
+    showSuccess,
+    showError,
+    showWarning,
+    showInfo,
+    clearAll
+  } = useToast();
+
+  // Toast demo functions
+  const handleShowSuccessToast = () => {
+    showSuccess('Operation completed successfully!', {
+      title: 'Success',
+      duration: 5000
+    });
+  };
+
+  const handleShowErrorToast = () => {
+    showError('Something went wrong. Please try again.', {
+      title: 'Error',
+      duration: 8000
+    });
+  };
+
+  const handleShowWarningToast = () => {
+    showWarning('Please review your input before proceeding.', {
+      title: 'Warning',
+      duration: 6000
+    });
+  };
+
+  const handleShowInfoToast = () => {
+    showInfo('New features have been added to the editor.', {
+      title: 'Information',
+      duration: 4000
+    });
+  };
+
+  const handleShowPersistentToast = () => {
+    showSuccess('This toast will stay until you close it manually.', {
+      title: 'Persistent Notification',
+      duration: 0 // No auto-dismiss
+    });
+  };
+
+  const handleShowMultipleToasts = () => {
+    showInfo('First notification');
+    showWarning('Second warning');
+    showSuccess('Third success message');
+    showError('Fourth error message');
+  };
+
+  const handleClearAllToasts = () => {
+    clearAll();
+  };
     
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
@@ -44,7 +109,12 @@ export const Custom: React.FC = () => {
     setter(checked);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    setIsLoading(true);
+
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
     console.log('Form submitted:', {
       input: inputValue,
       select: selectValue,
@@ -57,6 +127,9 @@ export const Custom: React.FC = () => {
         notifications: checkboxValue3
       }
     });
+
+    setIsLoading(false);
+    alert('Form submitted! Check console for details.');
   };
 
   return (
@@ -75,8 +148,9 @@ export const Custom: React.FC = () => {
               <SimpleButton
                 variant="primary"
                 onClick={handleSubmit}
+                loading={isLoading}
               >
-                Submit Form
+                {isLoading ? 'Submitting...' : 'Submit Form'}
               </SimpleButton>
               <SimpleButton
                 variant="secondary"
@@ -399,8 +473,299 @@ export const Custom: React.FC = () => {
                 </div>
               </div>
 
-  
-  
+              {/* Switch Components Section */}
+              <div className="custom-section">
+                <h2 className="custom-section-title">Switch Components</h2>
+                <div className="custom-component-grid">
+
+                  {/* Basic Switch */}
+                  <div className="custom-component-item">
+                    <SimpleSwitch
+                      label="Enable notifications"
+                      checked={switchValue1}
+                      onChange={setSwitchValue1}
+                      helperText="Receive push notifications"
+                    />
+                  </div>
+
+                  {/* Pre-checked Switch */}
+                  <div className="custom-component-item">
+                    <SimpleSwitch
+                      label="Dark mode"
+                      checked={switchValue2}
+                      onChange={setSwitchValue2}
+                      helperText="Toggle dark theme"
+                    />
+                  </div>
+
+                  {/* Switch with Loading State */}
+                  <div className="custom-component-item">
+                    <SimpleSwitch
+                      label="Auto-save"
+                      checked={true}
+                      disabled={isLoading}
+                      helperText={isLoading ? "Saving..." : "Automatically save work"}
+                    />
+                  </div>
+
+                  {/* Error Switch */}
+                  <div className="custom-component-item">
+                    <SimpleSwitch
+                      label="Sync settings"
+                      checked={false}
+                      error
+                      helperText="Connection failed"
+                    />
+                  </div>
+
+                  {/* Small Switch */}
+                  <div className="custom-component-item">
+                    <SimpleSwitch
+                      label="Compact mode"
+                      size="small"
+                      checked={false}
+                      helperText="Use smaller UI elements"
+                    />
+                  </div>
+
+                  {/* Large Switch */}
+                  <div className="custom-component-item">
+                    <SimpleSwitch
+                      label="Advanced features"
+                      size="large"
+                      checked={true}
+                      helperText="Enable experimental features"
+                    />
+                  </div>
+
+                </div>
+              </div>
+
+              {/* Color Picker Components Section */}
+              <div className="custom-section">
+                <h2 className="custom-section-title">Color Picker Components</h2>
+                <div className="custom-component-grid">
+
+                  {/* Basic Color Picker */}
+                  <div className="custom-component-item">
+                    <SimpleColorPicker
+                      label="Theme color"
+                      value={colorValue}
+                      onChange={setColorValue}
+                      helperText="Choose your theme color"
+                    />
+                  </div>
+
+                  {/* Color Picker with Presets */}
+                  <div className="custom-component-item">
+                    <SimpleColorPicker
+                      label="Background color"
+                      value="#ffffff"
+                      presetColors={['#ffffff', '#f8f9fa', '#e9ecef', '#dee2e6', '#ced4da', '#adb5bd', '#6c757d', '#495057']}
+                      helperText="Select background color"
+                    />
+                  </div>
+
+                  {/* Color Picker without Hex */}
+                  <div className="custom-component-item">
+                    <SimpleColorPicker
+                      label="Accent color"
+                      value="#ff6b6b"
+                      showHex={false}
+                      helperText="Choose accent color"
+                    />
+                  </div>
+
+                  {/* Error Color Picker */}
+                  <div className="custom-component-item">
+                    <SimpleColorPicker
+                      label="Brand color"
+                      value="#000000"
+                      error
+                      helperText="Invalid color format"
+                    />
+                  </div>
+
+                  {/* Small Color Picker */}
+                  <div className="custom-component-item">
+                    <SimpleColorPicker
+                      label="Highlight color"
+                      value="#ffd43b"
+                      helperText="Yellow highlight color"
+                    />
+                  </div>
+
+                  {/* Large Color Picker */}
+                  <div className="custom-component-item">
+                    <SimpleColorPicker
+                      label="Primary color"
+                      value="#4c6ef5"
+                      helperText="Blue primary color"
+                    />
+                  </div>
+
+                </div>
+              </div>
+
+              {/* Loading States Demo Section */}
+              <div className="custom-section">
+                <h2 className="custom-section-title">Loading States Demo (Continuous)</h2>
+                <div className="custom-component-grid">
+
+                  {/* Continuous Loading Button */}
+                  <div className="custom-component-item">
+                    <SimpleButton
+                      variant="primary"
+                      loading={true}
+                    >
+                      Processing Request...
+                    </SimpleButton>
+                    <p className="eb-field-helper">Continuous loading with shimmer effect</p>
+                  </div>
+
+                  {/* Continuous Loading Switch */}
+                  <div className="custom-component-item">
+                    <SimpleSwitch
+                      label="Loading data..."
+                      checked={false}
+                      disabled={true}
+                      helperText="Switch disabled during loading"
+                    />
+                    <p className="eb-field-helper">Disabled state with opacity</p>
+                  </div>
+
+                  {/* Multiple Loading States */}
+                  <div className="custom-component-item">
+                    <div style={{marginBottom: '8px'}}>
+                      <SimpleButton
+                        variant="secondary"
+                        loading={true}
+                      >
+                        Loading...
+                      </SimpleButton>
+                    </div>
+                    <SimpleButton
+                      variant="outline"
+                      loading={true}
+                    >
+                      Processing...
+                    </SimpleButton>
+                    <p className="eb-field-helper">Multiple loading variations</p>
+                  </div>
+
+                  {/* Continuous Skeleton Cards */}
+                  <div className="custom-component-item">
+                    <div className="content-card skeleton">
+                      <div className="content-media skeleton"></div>
+                      <div className="content-info">
+                        <div className="skeleton" style={{height: '16px', width: '70%', marginBottom: '8px'}}></div>
+                        <div className="skeleton" style={{height: '12px', width: '90%'}}></div>
+                      </div>
+                    </div>
+                    <p className="eb-field-helper">Continuous skeleton animations</p>
+                  </div>
+
+                  {/* Loading Range */}
+                  <div className="custom-component-item">
+                    <SimpleRange
+                      label="Loading progress..."
+                      value={75}
+                      disabled={true}
+                      helperText="Range disabled during loading"
+                    />
+                    <p className="eb-field-helper">Disabled range with 75% value</p>
+                  </div>
+
+                  {/* Loading Color Picker */}
+                  <div className="custom-component-item">
+                    <SimpleColorPicker
+                      label="Theme loading..."
+                      value="#cccccc"
+                      disabled={true}
+                      helperText="Color picker disabled"
+                    />
+                    <p className="eb-field-helper">Grayed out color input</p>
+                  </div>
+
+                </div>
+              </div>
+
+              {/* Toast/Notification Components Section */}
+              <div className="custom-section">
+                <h2 className="custom-section-title">Toast/Notification Components</h2>
+                <div className="custom-component-grid">
+                  <div className="custom-component-item">
+                    <SimpleButton
+                      variant="primary"
+                      onClick={handleShowSuccessToast}
+                    >
+                      Show Success Toast
+                    </SimpleButton>
+                    <p className="eb-field-helper">Success message with auto-dismiss</p>
+                  </div>
+
+                  <div className="custom-component-item">
+                    <SimpleButton
+                      variant="secondary"
+                      onClick={handleShowErrorToast}
+                    >
+                      Show Error Toast
+                    </SimpleButton>
+                    <p className="eb-field-helper">Error message with longer duration</p>
+                  </div>
+
+                  <div className="custom-component-item">
+                    <SimpleButton
+                      variant="outline"
+                      onClick={handleShowWarningToast}
+                    >
+                      Show Warning Toast
+                    </SimpleButton>
+                    <p className="eb-field-helper">Warning message for user attention</p>
+                  </div>
+
+                  <div className="custom-component-item">
+                    <SimpleButton
+                      variant="secondary"
+                      onClick={handleShowInfoToast}
+                    >
+                      Show Info Toast
+                    </SimpleButton>
+                    <p className="eb-field-helper">Information message with quick dismiss</p>
+                  </div>
+
+                  <div className="custom-component-item">
+                    <SimpleButton
+                      variant="primary"
+                      onClick={handleShowPersistentToast}
+                    >
+                      Show Persistent Toast
+                    </SimpleButton>
+                    <p className="eb-field-helper">Toast that requires manual closing</p>
+                  </div>
+
+                  <div className="custom-component-item">
+                    <SimpleButton
+                      variant="outline"
+                      onClick={handleShowMultipleToasts}
+                    >
+                      Show Multiple Toasts
+                    </SimpleButton>
+                    <p className="eb-field-helper">Stack multiple notifications</p>
+                  </div>
+
+                  <div className="custom-component-item">
+                    <SimpleButton
+                      variant="outline"
+                      onClick={handleClearAllToasts}
+                      disabled={toasts.length === 0}
+                    >
+                      Clear All Toasts ({toasts.length})
+                    </SimpleButton>
+                    <p className="eb-field-helper">Dismiss all active notifications</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -431,6 +796,25 @@ export const Custom: React.FC = () => {
               </div>
               <div className="custom-value-item">
                 <strong>Select All:</strong> {checkboxValue3 ? 'Selected' : 'Not selected'}
+              </div>
+              <div className="custom-value-item">
+                <strong>Notifications:</strong> {switchValue1 ? 'Enabled' : 'Disabled'}
+              </div>
+              <div className="custom-value-item">
+                <strong>Dark Mode:</strong> {switchValue2 ? 'On' : 'Off'}
+              </div>
+              <div className="custom-value-item">
+                <strong>Theme Color:</strong>
+                <span style={{
+                  display: 'inline-block',
+                  width: '12px',
+                  height: '12px',
+                  backgroundColor: colorValue,
+                  borderRadius: '2px',
+                  marginLeft: '4px',
+                  border: '1px solid var(--main-lh-color)'
+                }}></span>
+                {colorValue}
               </div>
             </div>
           </div>
@@ -477,7 +861,7 @@ export const Custom: React.FC = () => {
           <SimpleButton
             variant="primary"
             onClick={() => {
-              alert('Modal confirmed!');
+              showSuccess('Modal action confirmed successfully!');
               setIsModalOpen(false);
             }}
           >
@@ -485,6 +869,16 @@ export const Custom: React.FC = () => {
           </SimpleButton>
         </ModalFooter>
       </SimpleModal>
+
+      {/* Toast Manager */}
+      <ToastManager
+        toasts={toasts}
+        onRemove={(id) => {
+          // Toast sẽ tự động removed bởi useToast hook
+          console.log('Toast removed:', id);
+        }}
+        position="top-right"
+      />
     </div>
   );
 };

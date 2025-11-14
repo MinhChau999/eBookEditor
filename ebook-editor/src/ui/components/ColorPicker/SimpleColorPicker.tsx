@@ -100,6 +100,7 @@ export const SimpleColorPicker: React.FC<SimpleColorPickerProps> = ({
             onChange={handleChange}
             onFocus={disabled ? undefined : onFocus}
             onBlur={disabled ? undefined : onBlur}
+            className={`eb-color-picker ${error ? 'eb-color-picker-error' : ''} eb-focus-glow eb-interactive-click`}
           />
           {showHex && (
             <input

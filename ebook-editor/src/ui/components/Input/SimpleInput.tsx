@@ -122,7 +122,10 @@ export const SimpleInput: React.FC<SimpleInputProps> = ({
         )}
 
         <div className={fieldClasses}>
-          <input {...inputProps} />
+          <input
+            {...inputProps}
+            className={`eb-input eb-focus-glow ${error ? 'eb-error-shake' : ''}`}
+          />
         </div>
 
         {iconRight && (

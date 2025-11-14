@@ -105,6 +105,7 @@ export const SimpleRange: React.FC<SimpleRangeProps> = ({
           onChange={handleChange}
           onFocus={disabled ? undefined : onFocus}
           onBlur={disabled ? undefined : onBlur}
+          className={`eb-range ${error ? 'eb-range-error' : ''} eb-focus-glow`}
         />
       </div>
 

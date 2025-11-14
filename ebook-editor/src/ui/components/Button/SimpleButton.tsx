@@ -43,6 +43,8 @@ export const SimpleButton: React.FC<SimpleButtonProps> = ({
     iconOnlyClasses,
     loadingClasses,
     disabledClasses,
+    'eb-interactive-click',
+    'eb-focus-ring',
     className
   ].filter(Boolean).join(' ');
 
@@ -50,7 +52,7 @@ export const SimpleButton: React.FC<SimpleButtonProps> = ({
     <>
       {loading && (
         <span className="btn-spinner">
-          <i className="fas fa-spinner fa-spin"></i>
+          <span className="eb-spinner eb-spinner-small"></span>
         </span>
       )}
       {!loading && iconLeft && (
