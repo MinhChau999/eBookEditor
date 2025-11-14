@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
+import { SimpleInput } from '../components/Input';
+import { CreateBookCard, BookItem, TemplateBookCard } from '../components/BookCard';
 import '../../styles/theme.css';
 import '../../styles/book.css';
 
@@ -16,20 +17,30 @@ export const Book: React.FC = () => {
         <div className="editor-content-wrapper">
           {/* Tab Navigation */}
           <nav className="tab-navigation">
-            <button
-              className={`tab-item ${activeTab === 'books' ? 'active' : ''}`}
-              onClick={() => setActiveTab('books')}
-            >
-              <i className="fas fa-book tab-icon"></i>
-              Books
-            </button>
-            <button
-              className={`tab-item ${activeTab === 'templates' ? 'active' : ''}`}
-              onClick={() => setActiveTab('templates')}
-            >
-              <i className="fas fa-layer-group tab-icon"></i>
-              Templates
-            </button>
+            <div className="tab-nav-left">
+              <button
+                className={`tab-item ${activeTab === 'books' ? 'active' : ''}`}
+                onClick={() => setActiveTab('books')}
+              >
+                <i className="fas fa-book tab-icon"></i>
+                Books
+              </button>
+              <button
+                className={`tab-item ${activeTab === 'templates' ? 'active' : ''}`}
+                onClick={() => setActiveTab('templates')}
+              >
+                <i className="fas fa-layer-group tab-icon"></i>
+                Templates
+              </button>
+            </div>
+
+            <div className="tab-nav-right">
+              <SimpleInput
+                type="search"
+                placeholder="Search books, authors, or content..."
+                iconLeft="fas fa-search"
+              />
+            </div>
           </nav>
 
           {/* Tab Content */}
@@ -38,17 +49,11 @@ export const Book: React.FC = () => {
             <div className={`tab-panel ${activeTab === 'books' ? 'active' : ''}`}>
               <div className="content-grid">
                 {/* Add New Book Card - First */}
-                <Link to="/editor" className="book-card-link">
-                  <div className="content-card content-card-create">
-                    <div className="content-media content-media-create">
-                      <i className="fas fa-plus content-media-icon"></i>
-                    </div>
-                    <div className="content-info content-info-create">
-                      <h3 className="content-title">Create New Book</h3>
-                      <p className="content-meta">Start from scratch</p>
-                    </div>
-                  </div>
-                </Link>
+                <CreateBookCard
+                  title="Create New Book"
+                  description="Start from scratch"
+                  href="/editor"
+                />
 
                 {/* Sample Book Cards */}
                 {[
@@ -83,21 +88,13 @@ export const Book: React.FC = () => {
                     cover: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=300&h=400&fit=crop&q=80'
                   },
                 ].map((book, index) => (
-                  <Link key={index} to={`/editor/${index}`} className="book-card-link">
-                    <div className="content-card">
-                      <div className="content-media content-media-book">
-                        <img
-                          src={book.cover}
-                          alt={`${book.title} cover`}
-                          className="book-cover-image"
-                        />
-                      </div>
-                      <div className="content-info">
-                        <h3 className="content-title">{book.title}</h3>
-                        <p className="content-meta">{book.meta}</p>
-                      </div>
-                    </div>
-                  </Link>
+                  <BookItem
+                    key={index}
+                    title={book.title}
+                    cover={book.cover}
+                    meta={book.meta}
+                    href={`/editor/${index}`}
+                  />
                 ))}
               </div>
             </div>
@@ -144,22 +141,14 @@ export const Book: React.FC = () => {
                     cover: 'https://images.unsplash.com/photo-1532012197267-da84d127e765?w=300&h=400&fit=crop&q=80'
                   },
                 ].map((template, index) => (
-                  <div key={index} className="content-card" onClick={() => console.log(`Use ${template.title} template`)}>
-                    <div className="content-media content-media-book">
-                      <img
-                        src={template.cover}
-                        alt={`${template.title} template`}
-                        className="book-cover-image"
-                      />
-                      {template.badge && (
-                        <span className="template-badge">{template.badge}</span>
-                      )}
-                    </div>
-                    <div className="content-info">
-                      <h3 className="content-title">{template.title}</h3>
-                      <p className="content-description">{template.description}</p>
-                    </div>
-                  </div>
+                  <TemplateBookCard
+                    key={index}
+                    title={template.title}
+                    cover={template.cover}
+                    description={template.description}
+                    badge={template.badge || undefined}
+                    onClick={() => console.log(`Use ${template.title} template`)}
+                  />
                 ))}
               </div>
             </div>

@@ -1,0 +1,1 @@
+export { SimpleSelect, type SimpleSelectProps } from './SimpleSelect';

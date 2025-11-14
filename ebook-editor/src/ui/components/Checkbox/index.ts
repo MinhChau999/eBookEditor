@@ -1,0 +1,1 @@
+export { SimpleCheckbox, type SimpleCheckboxProps } from './SimpleCheckbox';

@@ -1,6 +1,19 @@
 import React from 'react';
+import { SimpleButton } from './Button';
 
 export const Header: React.FC = () => {
+  const handleNewBook = () => {
+    console.log('Create new book');
+  };
+
+  const handleImportEpub = () => {
+    console.log('Import EPUB file');
+  };
+
+  const handleSettings = () => {
+    console.log('Open settings');
+  };
+
   return (
     <div className="header">
       <div className="header-left">
@@ -12,19 +25,25 @@ export const Header: React.FC = () => {
 
       <div className="header-right">
         <div className="action-group">
-          <button className="btn btn-primary">
-            <i className="fas fa-plus"></i>
-            <span>New Book</span>
-          </button>
-          <button className="btn btn-secondary">
-            <i className="fas fa-file-import"></i>
-            <span>Import EPUB</span>
-          </button>
+          <SimpleButton
+            variant="primary"
+            iconLeft="fas fa-plus"
+            onClick={handleNewBook}
+          >
+            New Book
+          </SimpleButton>
+          <SimpleButton
+            variant="secondary"
+            iconLeft="fas fa-file-import"
+            onClick={handleImportEpub}
+          >
+            Import EPUB
+          </SimpleButton>
         </div>
 
         <div className="divider"></div>
 
-        <button className="icon-btn" title="Settings">
+        <button className="icon-btn" title="Settings" onClick={handleSettings}>
           <i className="fas fa-cog"></i>
         </button>
 

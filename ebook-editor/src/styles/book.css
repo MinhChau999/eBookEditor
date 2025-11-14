@@ -7,6 +7,148 @@
   width: 100%;
 }
 
+/* Custom Page Styles */
+.custom-page-header {
+  text-align: center;
+  margin-bottom: var(--spacing-xl);
+  padding: var(--spacing-lg);
+  background: var(--main-dkl-color);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--main-lh-color);
+}
+
+.custom-page-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.custom-page-description {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-lg);
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.custom-page-actions {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.custom-form-container {
+  margin-bottom: var(--spacing-xl);
+}
+
+.custom-form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.custom-section {
+  background: var(--main-dkl-color);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--main-lh-color);
+}
+
+.custom-section-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-lg);
+  border-bottom: 1px solid var(--main-lh-color);
+  padding-bottom: var(--spacing-sm);
+}
+
+.custom-component-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--spacing-lg);
+}
+
+.custom-component-item {
+  padding: var(--spacing-md);
+  background: var(--main-dk-color);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--main-lh-color);
+  transition: all 0.2s ease;
+}
+
+.custom-component-item:hover {
+  border-color: var(--color-blue);
+  transform: translateY(-2px);
+}
+
+.custom-values-display {
+  background: var(--main-dkl-color);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--main-lh-color);
+}
+
+.custom-values-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-md);
+}
+
+.custom-values-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-md);
+}
+
+.custom-value-item {
+  padding: var(--spacing-sm);
+  background: var(--main-dk-color);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--main-lh-color);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.custom-value-item strong {
+  color: var(--color-text-primary);
+  margin-right: var(--spacing-xs);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .custom-page-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .custom-component-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .custom-values-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .custom-form-grid {
+    gap: var(--spacing-lg);
+  }
+
+  .custom-section {
+    padding: var(--spacing-md);
+  }
+}
+
 /* Base Card Styles */
 .content-card {
   background: var(--main-dkl-color);
@@ -62,13 +204,21 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(45deg, transparent 30%, var(--main-lhl-color) 50%, transparent 70%);
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.08) 50%,
+    transparent 70%
+  );
   transform: translateX(-100%);
   transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  z-index: 2;
+  opacity: 0.7;
 }
 
 .content-card:hover .content-media::before {
   transform: translateX(100%);
+  opacity: 0.4;
 }
 
 .content-media-icon {
@@ -196,5 +346,28 @@
 
 .content-info-create {
   background: var(--main-dk-color) !important;
+}
+
+/* Disabled Card State */
+.content-card-disabled {
+  opacity: 0.5;
+  cursor: not-allowed !important;
+  pointer-events: none;
+}
+
+.content-card-disabled:hover {
+  transform: none !important;
+  box-shadow: none !important;
+  border-color: var(--main-lh-color) !important;
+  background: var(--main-dkl-color) !important;
+}
+
+.content-card-disabled .book-cover-image {
+  transform: none !important;
+}
+
+.content-card-disabled .content-media::before {
+  transform: translateX(-100%) !important;
+  opacity: 0.7 !important;
 }
 

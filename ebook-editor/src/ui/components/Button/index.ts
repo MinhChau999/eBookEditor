@@ -1,0 +1,1 @@
+export { SimpleButton, type SimpleButtonProps } from './SimpleButton';

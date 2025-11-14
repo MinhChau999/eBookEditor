@@ -1,0 +1,1 @@
+export { SimpleInput, type SimpleInputProps } from './SimpleInput';

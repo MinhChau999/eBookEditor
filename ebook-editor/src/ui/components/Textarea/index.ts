@@ -1,0 +1,1 @@
+export { SimpleTextarea, type SimpleTextareaProps } from './SimpleTextarea';
