@@ -2188,10 +2188,6 @@ body {
 }
 
 /* ===== GRAPESJS DESIGN PATTERN ENHANCEMENTS ===== */
-/* Ensure consistent spacing and typography */
-.eb-field-wrapper-full-width {
-  margin-bottom: var(--spacing-md);
-}
 
 .eb-field {
   position: relative;
