@@ -1,5 +1,5 @@
 // Export all custom plugins
-export { default as grapesjsPresetWebpage } from './grapesjs-preset-webpage';
+export { default as setup } from './setup';
 export { default as bookBlocks } from './book-blocks';
 
 // Plugin registration function

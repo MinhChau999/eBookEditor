@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import grapesjs from 'grapesjs';
-import '../../lib/grapesjs/packages/core/dist/css/grapes.min.css';
-import {grapesjsPresetWebpage, bookBlocks} from '../../plugins';
+import '../../styles/grapes.min.css';
+import {setup, bookBlocks} from '../../plugins';
 // import '../../styles/theme.css';
 
 // Define GrapesJS editor type
@@ -31,7 +31,7 @@ const Editor: React.FC = () => {
           height: '100%',
           width: '100%',
           storageManager: false,
-          plugins: [grapesjsPresetWebpage, bookBlocks],
+          plugins: [setup, bookBlocks],
 
           // Core Color Configuration
           canvas: {
@@ -45,7 +45,7 @@ const Editor: React.FC = () => {
     
           // Plugin Configuration
           pluginsOpts: {
-            'gjs-preset-webpage': {
+            'setup': {
               blocks: ['link-block', 'quote', 'text-basic'],
               useCustomTheme: false,
               showStylesOnChange: true,

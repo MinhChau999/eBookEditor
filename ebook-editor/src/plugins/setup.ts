@@ -1,14 +1,14 @@
 /*!
- * grapesjs-preset-webpage - 1.0.3
- * Custom version without auto-generated CSS
- * Based on original grapesjs-preset-webpage but modified for eBook editor
+ * grapesjs-setup - 1.0.0
+ * Custom setup plugin for eBook editor
+ * Based on grapesjs-preset-webpage but modified for better eBook editing experience
  */
 import grapesjs from 'grapesjs';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 // Plugin configuration interface
-interface PresetWebpageOptions {
+interface SetupOptions {
   blocks?: string[];
   block?: (blockId: string) => Record<string, unknown>;
   modalImportTitle?: string;
@@ -31,8 +31,8 @@ interface ImportCommand {
   getCodeViewer(): any;
 }
 
-const plugin = grapesjs.plugins.add('gjs-preset-webpage', (editor: any, options: PresetWebpageOptions = {}) => {
-  const config: PresetWebpageOptions = Object.assign({
+const plugin = grapesjs.plugins.add('setup', (editor: any, options: SetupOptions = {}) => {
+  const config: SetupOptions = Object.assign({
     blocks: ['link-block', 'quote', 'text-basic'],
     block: () => ({}),
     modalImportTitle: 'Import',
