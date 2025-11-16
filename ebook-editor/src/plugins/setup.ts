@@ -156,6 +156,10 @@ const plugin = grapesjs.plugins.add('setup', (editor: any, options: SetupOptions
 
     panels.getPanels().reset([
       {
+        id: 'left-sidebar',
+        buttons: []
+      },
+      {
         id: 'commands',
         buttons: [{}]
       },
@@ -207,16 +211,6 @@ const plugin = grapesjs.plugins.add('setup', (editor: any, options: SetupOptions
             label: `<svg ${iconStyle} viewBox="0 0 24 24"><path fill="currentColor" d="M12.89,3L14.85,3.4L11.11,21L9.15,20.6L12.89,3M19.59,12L16,8.41V5.58L22.42,12L16,18.41V15.58L19.59,12M1.58,12L8,5.58V8.41L4.41,12L8,15.58V18.41L1.58,12Z" /></svg>`
           },
           {
-            id: 'undo',
-            command: () => editor.runCommand('core:undo'),
-            label: `<svg ${iconStyle} viewBox="0 0 24 24"><path fill="currentColor" d="M20 13.5C20 17.09 17.09 20 13.5 20H6V18H13.5C16 18 18 16 18 13.5S16 9 13.5 9H7.83L10.91 12.09L9.5 13.5L4 8L9.5 2.5L10.92 3.91L7.83 7H13.5C17.09 7 20 9.91 20 13.5Z" /></svg>`
-          },
-          {
-            id: 'redo',
-            command: () => editor.runCommand('core:redo'),
-            label: `<svg ${iconStyle} viewBox="0 0 24 24"><path fill="currentColor" d="M10.5 18H18V20H10.5C6.91 20 4 17.09 4 13.5S6.91 7 10.5 7H16.17L13.08 3.91L14.5 2.5L20 8L14.5 13.5L13.09 12.09L16.17 9H10.5C8 9 6 11 6 13.5S8 18 10.5 18Z" /></svg>`
-          },
-          {
             id: importCommand,
             command: () => editor.runCommand(importCommand),
             label: `<svg ${iconStyle} viewBox="0 0 24 24"><path fill="currentColor" d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z" /></svg>`
@@ -255,6 +249,102 @@ const plugin = grapesjs.plugins.add('setup', (editor: any, options: SetupOptions
         ]
       }
     ]);
+
+    // Create custom left sidebar content
+    const leftSidebarPanel = document.createElement('div');
+    leftSidebarPanel.className = 'gjs-pn-panel gjs-pn-left-sidebar gjs-one-bg gjs-two-color';
+    leftSidebarPanel.id = 'gjs-left-sidebar';
+    leftSidebarPanel.style.cssText = `
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: var(--gjs-left-width, 15%);
+      height: 100%;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    `;
+
+    // Header
+    const header = document.createElement('div');
+    header.className = 'gjs-pn-header';
+    header.style.cssText = `
+      height: 40px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+      display: flex;
+      align-items: center;
+      padding: 0 15px;
+      font-size: 14px;
+      font-weight: 500;
+    `;
+    header.innerHTML = '📚 Document';
+
+    // Content area
+    const content = document.createElement('div');
+    content.className = 'gjs-pn-content';
+    content.style.cssText = `
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+    `;
+
+    // Add pages section
+    const pagesSection = document.createElement('div');
+    pagesSection.innerHTML = `
+      <div style="font-size: 12px; color: var(--gjs-secondary-color); margin-bottom: 10px; text-transform: uppercase;">Pages</div>
+      <div style="margin-bottom: 10px;">
+        <button class="gjs-pn-btn" style="width: 100%; padding: 8px; background: transparent; border: 1px solid rgba(255,255,255,0.2); color: var(--gjs-secondary-color); border-radius: 3px; cursor: pointer;">
+          + Add New Page
+        </button>
+      </div>
+      <div class="gjs-pages-list" style="display: flex; flex-direction: column; gap: 5px;">
+        <div class="gjs-page-item" style="padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid transparent; border-radius: 3px; cursor: pointer; display: flex; align-items: center; gap: 10px;">
+          <div style="width: 30px; height: 20px; background: var(--gjs-ui-primary-color, #4a8c87); border-radius: 2px; display: flex; align-items: center; justify-content: center; color: white; font-size: 10px;">1</div>
+          <div style="flex: 1;">
+            <div style="font-size: 12px; color: var(--gjs-secondary-color);">Page 1</div>
+            <div style="font-size: 10px; color: rgba(255,255,255,0.5);">Cover page</div>
+          </div>
+        </div>
+        <div class="gjs-page-item" style="padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid transparent; border-radius: 3px; cursor: pointer; display: flex; align-items: center; gap: 10px;">
+          <div style="width: 30px; height: 20px; background: var(--gjs-ui-primary-color, #4a8c87); border-radius: 2px; display: flex; align-items: center; justify-content: center; color: white; font-size: 10px;">2</div>
+          <div style="flex: 1;">
+            <div style="font-size: 12px; color: var(--gjs-secondary-color);">Page 2</div>
+            <div style="font-size: 10px; color: rgba(255,255,255,0.5);">Chapter 1</div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    content.appendChild(pagesSection);
+    leftSidebarPanel.appendChild(header);
+    leftSidebarPanel.appendChild(content);
+
+    // Add left sidebar to editor container when editor loads
+    editor.on('load', () => {
+      const editorContainer = editor.getContainer();
+      if (editorContainer) {
+        editorContainer.appendChild(leftSidebarPanel);
+
+        // Adjust canvas to account for left sidebar and right panels
+        const canvas = editorContainer.querySelector('.gjs-cv-canvas') as HTMLElement;
+        if (canvas) {
+          canvas.style.marginLeft = 'var(--gjs-left-width, 15%)';
+          canvas.style.width = 'calc(100% - var(--gjs-left-width, 15%) - var(--gjs-left-width, 15%))';
+        }
+
+        // Also adjust the commands panel position
+        const commandsPanel = editorContainer.querySelector('.gjs-pn-commands') as HTMLElement;
+        if (commandsPanel) {
+          commandsPanel.style.left = 'var(--gjs-left-width, 15%)';
+        }
+
+        const devicesPanel = editorContainer.querySelector('.gjs-pn-devices-c') as HTMLElement;
+        if (devicesPanel) {
+          devicesPanel.style.left = 'var(--gjs-left-width, 15%)';
+        }
+      }
+    });
 
     const blocksBtn = panels.getButton('views', openBlocks);
     editor.on('load', () => {

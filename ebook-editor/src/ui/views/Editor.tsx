@@ -379,25 +379,126 @@ const Editor: React.FC = () => {
             background: #4a8c87 !important;
             color: white !important;
           }
+
+          /* Left Sidebar Panel Styles */
+          .gjs-pn-left-sidebar {
+            --gjs-left-width: 15%;
+          }
+
+          /* Left sidebar container styles */
+          .gjs-pn-left-sidebar {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: var(--gjs-left-width, 15%) !important;
+            height: 100% !important;
+            z-index: 1 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1) !important;
+          }
+
+          /* Canvas layout adjustments */
+          .gjs-cv-canvas {
+            margin-left: var(--gjs-left-width, 15%) !important;
+            width: calc(100% - 2 * var(--gjs-left-width, 15%)) !important;
+          }
+
+          /* Top panels positioning */
+          .gjs-pn-commands,
+          .gjs-pn-devices-c,
+          .gjs-pn-options,
+          .gjs-pn-views {
+            left: var(--gjs-left-width, 15%) !important;
+          }
+
+          .gjs-pn-left-sidebar .gjs-pn-header {
+            background: rgba(0, 0, 0, 0.2) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+            font-weight: 500 !important;
+            height: 40px !important;
+            display: flex !important;
+            align-items: center !important;
+            padding: 0 15px !important;
+            font-size: 14px !important;
+          }
+
+          .gjs-pn-left-sidebar .gjs-pn-content {
+            background: transparent !important;
+            flex: 1 !important;
+            padding: 15px !important;
+            overflow-y: auto !important;
+          }
+
+          .gjs-pn-left-sidebar .gjs-pn-btn {
+            transition: all 0.2s ease;
+          }
+
+          .gjs-pn-left-sidebar .gjs-pn-btn:hover {
+            background: rgba(255, 255, 255, 0.1) !important;
+            border-color: var(--gjs-ui-primary-color, #4a8c87) !important;
+          }
+
+          .gjs-pn-left-sidebar .gjs-page-item {
+            transition: all 0.2s ease;
+          }
+
+          .gjs-pn-left-sidebar .gjs-page-item:hover {
+            background: rgba(255, 255, 255, 0.1) !important;
+            border-color: rgba(255, 255, 255, 0.2) !important;
+          }
+
+          .gjs-pn-left-sidebar .gjs-page-item.active {
+            background: var(--gjs-ui-primary-color, #4a8c87) !important;
+            border-color: var(--gjs-ui-primary-color, #4a8c87) !important;
+          }
         `);
 
-        // Set initial content
+        // Set initial content with page structure
         editorInstance.setComponents(`
           <div class="ebook-content">
-            <section class="hero-section">
+            <!-- Page 1: Cover Page -->
+            <div class="ebook-page" data-page="1" style="
+              min-height: 100vh;
+              background: linear-gradient(135deg, var(--tertiary-color, #4a8c87) 0%, var(--primary-color, #3f3f3f) 100%);
+              color: var(--color-text-primary, #dddddd);
+              padding: 80px 20px;
+              position: relative;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              text-align: center;
+            ">
               <div class="container">
-                <h1>Welcome to Your eBook Editor</h1>
-                <p>Start creating amazing content with our powerful drag-and-drop editor</p>
+                <h1 style="font-size: 3em; margin-bottom: 20px;">Your eBook Title</h1>
+                <p style="font-size: 1.2em; margin-bottom: 30px;">A Journey Through Content Creation</p>
+                <div style="margin-top: 60px;">
+                  <p style="font-style: italic;">Written by: Your Name</p>
+                </div>
               </div>
-            </section>
+            </div>
 
-            <section class="text-section">
+            <!-- Page 2: Chapter 1 Start -->
+            <div class="ebook-page" data-page="2" style="
+              min-height: 100vh;
+              background: var(--color-surface, #4a4a4a);
+              color: var(--color-text-primary, #dddddd);
+              padding: 60px 20px;
+              position: relative;
+            ">
               <div class="container">
-                <h2>Chapter 1: Getting Started</h2>
-                <p>This is where your story begins. Use the blocks on the left to add different types of content to your eBook. You can drag and drop text blocks, images, videos, and more to create rich, engaging content for your readers.</p>
-                <p>Click on any element to select it and use the properties panel on the right to customize its appearance. You can change colors, fonts, spacing, and much more to make your eBook look exactly how you want it to.</p>
+                <h2 style="font-size: 2.5em; margin-bottom: 30px; color: var(--tertiary-color, #4a8c87);">Chapter 1: Getting Started</h2>
+                <p style="font-size: 1.1em; line-height: 1.8; margin-bottom: 20px;">Welcome to the world of eBook creation! This editor provides you with powerful tools to bring your ideas to life. With our drag-and-drop interface, you can create professional-looking pages with minimal effort.</p>
+
+                <h3 style="font-size: 1.8em; margin-top: 30px; margin-bottom: 15px; color: var(--color-accent, #3b97e3);">Features at Your Fingertips</h3>
+                <p style="line-height: 1.6; margin-bottom: 15px;">• Page management with thumbnail previews<br/>
+                • Drag-and-drop content blocks<br/>
+                • Responsive design tools<br/>
+                • Real-time editing capabilities</p>
+
+                <p style="line-height: 1.6; margin-top: 30px;">Use the Page Manager panel on the left to navigate between pages, add new pages, or reorganize your eBook structure. Each page can be customized with different layouts, content types, and styling options.</p>
               </div>
-            </section>
+            </div>
           </div>
         `);
 
