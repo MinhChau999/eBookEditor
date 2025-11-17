@@ -250,86 +250,41 @@ const plugin = grapesjs.plugins.add('setup', (editor: any, options: SetupOptions
       }
     ]);
 
-    // Create custom left sidebar content
-    const leftSidebarPanel = document.createElement('div');
-    leftSidebarPanel.className = 'gjs-pn-panel gjs-pn-left-sidebar gjs-one-bg gjs-two-color';
-    leftSidebarPanel.id = 'gjs-left-sidebar';
-    leftSidebarPanel.style.cssText = `
-      position: absolute;
-      left: 0;
-      top: 0;
-      width: var(--gjs-left-width, 15%);
-      height: 100%;
-      z-index: 1;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-    `;
-
     // Header
-    const header = document.createElement('div');
-    header.className = 'gjs-pn-header';
-    header.style.cssText = `
-      height: 40px;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.2);
-      display: flex;
-      align-items: center;
-      padding: 0 15px;
-      font-size: 14px;
-      font-weight: 500;
+    const headerLeftSidebar = document.createElement('div');
+    headerLeftSidebar.className = 'gjs-pn-header-left-sidebar gjs-pn-panel gjs-one-bg gjs-two-color';
+    headerLeftSidebar.style.cssText = `
+        border-bottom: 2px solid var(--gjs-main-dark-color);
+        left: 0;
+        height: 40px;
+        width: var(--gjs-left-width);
+        z-index: 4;
     `;
-    header.innerHTML = '📚 Document';
 
     // Content area
-    const content = document.createElement('div');
-    content.className = 'gjs-pn-content';
-    content.style.cssText = `
-      flex: 1;
-      padding: 15px;
-      overflow-y: auto;
+    const contentLeftSidebar = document.createElement('div');
+    contentLeftSidebar.className = 'gjs-pn-content-left-sidebar gjs-pn-panel gjs-one-bg gjs-two-color';
+    contentLeftSidebar.style.cssText = `
+      height: 100%;
+      padding: 42px 0 0;
+      left: 0;
+      width: var(--gjs-left-width);
+      overflow: auto;
+      box-shadow: 0 0 5px var(--gjs-main-dark-color);
     `;
-
-    // Add pages section
-    const pagesSection = document.createElement('div');
-    pagesSection.innerHTML = `
-      <div style="font-size: 12px; color: var(--gjs-secondary-color); margin-bottom: 10px; text-transform: uppercase;">Pages</div>
-      <div style="margin-bottom: 10px;">
-        <button class="gjs-pn-btn" style="width: 100%; padding: 8px; background: transparent; border: 1px solid rgba(255,255,255,0.2); color: var(--gjs-secondary-color); border-radius: 3px; cursor: pointer;">
-          + Add New Page
-        </button>
-      </div>
-      <div class="gjs-pages-list" style="display: flex; flex-direction: column; gap: 5px;">
-        <div class="gjs-page-item" style="padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid transparent; border-radius: 3px; cursor: pointer; display: flex; align-items: center; gap: 10px;">
-          <div style="width: 30px; height: 20px; background: var(--gjs-ui-primary-color, #4a8c87); border-radius: 2px; display: flex; align-items: center; justify-content: center; color: white; font-size: 10px;">1</div>
-          <div style="flex: 1;">
-            <div style="font-size: 12px; color: var(--gjs-secondary-color);">Page 1</div>
-            <div style="font-size: 10px; color: rgba(255,255,255,0.5);">Cover page</div>
-          </div>
-        </div>
-        <div class="gjs-page-item" style="padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid transparent; border-radius: 3px; cursor: pointer; display: flex; align-items: center; gap: 10px;">
-          <div style="width: 30px; height: 20px; background: var(--gjs-ui-primary-color, #4a8c87); border-radius: 2px; display: flex; align-items: center; justify-content: center; color: white; font-size: 10px;">2</div>
-          <div style="flex: 1;">
-            <div style="font-size: 12px; color: var(--gjs-secondary-color);">Page 2</div>
-            <div style="font-size: 10px; color: rgba(255,255,255,0.5);">Chapter 1</div>
-          </div>
-        </div>
-      </div>
-    `;
-
-    content.appendChild(pagesSection);
-    leftSidebarPanel.appendChild(header);
-    leftSidebarPanel.appendChild(content);
 
     // Add left sidebar to editor container when editor loads
     editor.on('load', () => {
       const editorContainer = editor.getContainer();
       if (editorContainer) {
-        editorContainer.appendChild(leftSidebarPanel);
+        const editorContent = editorContainer.querySelector('.gjs-editor');
+        editorContent.appendChild(headerLeftSidebar);
+        editorContent.appendChild(contentLeftSidebar);
 
         // Adjust canvas to account for left sidebar and right panels
         const canvas = editorContainer.querySelector('.gjs-cv-canvas') as HTMLElement;
         if (canvas) {
-          canvas.style.marginLeft = 'var(--gjs-left-width, 15%)';
+          canvas.style.left = 'var(--gjs-left-width, 15%)';
           canvas.style.width = 'calc(100% - var(--gjs-left-width, 15%) - var(--gjs-left-width, 15%))';
         }
 

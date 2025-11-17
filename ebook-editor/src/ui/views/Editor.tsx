@@ -85,430 +85,107 @@ const Editor: React.FC = () => {
             box-sizing: border-box;
           }
 
-          body, .gjs-cv-canvas {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            margin: 0;
-            padding: 0;
-            background: var(--color-background, #444444);
-            color: var(--color-text-primary, #dddddd);
+          .ebook-page-cover {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #4a8c87 0%, #3f3f3f 100%);
+            color: #dddddd;
+            padding: 80px 20px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
           }
 
-          .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
+          .ebook-page-content {
+            min-height: 100vh;
+            background: #4a4a4a;
+            color:  #dddddd;
+            padding: 60px 20px;
+            position: relative;
           }
 
-          /* Theme-based content sections */
-          .hero-section {
-            background: linear-gradient(135deg, var(--tertiary-color, #4a8c87) 0%, var(--primary-color, #3f3f3f) 100%) !important;
-            color: var(--color-text-primary, #dddddd) !important;
-            padding: 80px 20px !important;
-            text-align: center !important;
+          .cover-title {
+            font-size: 3em;
+            margin-bottom: 20px;
           }
 
-          .text-section {
-            background: var(--color-surface, #4a4a4a) !important;
-            padding: 60px 20px !important;
+          .cover-subtitle {
+            font-size: 1.2em;
+            margin-bottom: 30px;
           }
 
-          .image-text-section {
-            background: var(--main-dk-color, rgba(0, 0, 0, 0.2)) !important;
-            padding: 60px 20px !important;
+          .cover-author {
+            margin-top: 60px;
           }
 
-          .quote-section {
-            background: linear-gradient(135deg, var(--tertiary-color, #4a8c87) 0%, var(--quaternary-color, #6cdada) 100%) !important;
-            color: var(--color-text-primary, #dddddd) !important;
-            padding: 60px 20px !important;
-            text-align: center !important;
+          .cover-author p {
+            font-style: italic;
           }
 
-          h1, h2, h3, h4, h5, h6 {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            font-weight: 600;
-            color: var(--color-text-primary, #dddddd);
+          .chapter-title {
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            color: #4a8c87;
           }
 
-          p {
+          .chapter-intro {
+            font-size: 1.1em;
+            line-height: 1.8;
+            margin-bottom: 20px;
+          }
+
+          .section-title {
+            font-size: 1.8em;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            color: #3b97e3;
+          }
+
+          .feature-list {
             line-height: 1.6;
-            color: var(--color-text-secondary, #b0b0b0);
+            margin-bottom: 15px;
           }
 
-          /* GrapesJS Selection and Highlighting - USING DIRECT COLORS */
-          .gjs-selected {
-            outline: 2px solid #4a8c87 !important;
-            outline-offset: 2px;
+          .content-paragraph {
+            line-height: 1.6;
+            margin-top: 30px;
           }
 
-          .gjs-cv-canvas {
-            background: #444444 !important;
-          }
-
-          .gjs-pn-panel {
-            background: #4a4a4a !important;
-            color: #dddddd !important;
-            border-color: #606060 !important;
-          }
-
-          .gjs-pn-panel .gjs-title {
-            background: rgba(0, 0, 0, 0.2) !important;
-            color: #dddddd !important;
-            border-bottom-color: #606060 !important;
-          }
-
-          .gjs-block {
-            background: #4a4a4a !important;
-            color: #dddddd !important;
-            border-color: #606060 !important;
-          }
-
-          .gjs-block:hover {
-            background: #555555 !important;
-            border-color: #4a8c87 !important;
-          }
-
-          .gjs-layer {
-            background: #4a4a4a !important;
-            color: #dddddd !important;
-            border-color: #606060 !important;
-          }
-
-          .gjs-layer:hover {
-            background: #555555 !important;
-          }
-
-          .gjs-layer.gjs-selected {
-            background: #4a8c87 !important;
-            color: white !important;
-          }
-
-          /* Style Manager */
-          .gjs-sm-sector {
-            background: var(--color-surface, #4a4a4a) !important;
-            color: var(--color-text-primary, #dddddd) !important;
-            border-color: var(--color-border, #606060) !important;
-          }
-
-          .gjs-sm-property {
-            background: var(--color-surface, #4a4a4a) !important;
-            color: var(--color-text-primary, #dddddd) !important;
-          }
-
-          .gjs-sm-label {
-            color: var(--color-text-secondary, #b0b0b0) !important;
-          }
-
-          .gjs-sm-input, .gjs-sm-select {
-            background: var(--main-dk-color, rgba(0, 0, 0, 0.2)) !important;
-            color: var(--color-text-primary, #dddddd) !important;
-            border-color: var(--color-border, #606060) !important;
-          }
-
-          .gjs-sm-input:focus, .gjs-sm-select:focus {
-            border-color: var(--color-accent, #3b97e3) !important;
-          }
-
-          /* Traits Manager */
-          .gjs-tm-traits {
-            background: var(--color-surface, #4a4a4a) !important;
-            color: var(--color-text-primary, #dddddd) !important;
-          }
-
-          .gjs-tm-trait {
-            background: var(--color-surface, #4a4a4a) !important;
-            border-color: var(--color-border, #606060) !important;
-          }
-
-          .gjs-tm-label {
-            color: var(--color-text-secondary, #b0b0b0) !important;
-          }
-
-          .gjs-tm-input {
-            background: var(--main-dk-color, rgba(0, 0, 0, 0.2)) !important;
-            color: var(--color-text-primary, #dddddd) !important;
-            border-color: var(--color-border, #606060) !important;
-          }
-
-          .gjs-tm-input:focus {
-            border-color: var(--color-accent, #3b97e3) !important;
-          }
-
-          /* Top Toolbar */
-          .gjs-toolbar {
-            background: var(--color-surface, #4a4a4a) !important;
-            border-color: var(--color-border, #606060) !important;
-          }
-
-          .gjs-toolbar-item {
-            color: var(--color-text-primary, #dddddd) !important;
-          }
-
-          .gjs-toolbar-item:hover {
-            color: var(--color-accent, #3b97e3) !important;
-          }
-
-          .gjs-toolbar-item.active {
-            background: var(--color-accent, #3b97e3) !important;
-            color: white !important;
-          }
-
-          /* GrapesJS Default Panel Styles - Enhanced for eBook Theme */
-          .gjs-cv-canvas {
-            height: 100vh !important;
-            background: #444444 !important;
-          }
-
-          /* Default Panels */
-          .gjs-pn-panel {
-            background: #4a4a4a !important;
-            color: #dddddd !important;
-            border-color: #606060 !important;
-          }
-
-          .gjs-pn-panel .gjs-title {
-            background: rgba(0, 0, 0, 0.2) !important;
-            color: #dddddd !important;
-            border-bottom-color: #606060 !important;
-          }
-
-          /* Style Manager */
-          .gjs-sm-sector {
-            background: #4a4a4a !important;
-            color: #dddddd !important;
-            border-color: #606060 !important;
-          }
-
-          .gjs-sm-property {
-            background: #4a4a4a !important;
-            color: #dddddd !important;
-          }
-
-          .gjs-sm-label {
-            color: #b0b0b0 !important;
-          }
-
-          .gjs-sm-input, .gjs-sm-select {
-            background: rgba(0, 0, 0, 0.2) !important;
-            color: #dddddd !important;
-            border-color: #606060 !important;
-          }
-
-          .gjs-sm-input:focus, .gjs-sm-select:focus {
-            border-color: #4a8c87 !important;
-          }
-
-          /* Traits Manager */
-          .gjs-tm-traits {
-            background: #4a4a4a !important;
-            color: #dddddd !important;
-          }
-
-          .gjs-tm-trait {
-            background: #4a4a4a !important;
-            border-color: #606060 !important;
-          }
-
-          .gjs-tm-label {
-            color: #b0b0b0 !important;
-          }
-
-          .gjs-tm-input {
-            background: rgba(0, 0, 0, 0.2) !important;
-            color: #dddddd !important;
-            border-color: #606060 !important;
-          }
-
-          .gjs-tm-input:focus {
-            border-color: #4a8c87 !important;
-          }
-
-          /* Layers Panel */
-          .gjs-layer {
-            background: #4a4a4a !important;
-            color: #dddddd !important;
-            border-color: #606060 !important;
-          }
-
-          .gjs-layer:hover {
-            background: #555555 !important;
-          }
-
-          .gjs-layer.gjs-selected {
-            background: #4a8c87 !important;
-            color: white !important;
-          }
-
-          /* Block Manager Styles */
-          .gjs-block {
-            background: #555555 !important;
-            color: #dddddd !important;
-            border: 1px solid #606060 !important;
-            border-radius: 5px !important;
-            padding: 15px !important;
-            margin: 10px 0 !important;
-            cursor: pointer !important;
-            transition: all 0.2s ease !important;
-          }
-
-          .gjs-block:hover {
-            background: #4a8c87 !important;
-            border-color: #4a8c87 !important;
-          }
-
-          /* Custom preset-webpage plugin styles now - no auto-injected CSS */
-
-          /* Ensure eBook content maintains our theme */
-          .ebook-content * {
-            color: inherit !important;
-            background-color: transparent !important;
-          }
-
-          /* Block category styles */
-          .gjs-block-category {
-            background: #4a4a4a !important;
-            color: #dddddd !important;
-            border-bottom: 1px solid #606060 !important;
-          }
-
-          .gjs-block-category:hover {
-            background: #555555 !important;
-          }
-
-          .gjs-block-category.active {
-            background: #4a8c87 !important;
-            color: white !important;
-          }
-
-          /* Left Sidebar Panel Styles */
-          .gjs-pn-left-sidebar {
-            --gjs-left-width: 15%;
-          }
-
-          /* Left sidebar container styles */
-          .gjs-pn-left-sidebar {
-            position: absolute !important;
-            left: 0 !important;
-            top: 0 !important;
-            width: var(--gjs-left-width, 15%) !important;
-            height: 100% !important;
-            z-index: 1 !important;
-            display: flex !important;
-            flex-direction: column !important;
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1) !important;
-          }
-
-          /* Canvas layout adjustments */
-          .gjs-cv-canvas {
-            margin-left: var(--gjs-left-width, 15%) !important;
-            width: calc(100% - 2 * var(--gjs-left-width, 15%)) !important;
-          }
-
-          /* Top panels positioning */
-          .gjs-pn-commands,
-          .gjs-pn-devices-c,
-          .gjs-pn-options,
-          .gjs-pn-views {
-            left: var(--gjs-left-width, 15%) !important;
-          }
-
-          .gjs-pn-left-sidebar .gjs-pn-header {
-            background: rgba(0, 0, 0, 0.2) !important;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-            font-weight: 500 !important;
-            height: 40px !important;
-            display: flex !important;
-            align-items: center !important;
-            padding: 0 15px !important;
-            font-size: 14px !important;
-          }
-
-          .gjs-pn-left-sidebar .gjs-pn-content {
-            background: transparent !important;
-            flex: 1 !important;
-            padding: 15px !important;
-            overflow-y: auto !important;
-          }
-
-          .gjs-pn-left-sidebar .gjs-pn-btn {
-            transition: all 0.2s ease;
-          }
-
-          .gjs-pn-left-sidebar .gjs-pn-btn:hover {
-            background: rgba(255, 255, 255, 0.1) !important;
-            border-color: var(--gjs-ui-primary-color, #4a8c87) !important;
-          }
-
-          .gjs-pn-left-sidebar .gjs-page-item {
-            transition: all 0.2s ease;
-          }
-
-          .gjs-pn-left-sidebar .gjs-page-item:hover {
-            background: rgba(255, 255, 255, 0.1) !important;
-            border-color: rgba(255, 255, 255, 0.2) !important;
-          }
-
-          .gjs-pn-left-sidebar .gjs-page-item.active {
-            background: var(--gjs-ui-primary-color, #4a8c87) !important;
-            border-color: var(--gjs-ui-primary-color, #4a8c87) !important;
-          }
         `);
 
         // Set initial content with page structure
         editorInstance.setComponents(`
           <div class="ebook-content">
             <!-- Page 1: Cover Page -->
-            <div class="ebook-page" data-page="1" style="
-              min-height: 100vh;
-              background: linear-gradient(135deg, var(--tertiary-color, #4a8c87) 0%, var(--primary-color, #3f3f3f) 100%);
-              color: var(--color-text-primary, #dddddd);
-              padding: 80px 20px;
-              position: relative;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              text-align: center;
-            ">
+            <div class="ebook-page ebook-page-cover" data-page="1">
               <div class="container">
-                <h1 style="font-size: 3em; margin-bottom: 20px;">Your eBook Title</h1>
-                <p style="font-size: 1.2em; margin-bottom: 30px;">A Journey Through Content Creation</p>
-                <div style="margin-top: 60px;">
-                  <p style="font-style: italic;">Written by: Your Name</p>
+                <h1 class="cover-title">Your eBook Title</h1>
+                <p class="cover-subtitle">A Journey Through Content Creation</p>
+                <div class="cover-author">
+                  <p>Written by: Your Name</p>
                 </div>
               </div>
             </div>
 
             <!-- Page 2: Chapter 1 Start -->
-            <div class="ebook-page" data-page="2" style="
-              min-height: 100vh;
-              background: var(--color-surface, #4a4a4a);
-              color: var(--color-text-primary, #dddddd);
-              padding: 60px 20px;
-              position: relative;
-            ">
+            <div class="ebook-page ebook-page-content" data-page="2">
               <div class="container">
-                <h2 style="font-size: 2.5em; margin-bottom: 30px; color: var(--tertiary-color, #4a8c87);">Chapter 1: Getting Started</h2>
-                <p style="font-size: 1.1em; line-height: 1.8; margin-bottom: 20px;">Welcome to the world of eBook creation! This editor provides you with powerful tools to bring your ideas to life. With our drag-and-drop interface, you can create professional-looking pages with minimal effort.</p>
+                <h2 class="chapter-title">Chapter 1: Getting Started</h2>
+                <p class="chapter-intro">Welcome to the world of eBook creation! This editor provides you with powerful tools to bring your ideas to life. With our drag-and-drop interface, you can create professional-looking pages with minimal effort.</p>
 
-                <h3 style="font-size: 1.8em; margin-top: 30px; margin-bottom: 15px; color: var(--color-accent, #3b97e3);">Features at Your Fingertips</h3>
-                <p style="line-height: 1.6; margin-bottom: 15px;">• Page management with thumbnail previews<br/>
+                <h3 class="section-title">Features at Your Fingertips</h3>
+                <p class="feature-list">• Page management with thumbnail previews<br/>
                 • Drag-and-drop content blocks<br/>
                 • Responsive design tools<br/>
                 • Real-time editing capabilities</p>
 
-                <p style="line-height: 1.6; margin-top: 30px;">Use the Page Manager panel on the left to navigate between pages, add new pages, or reorganize your eBook structure. Each page can be customized with different layouts, content types, and styling options.</p>
+                <p class="content-paragraph">Use the Page Manager panel on the left to navigate between pages, add new pages, or reorganize your eBook structure. Each page can be customized with different layouts, content types, and styling options.</p>
               </div>
             </div>
           </div>
         `);
 
-        // GrapesJS will automatically show its default panels
-
-        // GrapesJS blocks-basic plugin provides its own panel management
-
-        // GrapesJS blocks-basic plugin already provides blocks
-
-        // GrapesJS blocks-basic plugin provides its own blocks and drag-drop functionality
 
         editorInstanceRef.current = editorInstance;
         setIsLoading(false);
