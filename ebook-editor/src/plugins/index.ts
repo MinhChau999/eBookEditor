@@ -1,6 +1,7 @@
 // Export all custom plugins
 export { default as setup } from './setup';
 export { default as bookBlocks } from './book-blocks';
+export { default as bookManager } from './book-manager';
 
 // Plugin registration function
 export const registerEbookPlugins = () => {

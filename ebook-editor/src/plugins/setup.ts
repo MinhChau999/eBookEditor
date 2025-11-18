@@ -4,7 +4,7 @@
  * Based on grapesjs-preset-webpage but modified for better eBook editing experience
  */
 import grapesjs from 'grapesjs';
-import '../styles/left-sidebar.css';
+import '../styles/setup.css';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -343,29 +343,10 @@ const plugin = grapesjs.plugins.add('setup', (editor: any, options: SetupOptions
       const structureView = document.createElement('div');
       structureView.className = 'structure-view';
 
-      // Book Info Section
-      const bookInfoSection = document.createElement('div');
-      bookInfoSection.innerHTML = `
-        <div class="left-sidebar-title">
-          <i class="fas fa-book" style="margin-right: 8px;"></i>
-          <span>Book Information</span>
-        </div>
-        <div class="gjs-category-content" style="padding: var(--gjs-input-padding-multiple);">
-          <div class="gjs-form-group">
-            <label style="display: block; margin-bottom: 4px; font-size: var(--gjs-font-size); color: var(--gjs-font-color);">Title</label>
-            <div class="gjs-field">
-              <input type="text" placeholder="Enter book title" style="color: var(--gjs-font-color);">
-            </div>
-          </div>
-          <div class="gjs-form-group">
-            <label style="display: block; margin-bottom: 4px; font-size: var(--gjs-font-size); color: var(--gjs-font-color);">Author</label>
-            <div class="gjs-field">
-              <input type="text" placeholder="Enter author name" style="color: var(--gjs-font-color);">
-            </div>
-          </div>
-        </div>
-      `;
-      structureView.appendChild(bookInfoSection);
+      // Book Info Section - using book-manager plugin
+      if (editor.BookManager && editor.BookManager.createPanel) {
+        editor.BookManager.createPanel(container);
+      }
 
       // Chapters Section
       const chaptersSection = document.createElement('div');

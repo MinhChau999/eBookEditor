@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import grapesjs from 'grapesjs';
-import {setup, bookBlocks} from '../../plugins';
+import {setup, bookBlocks, bookManager} from '../../plugins';
 import tuiImageEditorPlugin from 'grapesjs-tui-image-editor';
 
 // Define GrapesJS editor type
@@ -30,7 +30,7 @@ const Editor: React.FC = () => {
           height: '100%',
           width: '100%',
           storageManager: false,
-          plugins: [setup, bookBlocks, tuiImageEditorPlugin],
+          plugins: [setup, bookBlocks, bookManager, tuiImageEditorPlugin],
 
           // Core Color Configuration
           canvas: {
@@ -154,8 +154,8 @@ const Editor: React.FC = () => {
 
           .ebook-page-cover {
             min-height: 100vh;
-            background: linear-gradient(135deg, #4a8c87 0%, #3f3f3f 100%);
-            color: #dddddd;
+            background: linear-gradient(135deg, #81C7BD 0%, #6BB6A8 50%, #A8D5E2 100%);
+            color: #2c3e50;
             padding: 80px 20px;
             position: relative;
             display: flex;
@@ -166,8 +166,8 @@ const Editor: React.FC = () => {
 
           .ebook-page-content {
             min-height: 100vh;
-            background: #4a4a4a;
-            color:  #dddddd;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 50%, #e9ecef 100%);
+            color: #2c3e50;
             padding: 60px 20px;
             position: relative;
           }
@@ -193,7 +193,7 @@ const Editor: React.FC = () => {
           .chapter-title {
             font-size: 2.5em;
             margin-bottom: 30px;
-            color: #4a8c87;
+            color: #2980b9;
           }
 
           .chapter-intro {
@@ -206,7 +206,7 @@ const Editor: React.FC = () => {
             font-size: 1.8em;
             margin-top: 30px;
             margin-bottom: 15px;
-            color: #3b97e3;
+            color: #27ae60;
           }
 
           .feature-list {
@@ -227,10 +227,11 @@ const Editor: React.FC = () => {
             <!-- Page 1: Cover Page -->
             <div class="ebook-page ebook-page-cover" data-page="1">
               <div class="container">
-                <h1 class="cover-title">Your eBook Title</h1>
-                <p class="cover-subtitle">A Journey Through Content Creation</p>
+                <h1 class="cover-title">Thơ ca Đời sống</h1>
+                <p class="cover-subtitle">Hành trình của những cảm xúc thăng hoa</p>
                 <div class="cover-author">
-                  <p>Written by: Your Name</p>
+                  <p>Với lời tâm sự từ trái tim</p>
+                  <p>Khám phá vẻ đẹp trong từng vần thơ</p>
                 </div>
               </div>
             </div>
@@ -238,16 +239,16 @@ const Editor: React.FC = () => {
             <!-- Page 2: Chapter 1 Start -->
             <div class="ebook-page ebook-page-content" data-page="2">
               <div class="container">
-                <h2 class="chapter-title">Chapter 1: Getting Started</h2>
-                <p class="chapter-intro">Welcome to the world of eBook creation! This editor provides you with powerful tools to bring your ideas to life. With our drag-and-drop interface, you can create professional-looking pages with minimal effort.</p>
+                <h2 class="chapter-title">Chương 1: Khởi đầu hành trình</h2>
+                <p class="chapter-intro">Trong thế giới của chữ nghĩa và cảm xúc, mỗi trang sách là một cánh cửa mở ra những chân trời mới. Từng câu thơ như mạch nguồn trong veo, chảy trôi qua những thung lũng của tâm hồn, mang theo hương thơm của ký ức và màu sắc của hiện tại.</p>
 
-                <h3 class="section-title">Features at Your Fingertips</h3>
-                <p class="feature-list">• Page management with thumbnail previews<br/>
-                • Drag-and-drop content blocks<br/>
-                • Responsive design tools<br/>
-                • Real-time editing capabilities</p>
+                <h3 class="section-title">Vẻ đẹp của sự đơn sơ</h3>
+                <p class="feature-list">• Mỗi vần thơ là một trang đời<br/>
+                • Từng câu văn là một khúc ca<br/>
+                • Mỗi trang sách là một câu chuyện<br/>
+                • Mỗi chương là một chặng đường</p>
 
-                <p class="content-paragraph">Use the Page Manager panel on the left to navigate between pages, add new pages, or reorganize your eBook structure. Each page can be customized with different layouts, content types, and styling options.</p>
+                <p class="content-paragraph">Hãy để cho tâm hồn mình được phiêu lãng cùng những con chữ, để trái tim được rung động bởi những giai điệu của ngôn từ. Cuốn sách này không chỉ là tập hợp những con chữ, mà là cuộc đối thoại giữa tâm hồn ta và thế giới xung quanh.</p>
               </div>
             </div>
           </div>
