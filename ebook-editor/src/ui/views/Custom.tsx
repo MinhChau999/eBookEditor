@@ -14,7 +14,6 @@ import { SimpleColorPicker } from '../components/ColorPicker';
 import { SimpleModal, ModalFooter } from '../components/Modal';
 import { ToastManager } from '../components/Toast/SimpleToast';
 import { useToast } from '../components/Toast/useSimpleToast';
-import '../../styles/theme.css';
 import '../../styles/book.css';
 
 export const Custom: React.FC = () => {

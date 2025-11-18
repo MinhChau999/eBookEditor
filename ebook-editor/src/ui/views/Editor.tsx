@@ -1,8 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import grapesjs from 'grapesjs';
-import '../../styles/grapes.min.css';
 import {setup, bookBlocks} from '../../plugins';
-// import '../../styles/theme.css';
 
 // Define GrapesJS editor type
 interface GrapesJSEditor {

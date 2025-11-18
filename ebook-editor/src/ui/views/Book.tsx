@@ -3,7 +3,6 @@ import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import { SimpleInput } from '../components/Input';
 import { CreateBookCard, BookItem, TemplateBookCard } from '../components/BookCard';
-import '../../styles/theme.css';
 import '../../styles/book.css';
 
 export const Book: React.FC = () => {
