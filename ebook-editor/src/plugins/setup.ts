@@ -43,7 +43,26 @@ const plugin = grapesjs.plugins.add('setup', (editor: any, options: SetupOptions
     importViewerOptions: {},
     textCleanCanvas: 'Are you sure you want to clear the canvas?',
     showStylesOnChange: true,
-    useCustomTheme: false // DISABLED - This prevents CSS injection
+    useCustomTheme: false, // DISABLED - This prevents CSS injection
+    // Asset Manager defaults
+    filestackApiKey: '',
+    assetManagerOptions: {
+      key: '',
+      uploadButtonText: '📤 Upload Images',
+      maxFiles: 20,
+      acceptTypes: 'image/*,video/*,.pdf',
+      buttonClassName: 'btn-prim btn-asset-manager',
+      containerClassName: 'asset-manager-container',
+      filestackOpts: {
+        uploadInBackground: false,
+        onClose: () => console.log('File picker closed'),
+        onUploadDone: (result: any) => console.log('Upload complete:', result)
+      },
+      onComplete: (files: any[], assets: any[]) => {
+        console.log('Asset Manager: Files uploaded:', files);
+        console.log('Asset Manager: Assets added:', assets);
+      }
+    }
   }, options);
 
   // Device switching commands
@@ -357,13 +376,11 @@ const plugin = grapesjs.plugins.add('setup', (editor: any, options: SetupOptions
           <button class="gjs-sm-btn" style="margin-left: auto;">+ Add</button>
         </div>
         <div class="gjs-category-content" style="padding: var(--gjs-input-padding-multiple);">
-          <div id="chapters-list" style="display: flex; flex-direction: column; gap: 4px;">
+          <div id="chapters-list" style="display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px;">
             <div class="gjs-field" style="padding: var(--gjs-input-padding); cursor: pointer;">
-              <i class="fas fa-file-alt" style="margin-right: 8px; color: var(--gjs-secondary-light-color);"></i>
               Chapter 1: Introduction
             </div>
             <div class="gjs-field" style="padding: var(--gjs-input-padding); cursor: pointer;">
-              <i class="fas fa-file-alt" style="margin-right: 8px; color: var(--gjs-secondary-light-color);"></i>
               Chapter 2: Getting Started
             </div>
           </div>
@@ -374,8 +391,7 @@ const plugin = grapesjs.plugins.add('setup', (editor: any, options: SetupOptions
       // Pages Section - InDesign Style with Spreads
       const pagesSection = document.createElement('div');
       pagesSection.innerHTML = `
-        <!-- InDesign Style Pages Panel Header -->
-        <div class="pages-panel-header">
+        <div class="left-sidebar-title">
           <div class="pages-panel-title">
             <i class="fas fa-file-alt"></i>
             <span>Pages</span>
@@ -387,202 +403,198 @@ const plugin = grapesjs.plugins.add('setup', (editor: any, options: SetupOptions
           </div>
         </div>
 
-        <!-- InDesign Style View Options -->
-        <div class="pages-view-options">
-          <button class="view-btn active" title="Spread View">
-            <i class="fas fa-columns"></i>
-            <span>Spreads</span>
-          </button>
-          <button class="view-btn" title="Single Page View">
-            <i class="fas fa-file"></i>
-            <span>Pages</span>
-          </button>
-          <button class="view-btn" title="Page Info">
-            <i class="fas fa-info-circle"></i>
-            <span>Info</span>
-          </button>
-        </div>
-
-        <!-- Master Pages Section - InDesign Style -->
-        <div class="master-pages-section">
-          <div class="master-pages-header">
-            <div class="master-pages-title">
-              <div class="master-master-icon">M</div>
-              <span>Master Pages</span>
-            </div>
-          </div>
-          <div class="master-pages-list">
-            <div class="master-page-item active">
-              <button class="master-page-delete-btn" title="Delete Master Page">
-                <i class="fas fa-trash"></i>
-              </button>
-              <div class="master-page-thumbnail">
-                <div style="position: absolute; top: 4px; left: 4px; font-size: 7px; font-weight: 600; color: var(--gjs-font-color);">A-Master</div>
-                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 20px; color: var(--gjs-secondary-light-color);">
-                  <i class="fas fa-layer-group"></i>
-                </div>
-              </div>
-              <div class="master-page-label">A-Master</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Pages Section - InDesign Style -->
-        <div class="pages-section">
-          <div class="pages-header">
-            <div class="pages-title">
+        <div class="gjs-category-content" style="padding: var(--gjs-input-padding-multiple);">
+          <div class="pages-view-options">
+            <button class="view-btn active" title="Spread View">
+              <i class="fas fa-columns"></i>
+              <span>Spreads</span>
+            </button>
+            <button class="view-btn" title="Single Page View">
               <i class="fas fa-file"></i>
               <span>Pages</span>
-            </div>
-            <div class="pages-count">5</div>
+            </button>
+            <button class="view-btn" title="Page Info">
+              <i class="fas fa-info-circle"></i>
+              <span>Info</span>
+            </button>
           </div>
 
-          <div class="pages-list">
-            <!-- Cover Page - Full Width -->
-            <div class="cover-page-container">
-              <div class="page-item page-cover page-active">
-                <button class="page-delete-btn" title="Delete Page">
-                  <i class="fas fa-trash"></i>
-                </button>
-                <div class="master-applied-indicator">A</div>
-                <div class="page cover-page">
-                  <div class="page-content">
-                    <div style="position: absolute; top: 6px; left: 6px; right: 6px;">
-                      <div class="page-content-line" style="width: 40%; height: 1px; margin-bottom: 3px;"></div>
-                    </div>
-                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%;">
-                      <div class="page-content-line" style="width: 75%; height: 2px; margin: 3px auto;"></div>
-                      <div class="page-content-line" style="width: 90%; height: 1px; margin: 2px auto;"></div>
-                      <div class="page-content-line" style="width: 80%; height: 1px; margin: 2px auto;"></div>
-                      <div class="page-content-line" style="width: 65%; height: 1px; margin: 2px auto;"></div>
-                    </div>
-                  </div>
-                </div>
-                <div class="page-number">Cover</div>
+          <div class="master-pages-section">
+            <div class="master-pages-header">
+              <div class="master-pages-title">
+                <div class="master-master-icon">M</div>
+                <span>Master Pages</span>
               </div>
             </div>
-
-            <!-- Page Spread 1: Pages 2-3 -->
-            <div class="page-spread">
-              <div class="page-item">
-                <button class="page-delete-btn" title="Delete Page">
+            <div class="master-pages-list">
+              <div class="master-page-item active">
+                <button class="master-page-delete-btn" title="Delete Master Page">
                   <i class="fas fa-trash"></i>
                 </button>
-                <div class="master-applied-indicator">A</div>
-                <div class="page">
-                  <div class="page-content">
-                    <div style="position: absolute; top: 4px; left: 4px; right: 4px;">
-                      <div class="page-content-line" style="width: 50%; height: 1px;"></div>
-                    </div>
-                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%;">
-                      <div class="page-content-line" style="width: 100%; height: 1px; margin: 1px 0;"></div>
-                      <div class="page-content-line" style="width: 92%; height: 1px; margin: 1px 0;"></div>
-                      <div class="page-content-line" style="width: 96%; height: 1px; margin: 1px 0;"></div>
-                      <div class="page-content-line" style="width: 88%; height: 1px; margin: 1px 0;"></div>
-                      <div class="page-content-line" style="width: 94%; height: 1px; margin: 1px 0;"></div>
-                      <div class="page-content-line" style="width: 90%; height: 1px; margin: 1px 0;"></div>
-                      <div class="page-content-line" style="width: 85%; height: 1px; margin: 1px 0;"></div>
-                    </div>
+                <div class="master-page-thumbnail">
+                  <div style="position: absolute; top: 4px; left: 4px; font-size: 7px; font-weight: 600; color: var(--gjs-font-color);">A-Master</div>
+                  <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 20px; color: var(--gjs-secondary-light-color);">
+                    <i class="fas fa-layer-group"></i>
                   </div>
                 </div>
-                <div class="page-number">2</div>
-              </div>
-
-              <div class="page-item">
-                <button class="page-delete-btn" title="Delete Page">
-                  <i class="fas fa-trash"></i>
-                </button>
-                <div class="master-applied-indicator">A</div>
-                <div class="page">
-                  <div class="page-content">
-                    <div style="position: absolute; top: 4px; left: 4px; right: 4px;">
-                      <div class="page-content-line" style="width: 45%; height: 1px;"></div>
-                    </div>
-                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%;">
-                      <div class="page-content-line" style="width: 100%; height: 1px; margin: 1px 0;"></div>
-                      <div class="page-content-line" style="width: 94%; height: 1px; margin: 1px 0;"></div>
-                      <div class="page-content-line" style="width: 90%; height: 1px; margin: 1px 0;"></div>
-                      <div class="page-content-line" style="width: 96%; height: 1px; margin: 1px 0;"></div>
-                      <div class="page-content-line" style="width: 88%; height: 1px; margin: 1px 0;"></div>
-                      <div class="page-content-line" style="width: 93%; height: 1px; margin: 1px 0;"></div>
-                      <div class="page-content-line" style="width: 75%; height: 1px; margin: 2px 0; background: var(--gjs-secondary-light-color);"></div>
-                    </div>
-                  </div>
-                </div>
-                <div class="page-number">3</div>
-              </div>
-            </div>
-
-            <!-- Page Spread 2: Pages 4-5 -->
-            <div class="page-spread">
-              <div class="page-item">
-                <button class="page-delete-btn" title="Delete Page">
-                  <i class="fas fa-trash"></i>
-                </button>
-                <div class="master-applied-indicator">A</div>
-                <div class="page">
-                  <div class="page-content">
-                    <div style="position: absolute; top: 4px; left: 4px; right: 4px;">
-                      <div class="page-content-line" style="width: 55%; height: 1px;"></div>
-                    </div>
-                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%;">
-                      <div class="page-content-line" style="width: 100%; height: 1px; margin: 1px 0;"></div>
-                      <div class="page-content-line" style="width: 95%; height: 1px; margin: 1px 0;"></div>
-                      <div class="page-content-line" style="width: 90%; height: 1px; margin: 1px 0;"></div>
-                      <div class="page-content-line" style="width: 97%; height: 1px; margin: 1px 0;"></div>
-                      <div class="page-content-line" style="width: 86%; height: 1px; margin: 1px 0;"></div>
-                      <div class="page-content-line" style="width: 93%; height: 1px; margin: 1px 0;"></div>
-                      <div class="page-content-line" style="width: 80%; height: 1px; margin: 1px 0;"></div>
-                      <div class="page-content-line" style="width: 88%; height: 1px; margin: 1px 0;"></div>
-                    </div>
-                  </div>
-                </div>
-                <div class="page-number">4</div>
-              </div>
-
-              <div class="page-item">
-                <button class="page-delete-btn" title="Delete Page">
-                  <i class="fas fa-trash"></i>
-                </button>
-                <div class="master-applied-indicator">A</div>
-                <div class="page">
-                  <div class="page-content">
-                    <div style="position: absolute; top: 4px; left: 4px; right: 4px;">
-                      <div class="page-content-line" style="width: 48%; height: 1px;"></div>
-                    </div>
-                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%;">
-                      <div class="page-content-line" style="width: 100%; height: 1px; margin: 1px 0;"></div>
-                      <div class="page-content-line" style="width: 91%; height: 1px; margin: 1px 0;"></div>
-                      <div class="page-content-line" style="width: 96%; height: 1px; margin: 1px 0;"></div>
-                      <div class="page-content-line" style="width: 88%; height: 1px; margin: 1px 0;"></div>
-                      <div class="page-content-line" style="width: 94%; height: 1px; margin: 1px 0;"></div>
-                      <div class="page-content-line" style="width: 90%; height: 1px; margin: 1px 0;"></div>
-                      <div class="page-content-line" style="width: 78%; height: 1px; margin: 1px 0;"></div>
-                      <div class="page-content-line" style="width: 85%; height: 1px; margin: 1px 0;"></div>
-                      <div class="page-content-line" style="width: 70%; height: 1px; margin: 2px 0; background: var(--gjs-secondary-light-color);"></div>
-                    </div>
-                  </div>
-                </div>
-                <div class="page-number">5</div>
+                <div class="master-page-label">A-Master</div>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- InDesign Style Panel Footer -->
-        <div class="pages-panel-footer">
-          <div class="page-info">
+          <div class="pages-section">
+            <div class="pages-header">
+              <div class="pages-title">
+                <i class="fas fa-file"></i>
+                <span>Pages</span>
+              </div>
+              <div class="pages-count">5</div>
+            </div>
+
+            <div class="pages-list">
+              <!-- Cover Page - Full Width -->
+              <div class="cover-page-container">
+                <div class="page-item page-cover page-active">
+                  <button class="page-delete-btn" title="Delete Page">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                  <div class="master-applied-indicator">A</div>
+                  <div class="page cover-page">
+                    <div class="page-content">
+                      <div style="position: absolute; top: 6px; left: 6px; right: 6px;">
+                        <div class="page-content-line" style="width: 40%; height: 1px; margin-bottom: 3px;"></div>
+                      </div>
+                      <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%;">
+                        <div class="page-content-line" style="width: 75%; height: 2px; margin: 3px auto;"></div>
+                        <div class="page-content-line" style="width: 90%; height: 1px; margin: 2px auto;"></div>
+                        <div class="page-content-line" style="width: 80%; height: 1px; margin: 2px auto;"></div>
+                        <div class="page-content-line" style="width: 65%; height: 1px; margin: 2px auto;"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="page-number">Cover</div>
+                </div>
+              </div>
+
+              <div class="page-spread">
+                <div class="page-item">
+                  <button class="page-delete-btn" title="Delete Page">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                  <div class="master-applied-indicator">A</div>
+                  <div class="page">
+                    <div class="page-content">
+                      <div style="position: absolute; top: 4px; left: 4px; right: 4px;">
+                        <div class="page-content-line" style="width: 50%; height: 1px;"></div>
+                      </div>
+                      <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%;">
+                        <div class="page-content-line" style="width: 100%; height: 1px; margin: 1px 0;"></div>
+                        <div class="page-content-line" style="width: 92%; height: 1px; margin: 1px 0;"></div>
+                        <div class="page-content-line" style="width: 96%; height: 1px; margin: 1px 0;"></div>
+                        <div class="page-content-line" style="width: 88%; height: 1px; margin: 1px 0;"></div>
+                        <div class="page-content-line" style="width: 94%; height: 1px; margin: 1px 0;"></div>
+                        <div class="page-content-line" style="width: 90%; height: 1px; margin: 1px 0;"></div>
+                        <div class="page-content-line" style="width: 85%; height: 1px; margin: 1px 0;"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="page-number">2</div>
+                </div>
+
+                <div class="page-item">
+                  <button class="page-delete-btn" title="Delete Page">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                  <div class="master-applied-indicator">A</div>
+                  <div class="page">
+                    <div class="page-content">
+                      <div style="position: absolute; top: 4px; left: 4px; right: 4px;">
+                        <div class="page-content-line" style="width: 45%; height: 1px;"></div>
+                      </div>
+                      <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%;">
+                        <div class="page-content-line" style="width: 100%; height: 1px; margin: 1px 0;"></div>
+                        <div class="page-content-line" style="width: 94%; height: 1px; margin: 1px 0;"></div>
+                        <div class="page-content-line" style="width: 90%; height: 1px; margin: 1px 0;"></div>
+                        <div class="page-content-line" style="width: 96%; height: 1px; margin: 1px 0;"></div>
+                        <div class="page-content-line" style="width: 88%; height: 1px; margin: 1px 0;"></div>
+                        <div class="page-content-line" style="width: 93%; height: 1px; margin: 1px 0;"></div>
+                        <div class="page-content-line" style="width: 75%; height: 1px; margin: 2px 0; background: var(--gjs-secondary-light-color);"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="page-number">3</div>
+                </div>
+              </div>
+
+              <div class="page-spread">
+                <div class="page-item">
+                  <button class="page-delete-btn" title="Delete Page">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                  <div class="master-applied-indicator">A</div>
+                  <div class="page">
+                    <div class="page-content">
+                      <div style="position: absolute; top: 4px; left: 4px; right: 4px;">
+                        <div class="page-content-line" style="width: 55%; height: 1px;"></div>
+                      </div>
+                      <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%;">
+                        <div class="page-content-line" style="width: 100%; height: 1px; margin: 1px 0;"></div>
+                        <div class="page-content-line" style="width: 95%; height: 1px; margin: 1px 0;"></div>
+                        <div class="page-content-line" style="width: 90%; height: 1px; margin: 1px 0;"></div>
+                        <div class="page-content-line" style="width: 97%; height: 1px; margin: 1px 0;"></div>
+                        <div class="page-content-line" style="width: 86%; height: 1px; margin: 1px 0;"></div>
+                        <div class="page-content-line" style="width: 93%; height: 1px; margin: 1px 0;"></div>
+                        <div class="page-content-line" style="width: 80%; height: 1px; margin: 1px 0;"></div>
+                        <div class="page-content-line" style="width: 88%; height: 1px; margin: 1px 0;"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="page-number">4</div>
+                </div>
+
+                <div class="page-item">
+                  <button class="page-delete-btn" title="Delete Page">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                  <div class="master-applied-indicator">A</div>
+                  <div class="page">
+                    <div class="page-content">
+                      <div style="position: absolute; top: 4px; left: 4px; right: 4px;">
+                        <div class="page-content-line" style="width: 48%; height: 1px;"></div>
+                      </div>
+                      <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%;">
+                        <div class="page-content-line" style="width: 100%; height: 1px; margin: 1px 0;"></div>
+                        <div class="page-content-line" style="width: 91%; height: 1px; margin: 1px 0;"></div>
+                        <div class="page-content-line" style="width: 96%; height: 1px; margin: 1px 0;"></div>
+                        <div class="page-content-line" style="width: 88%; height: 1px; margin: 1px 0;"></div>
+                        <div class="page-content-line" style="width: 94%; height: 1px; margin: 1px 0;"></div>
+                        <div class="page-content-line" style="width: 90%; height: 1px; margin: 1px 0;"></div>
+                        <div class="page-content-line" style="width: 78%; height: 1px; margin: 1px 0;"></div>
+                        <div class="page-content-line" style="width: 85%; height: 1px; margin: 1px 0;"></div>
+                        <div class="page-content-line" style="width: 70%; height: 1px; margin: 2px 0; background: var(--gjs-secondary-light-color);"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="page-number">5</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="pages-panel-footer">
+            <div class="page-info">
+              <div class="page-info-item">
+                <span class="page-info-label">Layout:</span>
+                <span class="page-info-value">Fixed</span>
+              </div>
+              <div class="page-info-item">
+                <span class="page-info-label">Size:</span>
+                <span class="page-info-value">A4</span>
+              </div>
+            </div>
             <div class="page-info-item">
-              <span class="page-info-label">Layout:</span>
-              <span class="page-info-value">Fixed</span>
+              <span class="page-info-label">5 pages</span>
             </div>
-            <div class="page-info-item">
-              <span class="page-info-label">Size:</span>
-              <span class="page-info-value">A4</span>
-            </div>
-          </div>
-          <div class="page-info-item">
-            <span class="page-info-label">5 pages</span>
           </div>
         </div>
       `;
@@ -622,42 +634,195 @@ const plugin = grapesjs.plugins.add('setup', (editor: any, options: SetupOptions
       const assetsView = document.createElement('div');
       assetsView.className = 'assets-view';
 
-      assetsView.innerHTML = `
-        <div class="left-sidebar-title">
-          <i class="fas fa-photo-video" style="margin-right: 8px;"></i>
-          Media Assets
-          <button class="gjs-sm-btn" style="margin-left: auto;">Upload</button>
-        </div>
-        <div class="gjs-category-content">
-          <div class="media-section">
-            <div class="left-sidebar-title">
-              <i class="fas fa-images" style="margin-right: 4px; font-size: 12px;"></i>
-              IMAGES
-            </div>
-            <div class="gjs-category-content">
-              <div class="media-grid">
-                <div class="media-placeholder">
-                  <i class="fas fa-images media-icon"></i>
-                  <span class="media-label">No images</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="media-section">
-            <div class="left-sidebar-title">
-              <i class="fas fa-file-alt" style="margin-right: 4px; font-size: 12px;"></i>
-              DOCUMENTS
-            </div>
-            <div class="gjs-category-content">
-              <div class="media-empty">
-                <i class="fas fa-file-alt media-icon"></i>
-                <span>No documents uploaded</span>
-              </div>
-            </div>
-          </div>
-        </div>
+      // Create header with upload button
+      const headerSection = document.createElement('div');
+      headerSection.className = 'left-sidebar-title';
+      headerSection.innerHTML = `
+        <i class="fas fa-photo-video" style="margin-right: 8px;"></i>
+        Media Assets
       `;
+
+      // Add upload button
+      const uploadButton = (editor as any).createAssetUploadButton ? (editor as any).createAssetUploadButton() : null;
+      if (uploadButton) {
+        headerSection.appendChild(uploadButton);
+      } else {
+        // Fallback upload button
+        const fallbackButton = document.createElement('button');
+        fallbackButton.className = 'gjs-sm-btn';
+        fallbackButton.style.marginLeft = 'auto';
+        fallbackButton.textContent = 'Upload';
+        fallbackButton.addEventListener('click', () => {
+          editor.runCommand('open-assets');
+        });
+        headerSection.appendChild(fallbackButton);
+      }
+
+      // Create content container
+      const contentContainer = document.createElement('div');
+      contentContainer.className = 'gjs-category-content';
+
+      // Images section
+      const imagesSection = document.createElement('div');
+      imagesSection.className = 'media-section';
+
+      const imagesHeader = document.createElement('div');
+      imagesHeader.className = 'left-sidebar-title';
+      imagesHeader.innerHTML = `
+        <i class="fas fa-images" style="margin-right: 4px; font-size: 12px;"></i>
+        IMAGES
+      `;
+
+      const imagesContent = document.createElement('div');
+      imagesContent.className = 'gjs-category-content';
+      const imagesGrid = document.createElement('div');
+      imagesGrid.className = 'media-grid';
+      imagesGrid.id = 'images-grid';
+
+      // Documents section
+      const documentsSection = document.createElement('div');
+      documentsSection.className = 'media-section';
+
+      const documentsHeader = document.createElement('div');
+      documentsHeader.className = 'left-sidebar-title';
+      documentsHeader.innerHTML = `
+        <i class="fas fa-file-alt" style="margin-right: 4px; font-size: 12px;"></i>
+        DOCUMENTS
+      `;
+
+      const documentsContent = document.createElement('div');
+      documentsContent.className = 'gjs-category-content';
+      const documentsList = document.createElement('div');
+      documentsList.className = 'media-empty';
+      documentsList.id = 'documents-list';
+      documentsList.innerHTML = `
+        <i class="fas fa-file-alt media-icon"></i>
+        <span>No documents uploaded</span>
+      `;
+
+      // Function to update assets display
+      const updateAssetsDisplay = () => {
+        try {
+          const assets = editor.AssetManager.getAll();
+          const images: any[] = [];
+          const documents: any[] = [];
+
+          // Separate assets by type
+          assets.forEach((asset: any) => {
+            const assetType = asset.get('type') || asset.type || '';
+            if (assetType.startsWith('image/')) {
+              images.push(asset);
+            } else {
+              documents.push(asset);
+            }
+          });
+
+          // Update images grid
+          if (images.length > 0) {
+            imagesGrid.innerHTML = images.map(asset => {
+              const src = asset.getSrc ? asset.getSrc() : (asset.src || asset.url);
+              const name = asset.get('name') || asset.name || asset.filename || 'Unnamed';
+              return `
+                <div class="media-item" data-asset-src="${src}" title="${name}">
+                  <img src="${src}" alt="${name}" />
+                </div>
+              `;
+            }).join('');
+
+            // Add click handlers to images
+            imagesGrid.querySelectorAll('.media-item').forEach((item, index) => {
+              item.addEventListener('click', () => {
+                const selectedAsset = images[index];
+                if (selectedAsset && editor.select) {
+                  editor.select(selectedAsset);
+                }
+              });
+            });
+          } else {
+            imagesGrid.innerHTML = `
+              <div class="media-placeholder">
+                <i class="fas fa-images media-icon"></i>
+                <span class="media-label">No images</span>
+              </div>
+            `;
+          }
+
+          // Update documents list
+          if (documents.length > 0) {
+            documentsList.className = 'media-list';
+            documentsList.innerHTML = documents.map(asset => {
+              const src = asset.getSrc ? asset.getSrc() : (asset.src || asset.url);
+              const name = asset.get('name') || asset.name || asset.filename || 'Untitled';
+              const type = asset.get('type') || asset.type || 'Document';
+              return `
+                <div class="media-item" data-asset-src="${src}" title="${name}">
+                  <i class="fas fa-file-alt media-icon"></i>
+                  <div class="media-info">
+                    <div class="media-name">${name}</div>
+                    <div class="media-type">${type}</div>
+                  </div>
+                </div>
+              `;
+            }).join('');
+
+            // Add click handlers to documents
+            documentsList.querySelectorAll('.media-item').forEach((item, index) => {
+              item.addEventListener('click', () => {
+                const selectedAsset = documents[index];
+                if (selectedAsset && editor.select) {
+                  editor.select(selectedAsset);
+                }
+              });
+            });
+          } else {
+            documentsList.className = 'media-empty';
+            documentsList.innerHTML = `
+              <i class="fas fa-file-alt media-icon"></i>
+              <span>No documents uploaded</span>
+            `;
+          }
+        } catch (error) {
+          console.error('Error updating assets display:', error);
+          // Show error state
+          imagesGrid.innerHTML = `
+            <div class="media-placeholder">
+              <i class="fas fa-exclamation-triangle media-icon" style="color: #ff9800;"></i>
+              <span class="media-label">Error loading assets</span>
+            </div>
+          `;
+        }
+      };
+
+      // Initial display with slight delay to ensure all plugins are loaded
+      setTimeout(() => {
+        updateAssetsDisplay();
+      }, 100);
+
+      // Assign to global variable for use in upload button
+      (globalThis as any).updateAssetsDisplay = updateAssetsDisplay;
+
+      // Update display when assets change
+      editor.on('asset:add', updateAssetsDisplay);
+      editor.on('asset:remove', updateAssetsDisplay);
+      editor.on('asset:load', updateAssetsDisplay);
+
+      // Also update when asset manager plugin is ready
+      editor.on('asset-manager:ready', updateAssetsDisplay);
+
+      // Assemble the structure
+      imagesContent.appendChild(imagesGrid);
+      imagesSection.appendChild(imagesHeader);
+      imagesSection.appendChild(imagesContent);
+
+      documentsContent.appendChild(documentsList);
+      documentsSection.appendChild(documentsHeader);
+      documentsSection.appendChild(documentsContent);
+
+      contentContainer.appendChild(imagesSection);
+      contentContainer.appendChild(documentsSection);
+
+      assetsView.appendChild(headerSection);
+      assetsView.appendChild(contentContainer);
 
       container.appendChild(assetsView);
 

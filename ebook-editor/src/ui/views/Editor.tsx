@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import grapesjs from 'grapesjs';
 import {setup, bookBlocks} from '../../plugins';
+import tuiImageEditorPlugin from 'grapesjs-tui-image-editor';
 
 // Define GrapesJS editor type
 interface GrapesJSEditor {
@@ -29,7 +30,7 @@ const Editor: React.FC = () => {
           height: '100%',
           width: '100%',
           storageManager: false,
-          plugins: [setup, bookBlocks],
+          plugins: [setup, bookBlocks, tuiImageEditorPlugin],
 
           // Core Color Configuration
           canvas: {
@@ -74,6 +75,74 @@ const Editor: React.FC = () => {
                 // Custom block configurations can go here
                 attributes: { class: 'gjs-block-custom' }
               })
+            },
+            'grapesjs-tui-image-editor': {
+              config: {
+                includeUI: {
+                  theme: {
+                    'common.bi.image': 'https://uicdn.toast.com/tui-image-editor/latest/svg/icon-b.svg',
+                    'common.bisize.width': '251px',
+                    'common.bisize.height': '21px',
+                    'common.backgroundImage': 'none',
+                    'common.backgroundColor': '#f3f4f6',
+                    'common.border': '1px solid #ddd',
+
+                    'header.backgroundImage': 'none',
+                    'header.backgroundColor': '#f3f4f6',
+                    'header.border': '0px',
+
+                    'menu.normalIcon.color': '#8a8a8a',
+                    'menu.activeIcon.color': '#555555',
+                    'menu.disabledIcon.color': '#434343',
+                    'menu.hoverIcon.color': '#e9e9e9',
+
+                    'submenu.backgroundColor': 'white',
+                    'submenu.partition.color': '#e5e5e5',
+
+                    'submenu.normalIcon.color': '#8a8a8a',
+                    'submenu.activeIcon.color': '#555555',
+
+                    'submenu.normalLabel.color': '#858585',
+                    'submenu.normalLabel.fontWeight': 'normal',
+                    'submenu.activeLabel.color': '#000000',
+                    'submenu.activeLabel.fontWeight': 'normal',
+
+                    'checkbox.border': '1px solid #ccc',
+                    'checkbox.backgroundColor': '#fff',
+
+                    'range.pointer.color': '#333',
+                    'range.bar.color': '#ccc',
+                    'range.subbar.color': '#606060',
+
+                    'range.value.color': '#000',
+                    'range.value.fontWeight': 'normal',
+                    'range.value.fontSize': '11px',
+                    'range.value.border': '0',
+                    'range.value.backgroundColor': '#f5f5f5',
+                    'range.title.color': '#000',
+                    'range.title.fontWeight': 'lighter',
+
+                    'colorpicker.button.border': '1px solid #cbcbcb',
+                    'colorpicker.title.color': '#000'
+                  },
+                  menu: ['crop', 'flip', 'rotate', 'draw', 'shape', 'icon', 'text', 'mask', 'filter'],
+                  initMenu: 'filter',
+                  uiSize: {
+                    width: '100%',
+                    height: '700px'
+                  },
+                  menuBarPosition: 'bottom'
+                },
+                cssMaxWidth: 700,
+                cssMaxHeight: 500,
+                usageStatistics: false
+              },
+              labelImageEditor: 'Image Editor',
+              labelApply: 'Apply',
+              height: '700px',
+              width: '100%',
+              hideHeader: true,
+              addToAssets: true
             }
           }
         });

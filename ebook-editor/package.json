@@ -15,6 +15,7 @@
     "@types/jszip": "^3.4.0",
     "@types/uuid": "^10.0.0",
     "grapesjs": "^0.22.13",
+    "grapesjs-tui-image-editor": "^1.0.2",
     "jszip": "^3.10.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
