@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import grapesjs from 'grapesjs';
-// import {setup, bookBlocks, bookManager, enhancedAssetManager, panelManager, commandManager} from '../../plugins';
 import tuiImageEditorPlugin from 'grapesjs-tui-image-editor';
 
 // Define GrapesJS editor type
@@ -42,38 +41,6 @@ const Editor: React.FC = () => {
           },
 
           pluginsOpts: {
-            'setup': {
-              blocks: ['link-block', 'quote', 'text-basic'],
-              useCustomTheme: false,
-              showStylesOnChange: true,
-              textCleanCanvas: 'Are you sure you want to clear the canvas?',
-              modalImportTitle: 'Import Content',
-              modalImportButton: 'Import'
-            },
-            'book-blocks': {
-              blocks: ['column1', 'column2', 'column3', 'text', 'image', 'video'],
-              category: 'Book Elements',
-              flexGrid: true,
-              addBasicStyle: true,
-              rowHeight: 100,
-              labelColumn1: 'Single Column',
-              labelColumn2: 'Two Columns',
-              labelColumn3: 'Three Columns',
-              labelText: 'Text Block',
-              labelImage: 'Image',
-              labelVideo: 'Video'
-            },
-            'ebook-blocks': {
-              blocks: ['text-basic', 'quote', 'text-section', 'chapter-title'],
-              showStylesOnChange: true,
-              textCleanCanvas: 'Are you sure you want to clear all content?',
-              modalImportTitle: 'Import eBook Content',
-              modalImportButton: 'Import Content',
-              block: () => ({
-                // Custom block configurations can go here
-                attributes: { class: 'gjs-block-custom' }
-              })
-            },
             'grapesjs-tui-image-editor': {
               config: {
                 includeUI: {

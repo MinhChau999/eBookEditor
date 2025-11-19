@@ -1,0 +1,120 @@
+import React, { useState } from 'react';
+import { useBookStore } from '../../../core/store/bookStore';
+import type { BookInfo } from '../../../core/types/book.types';
+
+interface CreateBookModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export const CreateBookModal: React.FC<CreateBookModalProps> = ({ isOpen, onClose }) => {
+  const createBook = useBookStore((state: any) => state.createBook);
+  const [formData, setFormData] = useState<Partial<BookInfo>>({
+    title: '',
+    author: '',
+    mode: 'reflow',
+    template: 'A4',
+  });
+
+  if (!isOpen) return null;
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.title) return;
+
+    const pageSize = formData.mode === 'fixed-layout' ? getPageSize(formData.template) : undefined;
+
+    createBook({
+      title: formData.title!,
+      author: formData.author,
+      mode: formData.mode as 'reflow' | 'fixed-layout',
+      template: formData.template as any,
+      pageSize,
+    });
+
+    onClose();
+    setFormData({ title: '', author: '', mode: 'reflow', template: 'A4' });
+  };
+
+  const getPageSize = (template?: string) => {
+    switch (template) {
+      case 'A4': return { width: 794, height: 1123, unit: 'px' as const }; // 96 DPI
+      case 'A5': return { width: 559, height: 794, unit: 'px' as const };
+      case 'Letter': return { width: 816, height: 1056, unit: 'px' as const };
+      default: return { width: 794, height: 1123, unit: 'px' as const };
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-96 shadow-xl">
+        <h2 className="text-xl font-bold mb-4">Create New Book</h2>
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-1">Title</label>
+            <input
+              type="text"
+              className="w-full border rounded px-3 py-2"
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              required
+            />
+          </div>
+          
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-1">Author</label>
+            <input
+              type="text"
+              className="w-full border rounded px-3 py-2"
+              value={formData.author}
+              onChange={(e) => setFormData({ ...formData, author: e.target.value })}
+            />
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-1">Mode</label>
+            <select
+              className="w-full border rounded px-3 py-2"
+              value={formData.mode}
+              onChange={(e) => setFormData({ ...formData, mode: e.target.value as any })}
+            >
+              <option value="reflow">Reflowable (Standard eBook)</option>
+              <option value="fixed-layout">Fixed Layout (Comics, Kids)</option>
+            </select>
+          </div>
+
+          {formData.mode === 'fixed-layout' && (
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-1">Page Size</label>
+              <select
+                className="w-full border rounded px-3 py-2"
+                value={formData.template}
+                onChange={(e) => setFormData({ ...formData, template: e.target.value as any })}
+              >
+                <option value="A4">A4</option>
+                <option value="A5">A5</option>
+                <option value="Letter">Letter</option>
+              </select>
+            </div>
+          )}
+
+          <div className="flex justify-end gap-2 mt-6">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              Create
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
