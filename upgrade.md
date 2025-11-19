@@ -70,3 +70,18 @@ Xây dựng một công cụ web-based (có thể dùng React + backend Node.js)
 
 2. CLI Tool for PDF/eBook Management
 Phát triển một CLI tool (dùng Go hoặc Rust cho tốc độ, tương tự Charm Bracelet style) để xử lý PDF và EPUB: extract text, merge files, optimize assets (images/fonts), và generate metadata tự động. Thay vì phụ thuộc thư viện thương mại như FPDI, dùng mã nguồn mở như pdfparser hoặc TCPDF làm core. Thêm integration với AI (như Qwen) để tóm tắt nội dung hoặc tạo cover. Tool này có thể publish trên GitHub, dễ dùng qua Homebrew, và phù hợp cho devs cần automation hàng loạt.
+
+
+# 📋 KẾ HOẠCH PHÁT TRIỂN FIXED LAYOUT PLUGIN (FINAL VERSION)
+**Xây dựng hệ thống Fixed Layout với Canvas cố định và Content Reflow - Book Info-based Page Size Management**
+
+---
+
+## 🎯 MỤC TIÊU CHÍNH (FINAL)
+
+### ✅ Core Concept:
+- **Book-level Page Size**: Kích thước page được lưu trong book metadata
+- **Template Options**: Standard sizes (A4, A5, Letter, etc.) chỉ là preset cho người dùng
+- **Custom Size Support**: Người dùng có thể nhập kích thước tùy chỉnh
+- **All Pages Same Size**: Tất cả pages trong book có cùng kích thước
+- **Content Reflow**: Nội dung flow bình thường trong từng page cố định

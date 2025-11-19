@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import grapesjs from 'grapesjs';
-import {setup, bookBlocks, bookManager} from '../../plugins';
+// import {setup, bookBlocks, bookManager, enhancedAssetManager, panelManager, commandManager} from '../../plugins';
 import tuiImageEditorPlugin from 'grapesjs-tui-image-editor';
 
 // Define GrapesJS editor type
@@ -30,7 +30,7 @@ const Editor: React.FC = () => {
           height: '100%',
           width: '100%',
           storageManager: false,
-          plugins: [setup, bookBlocks, bookManager, tuiImageEditorPlugin],
+          plugins: [tuiImageEditorPlugin],
 
           // Core Color Configuration
           canvas: {
@@ -41,8 +41,6 @@ const Editor: React.FC = () => {
             scripts: []
           },
 
-    
-          // Plugin Configuration
           pluginsOpts: {
             'setup': {
               blocks: ['link-block', 'quote', 'text-basic'],
@@ -293,7 +291,6 @@ const Editor: React.FC = () => {
             padding: '40px',
             color: 'var(--color-text-primary, #dddddd)'
           }}>
-            <div style={{ fontSize: '48px', marginBottom: '20px' }}>📚</div>
             <h3>Loading GrapesJS Editor...</h3>
             <p>Initializing your eBook editor workspace</p>
           </div>
