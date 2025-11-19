@@ -1,20 +1,18 @@
 import React, { useEffect, useRef, useState } from 'react';
 import grapesjs from 'grapesjs';
 import tuiImageEditorPlugin from 'grapesjs-tui-image-editor';
+import coreSetup from '../../plugins/core-setup';
+import bookAdapter from '../../plugins/book-adapter';
+import leftPanel from '../../plugins/left-panel';
 
 // Define GrapesJS editor type
-interface GrapesJSEditor {
-  destroy: () => void;
-  addStyle: (css: string) => void;
-  setComponents: (components: string) => void;
-  Panels: {
-    addPanel: (panel: { id: string; el: string }) => void;
-  };
+interface EditorProps {
+  // Add any props if needed
 }
 
-const Editor: React.FC = () => {
+export const Editor: React.FC<EditorProps> = () => {
   const editorRef = useRef<HTMLDivElement>(null);
-  const editorInstanceRef = useRef<GrapesJSEditor | null>(null);
+  const editorInstanceRef = useRef<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -29,7 +27,12 @@ const Editor: React.FC = () => {
           height: '100%',
           width: '100%',
           storageManager: false,
-          plugins: [tuiImageEditorPlugin],
+          plugins: [
+            coreSetup,
+            bookAdapter,
+            leftPanel,
+            tuiImageEditorPlugin
+          ],
 
           // Core Color Configuration
           canvas: {
@@ -41,6 +44,9 @@ const Editor: React.FC = () => {
           },
 
           pluginsOpts: {
+            'core-setup': {
+              textCleanCanvas: 'Are you sure you want to clear the canvas?',
+            },
             'grapesjs-tui-image-editor': {
               config: {
                 includeUI: {
@@ -61,15 +67,17 @@ const Editor: React.FC = () => {
                     'menu.disabledIcon.color': '#434343',
                     'menu.hoverIcon.color': '#e9e9e9',
 
-                    'submenu.backgroundColor': 'white',
+                    'submenu.backgroundColor': '#ffffff',
                     'submenu.partition.color': '#e5e5e5',
 
                     'submenu.normalIcon.color': '#8a8a8a',
                     'submenu.activeIcon.color': '#555555',
+                    'submenu.iconSize.width': '32px',
+                    'submenu.iconSize.height': '32px',
 
                     'submenu.normalLabel.color': '#858585',
                     'submenu.normalLabel.fontWeight': 'normal',
-                    'submenu.activeLabel.color': '#000000',
+                    'submenu.activeLabel.color': '#000',
                     'submenu.activeLabel.fontWeight': 'normal',
 
                     'checkbox.border': '1px solid #ccc',
@@ -79,6 +87,10 @@ const Editor: React.FC = () => {
                     'range.bar.color': '#ccc',
                     'range.subbar.color': '#606060',
 
+                    'range.disabledPointer.color': '#d3d3d3',
+                    'range.disabledBar.color': 'rgba(85,85,85,0.06)',
+                    'range.disabledSubbar.color': 'rgba(51,51,51,0.2)',
+
                     'range.value.color': '#000',
                     'range.value.fontWeight': 'normal',
                     'range.value.fontSize': '11px',
@@ -87,15 +99,15 @@ const Editor: React.FC = () => {
                     'range.title.color': '#000',
                     'range.title.fontWeight': 'lighter',
 
-                    'colorpicker.button.border': '1px solid #cbcbcb',
+                    'colorpicker.button.border': '0px',
                     'colorpicker.title.color': '#000'
                   },
                   menu: ['crop', 'flip', 'rotate', 'draw', 'shape', 'icon', 'text', 'mask', 'filter'],
                   initMenu: 'filter',
-                  uiSize: {
-                    width: '100%',
-                    height: '700px'
-                  },
+                  // uiSize: { // Removed as per instruction
+                  //   width: '100%',
+                  //   height: '700px'
+                  // },
                   menuBarPosition: 'bottom'
                 },
                 cssMaxWidth: 700,

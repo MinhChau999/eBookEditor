@@ -73,13 +73,11 @@ src/
 │   ├── page/                  # Page/Spread Management Feature
 │   └── assets/                # Asset Management Feature
 │
-├── lib/
-│   └── grapesjs/
-│       └── plugins/           # GrapesJS Adapters (The "Bridge")
-│           ├── core-setup/    # Minimal Editor Config (Panels, Commands)
-│           ├── book-adapter/  # Renders Book UI into Editor Panels
-│           ├── page-adapter/  # Renders Page UI into Editor Panels
-│           └── dual-mode/     # Orchestrates Reflow/Fixed switching
+├── plugins/                   # GrapesJS Adapters (The "Bridge")
+│   ├── core-setup/            # Minimal Editor Config (Panels, Commands)
+│   ├── book-adapter/          # Renders Book UI into Editor Panels
+│   ├── page-adapter/          # Renders Page UI into Editor Panels
+│   └── dual-mode/             # Orchestrates Reflow/Fixed switching
 │
 └── ui/                        # Shared Design System
     ├── components/            # Generic UI (Button, Input, Modal)

@@ -82,7 +82,10 @@ export const useBookStore = create<BookStore>()(
     }),
     {
       name: 'ebook-storage',
-      partialize: (state: BookStore) => ({ books: state.books, currentBook: state.currentBook } as any), // Persist only books and current selection
+      partialize: (state: BookStore): Pick<BookStore, 'books' | 'currentBook'> => ({ 
+        books: state.books, 
+        currentBook: state.currentBook 
+      }), // Persist only books and current selection
     }
   )
 );
