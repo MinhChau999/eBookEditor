@@ -56,6 +56,90 @@ export const Editor: React.FC<EditorProps> = () => {
           height: '100%',
           width: '100%',
           storageManager: false,
+          // Initialize with Sample Pages
+          pageManager: {
+            pages: [
+              {
+                id: 'page-cover',
+                name: 'Cover',
+                component: `
+                  <div class="page-container" data-page="1">
+                    <div class="ebook-page ebook-page-cover w-full h-full flex flex-col items-center justify-center text-center p-20 relative overflow-hidden">
+                      <div class="container w-full max-w-3xl mx-auto">
+                        <h1 class="cover-title text-5xl mb-5 font-bold text-gray-800">Thơ ca Đời sống</h1>
+                        <p class="cover-subtitle text-xl mb-8 text-gray-600">Hành trình của những cảm xúc thăng hoa</p>
+                        <div class="cover-author mt-16">
+                          <p class="italic text-gray-500">Với lời tâm sự từ trái tim</p>
+                          <p class="italic text-gray-500">Khám phá vẻ đẹp trong từng vần thơ</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                `
+              },
+              {
+                id: 'page-chapter-1',
+                name: 'Chapter 1',
+                component: `
+                  <div class="page-container" data-page="2">
+                    <div class="ebook-page ebook-page-content w-full h-full p-16 relative overflow-hidden bg-white text-gray-800">
+                      <div class="container w-full h-full flex flex-col">
+                        <h2 class="chapter-title text-4xl mb-8 text-blue-600 font-bold">Chương 1: Khởi đầu hành trình</h2>
+                        <p class="chapter-intro text-lg leading-relaxed mb-6">Trong thế giới của chữ nghĩa và cảm xúc, mỗi trang sách là một cánh cửa mở ra những chân trời mới. Từng câu thơ như mạch nguồn trong veo, chảy trôi qua những thung lũng của tâm hồn, mang theo hương thơm của ký ức và màu sắc của hiện tại.</p>
+
+                        <h3 class="section-title text-2xl mt-8 mb-4 text-green-600 font-semibold">Vẻ đẹp của sự đơn sơ</h3>
+                        <div class="feature-list leading-relaxed mb-4 pl-4 border-l-4 border-green-100">
+                          <p>• Mỗi vần thơ là một trang đời</p>
+                          <p>• Từng câu văn là một khúc ca</p>
+                          <p>• Mỗi trang sách là một câu chuyện</p>
+                          <p>• Mỗi chương là một chặng đường</p>
+                        </div>
+
+                        <p class="content-paragraph leading-relaxed mt-6">Hãy để cho tâm hồn mình được phiêu lãng cùng những con chữ, để trái tim được rung động bởi những giai điệu của ngôn từ. Cuốn sách này không chỉ là tập hợp những con chữ, mà là cuộc đối thoại giữa tâm hồn ta và thế giới xung quanh.</p>
+                        
+                        <!-- Footer/Page Number -->
+                        <div class="absolute bottom-8 left-0 right-0 text-center text-sm text-gray-400">
+                          Page 2
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                `
+              },
+              {
+                id: 'page-chapter-2',
+                name: 'Chapter 2',
+                component: `
+                  <div class="page-container" data-page="3">
+                    <div class="ebook-page ebook-page-content w-full h-full p-16 relative overflow-hidden bg-white text-gray-800">
+                      <div class="container w-full h-full flex flex-col">
+                        <h2 class="chapter-title text-4xl mb-8 text-purple-600 font-bold">Chương 2: Những Cung Bậc Cảm Xúc</h2>
+                        <p class="chapter-intro text-lg leading-relaxed mb-6">Cuộc sống là một bản giao hưởng của những cảm xúc. Có những nốt thăng vui tươi, rộn rã, nhưng cũng có những nốt trầm sâu lắng, suy tư. Thơ ca chính là phương tiện để ta ghi lại những cung bậc ấy, để lưu giữ những khoảnh khắc đáng nhớ của cuộc đời.</p>
+
+                        <div class="grid grid-cols-2 gap-6 mt-8">
+                          <div class="p-4 bg-purple-50 rounded-lg border border-purple-100">
+                            <h4 class="font-bold text-purple-700 mb-2">Niềm Vui</h4>
+                            <p class="text-sm text-gray-600">Như ánh nắng ban mai, sưởi ấm tâm hồn và mang lại hy vọng mới.</p>
+                          </div>
+                          <div class="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                            <h4 class="font-bold text-blue-700 mb-2">Nỗi Buồn</h4>
+                            <p class="text-sm text-gray-600">Như cơn mưa rào mùa hạ, gột rửa những ưu tư và giúp ta trưởng thành hơn.</p>
+                          </div>
+                        </div>
+
+                        <p class="content-paragraph leading-relaxed mt-8">Đừng ngại ngần thể hiện cảm xúc của mình. Hãy để những vần thơ nói hộ lòng bạn, để chia sẻ niềm vui và nỗi buồn với thế giới xung quanh.</p>
+                        
+                        <!-- Footer/Page Number -->
+                        <div class="absolute bottom-8 left-0 right-0 text-center text-sm text-gray-400">
+                          Page 3
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                `
+              }
+            ]
+          },
           plugins: [
             coreSetup,
             bookAdapter,
@@ -223,49 +307,7 @@ export const Editor: React.FC<EditorProps> = () => {
           }
         `);
 
-        // Set initial content with page structure
-        editorInstance.setComponents(`
-          <div class="ebook-content">
-            <!-- Page 1: Cover Page -->
-            <div class="page-container" data-page="1">
-              <div class="ebook-page ebook-page-cover w-full h-full flex flex-col items-center justify-center text-center p-20 relative overflow-hidden">
-                <div class="container w-full max-w-3xl mx-auto">
-                  <h1 class="cover-title text-5xl mb-5 font-bold text-gray-800">Thơ ca Đời sống</h1>
-                  <p class="cover-subtitle text-xl mb-8 text-gray-600">Hành trình của những cảm xúc thăng hoa</p>
-                  <div class="cover-author mt-16">
-                    <p class="italic text-gray-500">Với lời tâm sự từ trái tim</p>
-                    <p class="italic text-gray-500">Khám phá vẻ đẹp trong từng vần thơ</p>
-                  </div>
-                </div>
-              </div>
-            </div>
 
-            <!-- Page 2: Chapter 1 Start -->
-            <div class="page-container" data-page="2">
-              <div class="ebook-page ebook-page-content w-full h-full p-16 relative overflow-hidden bg-white text-gray-800">
-                <div class="container w-full h-full flex flex-col">
-                  <h2 class="chapter-title text-4xl mb-8 text-blue-600 font-bold">Chương 1: Khởi đầu hành trình</h2>
-                  <p class="chapter-intro text-lg leading-relaxed mb-6">Trong thế giới của chữ nghĩa và cảm xúc, mỗi trang sách là một cánh cửa mở ra những chân trời mới. Từng câu thơ như mạch nguồn trong veo, chảy trôi qua những thung lũng của tâm hồn, mang theo hương thơm của ký ức và màu sắc của hiện tại.</p>
-
-                  <h3 class="section-title text-2xl mt-8 mb-4 text-green-600 font-semibold">Vẻ đẹp của sự đơn sơ</h3>
-                  <div class="feature-list leading-relaxed mb-4 pl-4 border-l-4 border-green-100">
-                    <p>• Mỗi vần thơ là một trang đời</p>
-                    <p>• Từng câu văn là một khúc ca</p>
-                    <p>• Mỗi trang sách là một câu chuyện</p>
-                    <p>• Mỗi chương là một chặng đường</p>
-                  </div>
-
-                  <p class="content-paragraph leading-relaxed mt-6">Hãy để cho tâm hồn mình được phiêu lãng cùng những con chữ, để trái tim được rung động bởi những giai điệu của ngôn từ. Cuốn sách này không chỉ là tập hợp những con chữ, mà là cuộc đối thoại giữa tâm hồn ta và thế giới xung quanh.</p>
-                  
-                  <!-- Footer/Page Number -->
-                  <div class="absolute bottom-8 left-0 right-0 text-center text-sm text-gray-400">
-                    Page 2
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        `);
 
 
         editorInstanceRef.current = editorInstance;

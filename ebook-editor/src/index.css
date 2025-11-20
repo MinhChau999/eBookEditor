@@ -557,17 +557,24 @@ button:focus-visible {
   margin: 0 auto;
 }
 
+/* Fixed Layout Mode */
 .gjs-mode-fixed .gjs-cv-canvas {
-  background-color: #e5e5e5;
+  width: 100%;
+  height: 100%;
+  overflow: auto !important; /* Enable scrolling */
+  display: block; /* Ensure block display for scrolling */
+  background-image: radial-gradient(#d1d1d1 1px, transparent 1px); /* Subtle grid dots */
+  background-size: 20px 20px;
 }
 
 .gjs-mode-fixed .gjs-frame {
   width: 794px !important; /* A4 Width at 96 DPI */
   height: 1123px !important; /* A4 Height at 96 DPI */
-  margin: 40px auto;
+  margin: 0 auto; /* Center with margin */
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
   background: white;
   transition: all 0.3s ease;
+  display: block; /* Ensure it takes up space */
 }
 
 /* Spread View */
@@ -582,4 +589,24 @@ button:focus-visible {
        or this is a placeholder for the multi-frame logic. */
     box-shadow: 0 0 15px rgba(0,0,0,0.2);
     /* Potential future logic: width: calc(794px * 2); */
+}
+
+/* Page Container Styles (Moved from inline styles) */
+.page-fixed-layout {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background-color: transparent;
+  overflow: hidden;
+}
+
+.page-bleed-guide {
+  outline: 1px dashed #ff0000;
+  outline-offset: -3mm; /* Bleed inside the frame */
+}
+
+.page-size-a4 {
+  /* Dimensions handled by the frame now */
+  width: 100%;
+  height: 100%;
 }

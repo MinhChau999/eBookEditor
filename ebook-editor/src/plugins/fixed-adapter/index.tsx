@@ -27,8 +27,6 @@ export default grapesjs.plugins.add('fixed-adapter', (editor) => {
         frameEl.style.width = '100%';
         frameEl.style.height = '100%';
         frameEl.style.maxWidth = 'none';
-        frameEl.style.margin = '0';
-        frameEl.style.backgroundColor = '#e5e5e5'; // Darker desk color (InDesign style)
         frameEl.style.backgroundImage = 'radial-gradient(#d1d1d1 1px, transparent 1px)'; // Subtle grid dots
         frameEl.style.backgroundSize = '20px 20px';
 
@@ -49,7 +47,6 @@ export default grapesjs.plugins.add('fixed-adapter', (editor) => {
         pageContainer.style.position = 'absolute';
         pageContainer.style.width = `${width}${template.unit}`;
         pageContainer.style.height = `${template.height}${template.unit}`;
-        pageContainer.style.top = '60px'; // More top spacing
         pageContainer.style.left = '50%';
         pageContainer.style.transform = 'translateX(-50%)';
         pageContainer.style.backgroundColor = '#ffffff';

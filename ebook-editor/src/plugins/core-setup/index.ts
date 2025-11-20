@@ -71,7 +71,7 @@ export default grapesjs.plugins.add('core-setup', (editor, options: CoreSetupOpt
 
   // Initialize default mode
   editor.on('load', () => {
-    updateMode('reflow');
+    updateMode('fixed');
   });
 
   // Canvas clear
