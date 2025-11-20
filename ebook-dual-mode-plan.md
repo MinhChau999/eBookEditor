@@ -246,236 +246,44 @@ interface ResponsiveFixedLayout {
 - [ ] Template library
 - [ ] Asset management
 
----
+### **PHASE 5: POLISH & ADVANCED FEATURES** (Week 5)
 
-## 🚀 EPUB FIXED LAYOUT EXPORT ARCHITECTURE
+#### 5.1 PDF Export System
+- [ ] Implement PDF generation using `html2canvas` + `jspdf`
+- [ ] Add PDF option to Export Modal
+- [ ] Support A4/A5 page sizes for PDF
 
-### **1. Data Structure for Export**
+#### 5.2 Enhanced Import
+- [ ] Extract and display images from EPUB
+- [ ] Improve style parsing and application
+- [ ] Handle relative paths for assets
 
-```typescript
-interface EPUBFixedLayoutExport {
-  bookInfo: {
-    title: string;
-    author: string;
-    language: string;
-    identifier: string;
-    modified: string;
-  };
-  layout: {
-    width: number;    // Page width in pixels
-    height: number;   // Page height in pixels
-    orientation: 'portrait' | 'landscape' | 'auto';
-    spread: 'none' | 'landscape' | 'portrait' | 'both';
-  };
-  pages: EPUBPage[];
-  assets: EPUBAsset[];
-  navigation: EPUBNavigation[];
-}
+#### 5.3 UI Polish
+- [ ] Add Toast notifications for actions
+- [ ] Improve loading states and error handling
+- [ ] Add "Preview Mode" toggle
 
-interface EPUBPage {
-  id: string;           // page-001, page-002, etc.
-  filename: string;     // page-001.xhtml
-  title: string;        // Page title for accessibility
-  content: string;      // XHTML content with absolute positioning
-  styles: string;       // Page-specific CSS
-  assets: string[];     // Asset references
-  pageNumber: number;   // Sequential page number
-}
+#### 5.4 Testing & Quality
+- [ ] Setup Vitest for unit testing
+- [ ] Write tests for `bookStore` and `epubParser`
 
-interface EPUBAsset {
-  id: string;
-  filename: string;
-  mediaType: string;
-  content: Buffer | string;
-  optimized: boolean;
-}
-```
+### **PHASE 6: CORE LAYOUT & PAGES REFACTOR** (Week 6)
 
-### **2. EPUB File Generation Pipeline**
+#### 6.1 Page Management Refactor (React Migration)
+- [ ] **Migrate "Structure" Panel**: Replace legacy DOM code with React components (`PageManager`, `PageList`).
+- [ ] **Page Thumbnails**: Visual representation of pages in grid view.
+- [ ] **Spread View UI**: Better visualization of 2-page spreads in the panel.
+- [ ] **Interactivity**: Drag-and-drop reordering (future), context menus.
 
-```typescript
-class EPUBFixedLayoutExporter {
-  async export(bookInfo: BookInfo, pages: PageData[]): Promise<Buffer> {
-    const epubData = await this.prepareEPUBData(bookInfo, pages);
-    const zipFile = await this.createEPUBZip(epubData);
-    return zipFile;
-  }
+#### 6.2 Fixed Layout Core Fixes
+- [ ] **Strict Page Container**: Inject a `.page-container` div into the canvas that acts as the physical paper.
+- [ ] **Centering & Shadow**: Ensure the page container is centered on the gray workspace with a realistic drop shadow.
+- [ ] **Content Clipping**: Enforce `overflow: hidden` on the page container to prevent content from floating outside.
+- [ ] **Spread View Logic**: Correctly double the container width and render the spine guide.
 
-  private async prepareEPUBData(bookInfo: BookInfo, pages: PageData[]): Promise<EPUBData> {
-    return {
-      'mimetype': 'application/epub+zip',
-      'META-INF/container.xml': this.generateContainerXML(),
-      'OEBPS/content.opf': await this.generateContentOPF(bookInfo, pages),
-      'OEBPS/nav.xhtml': this.generateNavigation(pages),
-      'OEBPS/toc.ncx': this.generateNCX(pages),
-      'OEBPS/css/epub-core.css': this.generateCoreCSS(),
-      'OEBPS/css/page-styles.css': this.generatePageCSS(bookInfo.pageSize),
-      ...await this.generatePageFiles(pages),
-      ...await this.copyAssets(pages)
-    };
-  }
-
-  private async generateContentOPF(bookInfo: BookInfo, pages: PageData[]): Promise<string> {
-    return `<?xml version="1.0" encoding="UTF-8"?>
-<package xmlns="http://www.idpf.org/2007/opf" unique-identifier="bookid" version="3.0">
-
-  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
-    <dc:identifier id="bookid">${bookInfo.id}</dc:identifier>
-    <dc:title>${bookInfo.title}</dc:title>
-    <dc:creator>${bookInfo.author}</dc:creator>
-    <dc:language>vi</dc:language>
-    <meta property="dcterms:modified">${new Date().toISOString()}</meta>
-
-    <!-- 🔥 FIXED LAYOUT CRITICAL METADATA -->
-    <meta property="rendition:layout">pre-paginated</meta>
-    <meta property="rendition:orientation">${bookInfo.orientation || 'auto'}</meta>
-    <meta property="rendition:spread">${bookInfo.spread || 'auto'}</meta>
-    <meta property="rendition:viewport">width=${bookInfo.pageSize?.width}, height=${bookInfo.pageSize?.height}</meta>
-  </metadata>
-
-  <manifest>
-    <item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>
-    <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>
-    <item id="css-core" href="css/epub-core.css" media-type="text/css"/>
-    <item id="css-page" href="css/page-styles.css" media-type="text/css"/>
-
-    ${this.generateManifestItems(pages)}
-    ${this.generateAssetManifestItems(pages)}
-  </manifest>
-
-  <spine page-progression-direction="ltr">
-    ${this.generateSpineItems(pages)}
-  </spine>
-
-</package>`;
-  }
-
-  private async generatePageFiles(pages: PageData[]): Promise<Record<string, string>> {
-    const pageFiles: Record<string, string> = {};
-
-    pages.forEach((page, index) => {
-      const pageId = `page-${String(index + 1).padStart(3, '0')}`;
-      const filename = `xhtml/${pageId}.xhtml`;
-
-      pageFiles[filename] = this.generatePageXHTML(page, pageId);
-    });
-
-    return pageFiles;
-  }
-
-  private generatePageXHTML(page: PageData, pageId: string): string {
-    const { pageSize } = this.getBookInfo();
-
-    return `<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
-<head>
-  <title>${page.name}</title>
-  <link rel="stylesheet" type="text/css" href="../css/epub-core.css"/>
-  <link rel="stylesheet" type="text/css" href="../css/page-styles.css"/>
-
-  <style>
-    /* 🔥 CRITICAL: Fixed positioning for EPUB readers */
-    html, body {
-      width: ${pageSize.width}px;
-      height: ${pageSize.height}px;
-      overflow: hidden;
-      margin: 0;
-      padding: 0;
-      position: absolute;
-      top: 0;
-      left: 0;
-      -epub-writing-mode: horizontal-tb;
-    }
-
-    .page-content {
-      width: 100%;
-      height: 100%;
-      position: relative;
-      background: white;
-      box-sizing: border-box;
-    }
-
-    /* Page-specific styles */
-    ${page.styles || ''}
-  </style>
-</head>
-<body>
-  <div class="page-content">
-    ${this.convertContentToFixedLayout(page.content)}
-  </div>
-</body>
-</html>`;
-  }
-
-  private convertContentToFixedLayout(content: string): string {
-    // ⚠️ UPDATED STRATEGY: Keep content responsive within the fixed page container
-    // Do NOT convert to absolute positioning.
-    // Just ensure the content is wrapped in a container that matches the page size.
-    
-    return content; 
-  }
-}
-```
-
-### **3. Responsive Container Strategy (Replaces Positioning Algorithm)**
-
-Instead of calculating absolute positions, we use CSS to ensure content fits within the fixed page boundaries.
-
-```css
-/* Core CSS for Fixed Layout Page */
-.page-container {
-  width: var(--page-width);
-  height: var(--page-height);
-  overflow: hidden; /* Clip content that overflows */
-  position: relative;
-  background: white;
-}
-
-/* Content Area */
-.content-area {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  /* Allow internal scrolling during editing, but hidden in export */
-  overflow: hidden; 
-}
-
-/* Grid System Support */
-.grid-layout {
-  display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  gap: var(--grid-gap);
-}
-```
-
-> **💡 Note:** With this approach, the author is responsible for ensuring content fits within the page. If content overflows, it will be clipped. We can provide a "Overflow Warning" in the editor.
-
-### **4. EPUB Validation**
-
-```typescript
-class EPUBValidator {
-  async validateEPUB(epubBuffer: Buffer): Promise<ValidationResult> {
-    // 1. Check mimetype
-    // 2. Validate container.xml
-    // 3. Check content.opf structure
-    // 4. Verify fixed layout metadata
-    // 5. Validate XHTML files
-    // 6. Check CSS compliance
-    // 7. Verify asset references
-
-    return {
-      isValid: true,
-      errors: [],
-      warnings: []
-    };
-  }
-}
-```
-
----
-
+#### 6.3 Master Pages (UI)
+- [ ] **Master Page List**: UI for managing master templates.
+- [ ] **Apply Master**: Logic to apply master page background/elements to regular pages.
 ## 💡 RECOMMENDATIONS
 
 ### **Technical Recommendations**

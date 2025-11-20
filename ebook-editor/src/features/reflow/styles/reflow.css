@@ -1,0 +1,36 @@
+/* Reflow Mode Styles */
+
+.reflow-content {
+  font-family: 'Inter', sans-serif;
+  line-height: 1.6;
+  color: inherit; /* Inherit from container */
+}
+
+.reflow-content img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 20px auto;
+  border-radius: 8px;
+}
+
+.reflow-content h1, 
+.reflow-content h2, 
+.reflow-content h3 {
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  font-weight: 700;
+}
+
+.reflow-content p {
+  margin-bottom: 1em;
+}
+
+/* Theme Overrides (handled by inline styles in container, but can be reinforced here) */
+.reflow-theme-dark a {
+  color: #60a5fa;
+}
+
+.reflow-theme-sepia a {
+  color: #8c6b5d;
+}

@@ -3,7 +3,15 @@ import grapesjs from 'grapesjs';
 import tuiImageEditorPlugin from 'grapesjs-tui-image-editor';
 import coreSetup from '../../plugins/core-setup';
 import bookAdapter from '../../plugins/book-adapter';
-import leftPanel from '../../plugins/left-panel';
+import reflowAdapter from '../../plugins/reflow-adapter/index';
+import fixedAdapter from '../../plugins/fixed-adapter/index';
+import leftPanel from '../../plugins/left-panel/index';
+import grapesjsRulers from 'grapesjs-rulers';
+import { ExportModal } from '../../features/export/components/ExportModal';
+import { parseEPUB } from '../../features/import/utils/epubParser';
+import { useBookStore } from '../../core/store/bookStore';
+import { useUIStore } from '../../core/store/uiStore';
+import { Toast } from '../components/Toast';
 
 // Define GrapesJS editor type
 interface EditorProps {
@@ -13,7 +21,28 @@ interface EditorProps {
 export const Editor: React.FC<EditorProps> = () => {
   const editorRef = useRef<HTMLDivElement>(null);
   const editorInstanceRef = useRef<any>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [showExportModal, setShowExportModal] = useState(false);
+  const { importBook } = useBookStore();
+  const { toasts, addToast, removeToast } = useUIStore();
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      try {
+        setIsLoading(true);
+        const bookData = await parseEPUB(file);
+        importBook(bookData);
+        addToast(`Imported "${bookData.title}" successfully!`, 'success');
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Import failed:', error);
+        addToast('Import failed. Please check the file.', 'error');
+        setIsLoading(false);
+      }
+    }
+  };
 
   useEffect(() => {
     if (!editorRef.current) return;
@@ -31,25 +60,23 @@ export const Editor: React.FC<EditorProps> = () => {
             coreSetup,
             bookAdapter,
             leftPanel,
+            reflowAdapter,
+            fixedAdapter,
+            grapesjsRulers,
             tuiImageEditorPlugin
           ],
-
-          // Core Color Configuration
-          canvas: {
-            styles: [
-              'https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap',
-              'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap'
-            ],
-            scripts: []
-          },
-
           pluginsOpts: {
+            [grapesjsRulers as any]: {
+              dragMode: 'translate',
+            },
             'core-setup': {
               textCleanCanvas: 'Are you sure you want to clear the canvas?',
             },
-            'grapesjs-tui-image-editor': {
+            [tuiImageEditorPlugin as any]: {
               config: {
                 includeUI: {
+                  initMenu: 'filter',
+                  menuBarPosition: 'bottom',
                   theme: {
                     'common.bi.image': 'https://uicdn.toast.com/tui-image-editor/latest/svg/icon-b.svg',
                     'common.bisize.width': '251px',
@@ -57,40 +84,31 @@ export const Editor: React.FC<EditorProps> = () => {
                     'common.backgroundImage': 'none',
                     'common.backgroundColor': '#f3f4f6',
                     'common.border': '1px solid #ddd',
-
                     'header.backgroundImage': 'none',
                     'header.backgroundColor': '#f3f4f6',
                     'header.border': '0px',
-
                     'menu.normalIcon.color': '#8a8a8a',
                     'menu.activeIcon.color': '#555555',
                     'menu.disabledIcon.color': '#434343',
                     'menu.hoverIcon.color': '#e9e9e9',
-
                     'submenu.backgroundColor': '#ffffff',
                     'submenu.partition.color': '#e5e5e5',
-
                     'submenu.normalIcon.color': '#8a8a8a',
                     'submenu.activeIcon.color': '#555555',
                     'submenu.iconSize.width': '32px',
                     'submenu.iconSize.height': '32px',
-
                     'submenu.normalLabel.color': '#858585',
                     'submenu.normalLabel.fontWeight': 'normal',
                     'submenu.activeLabel.color': '#000',
                     'submenu.activeLabel.fontWeight': 'normal',
-
                     'checkbox.border': '1px solid #ccc',
                     'checkbox.backgroundColor': '#fff',
-
                     'range.pointer.color': '#333',
                     'range.bar.color': '#ccc',
                     'range.subbar.color': '#606060',
-
                     'range.disabledPointer.color': '#d3d3d3',
                     'range.disabledBar.color': 'rgba(85,85,85,0.06)',
                     'range.disabledSubbar.color': 'rgba(51,51,51,0.2)',
-
                     'range.value.color': '#000',
                     'range.value.fontWeight': 'normal',
                     'range.value.fontSize': '11px',
@@ -98,17 +116,9 @@ export const Editor: React.FC<EditorProps> = () => {
                     'range.value.backgroundColor': '#f5f5f5',
                     'range.title.color': '#000',
                     'range.title.fontWeight': 'lighter',
-
                     'colorpicker.button.border': '0px',
                     'colorpicker.title.color': '#000'
                   },
-                  menu: ['crop', 'flip', 'rotate', 'draw', 'shape', 'icon', 'text', 'mask', 'filter'],
-                  initMenu: 'filter',
-                  // uiSize: { // Removed as per instruction
-                  //   width: '100%',
-                  //   height: '700px'
-                  // },
-                  menuBarPosition: 'bottom'
                 },
                 cssMaxWidth: 700,
                 cssMaxHeight: 500,
@@ -122,6 +132,14 @@ export const Editor: React.FC<EditorProps> = () => {
               addToAssets: true
             }
           }
+        });
+
+        editorInstance.Commands.add('open-export-modal', () => {
+            setShowExportModal(true);
+        });
+
+        editorInstance.Commands.add('import-book', () => {
+            fileInputRef.current?.click();
         });
 
         editorInstance.addStyle(`
@@ -196,36 +214,54 @@ export const Editor: React.FC<EditorProps> = () => {
             margin-top: 30px;
           }
 
+          /* Default Page Container Style (will be overridden by Fixed Adapter) */
+          .page-container {
+            position: relative;
+            width: 100%;
+            height: auto;
+            background: white;
+          }
         `);
 
         // Set initial content with page structure
         editorInstance.setComponents(`
           <div class="ebook-content">
             <!-- Page 1: Cover Page -->
-            <div class="ebook-page ebook-page-cover" data-page="1">
-              <div class="container">
-                <h1 class="cover-title">Thơ ca Đời sống</h1>
-                <p class="cover-subtitle">Hành trình của những cảm xúc thăng hoa</p>
-                <div class="cover-author">
-                  <p>Với lời tâm sự từ trái tim</p>
-                  <p>Khám phá vẻ đẹp trong từng vần thơ</p>
+            <div class="page-container" data-page="1">
+              <div class="ebook-page ebook-page-cover w-full h-full flex flex-col items-center justify-center text-center p-20 relative overflow-hidden">
+                <div class="container w-full max-w-3xl mx-auto">
+                  <h1 class="cover-title text-5xl mb-5 font-bold text-gray-800">Thơ ca Đời sống</h1>
+                  <p class="cover-subtitle text-xl mb-8 text-gray-600">Hành trình của những cảm xúc thăng hoa</p>
+                  <div class="cover-author mt-16">
+                    <p class="italic text-gray-500">Với lời tâm sự từ trái tim</p>
+                    <p class="italic text-gray-500">Khám phá vẻ đẹp trong từng vần thơ</p>
+                  </div>
                 </div>
               </div>
             </div>
 
             <!-- Page 2: Chapter 1 Start -->
-            <div class="ebook-page ebook-page-content" data-page="2">
-              <div class="container">
-                <h2 class="chapter-title">Chương 1: Khởi đầu hành trình</h2>
-                <p class="chapter-intro">Trong thế giới của chữ nghĩa và cảm xúc, mỗi trang sách là một cánh cửa mở ra những chân trời mới. Từng câu thơ như mạch nguồn trong veo, chảy trôi qua những thung lũng của tâm hồn, mang theo hương thơm của ký ức và màu sắc của hiện tại.</p>
+            <div class="page-container" data-page="2">
+              <div class="ebook-page ebook-page-content w-full h-full p-16 relative overflow-hidden bg-white text-gray-800">
+                <div class="container w-full h-full flex flex-col">
+                  <h2 class="chapter-title text-4xl mb-8 text-blue-600 font-bold">Chương 1: Khởi đầu hành trình</h2>
+                  <p class="chapter-intro text-lg leading-relaxed mb-6">Trong thế giới của chữ nghĩa và cảm xúc, mỗi trang sách là một cánh cửa mở ra những chân trời mới. Từng câu thơ như mạch nguồn trong veo, chảy trôi qua những thung lũng của tâm hồn, mang theo hương thơm của ký ức và màu sắc của hiện tại.</p>
 
-                <h3 class="section-title">Vẻ đẹp của sự đơn sơ</h3>
-                <p class="feature-list">• Mỗi vần thơ là một trang đời<br/>
-                • Từng câu văn là một khúc ca<br/>
-                • Mỗi trang sách là một câu chuyện<br/>
-                • Mỗi chương là một chặng đường</p>
+                  <h3 class="section-title text-2xl mt-8 mb-4 text-green-600 font-semibold">Vẻ đẹp của sự đơn sơ</h3>
+                  <div class="feature-list leading-relaxed mb-4 pl-4 border-l-4 border-green-100">
+                    <p>• Mỗi vần thơ là một trang đời</p>
+                    <p>• Từng câu văn là một khúc ca</p>
+                    <p>• Mỗi trang sách là một câu chuyện</p>
+                    <p>• Mỗi chương là một chặng đường</p>
+                  </div>
 
-                <p class="content-paragraph">Hãy để cho tâm hồn mình được phiêu lãng cùng những con chữ, để trái tim được rung động bởi những giai điệu của ngôn từ. Cuốn sách này không chỉ là tập hợp những con chữ, mà là cuộc đối thoại giữa tâm hồn ta và thế giới xung quanh.</p>
+                  <p class="content-paragraph leading-relaxed mt-6">Hãy để cho tâm hồn mình được phiêu lãng cùng những con chữ, để trái tim được rung động bởi những giai điệu của ngôn từ. Cuốn sách này không chỉ là tập hợp những con chữ, mà là cuộc đối thoại giữa tâm hồn ta và thế giới xung quanh.</p>
+                  
+                  <!-- Footer/Page Number -->
+                  <div class="absolute bottom-8 left-0 right-0 text-center text-sm text-gray-400">
+                    Page 2
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -275,6 +311,14 @@ export const Editor: React.FC<EditorProps> = () => {
           </div>
         </div>
       ) : null}
+
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        style={{ display: 'none' }} 
+        accept=".epub"
+        onChange={handleFileChange}
+      />
       <div
         ref={editorRef}
         style={{
@@ -283,6 +327,20 @@ export const Editor: React.FC<EditorProps> = () => {
           width: '100%'
         }}
       />
+
+      {showExportModal && <ExportModal onClose={() => setShowExportModal(false)} />}
+      
+      {/* Toast Container */}
+      <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
+        {toasts.map((toast) => (
+          <Toast 
+            key={toast.id} 
+            message={toast.message} 
+            type={toast.type} 
+            onClose={() => removeToast(toast.id)} 
+          />
+        ))}
+      </div>
     </div>
   );
 };

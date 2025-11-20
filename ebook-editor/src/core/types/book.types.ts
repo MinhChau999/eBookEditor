@@ -12,6 +12,14 @@ export interface BookInfo {
   createdAt: Date;
   updatedAt: Date;
   coverImage?: string;
+  reflowSettings?: ReflowSettings;
+}
+
+export interface ReflowSettings {
+  fontSize: number;
+  lineHeight: number;
+  theme: 'light' | 'dark' | 'sepia';
+  fontFamily: string;
 }
 
 export interface PageData {

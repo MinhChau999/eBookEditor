@@ -41,6 +41,8 @@ export default grapesjs.plugins.add('core-setup', (editor, options: CoreSetupOpt
             if (container) container.classList.remove('gjs-view-spread');
         }
     }
+
+    editor.trigger('mode:change', { mode });
   };
 
   commands.add('set-mode-reflow', {
@@ -89,6 +91,74 @@ export default grapesjs.plugins.add('core-setup', (editor, options: CoreSetupOpt
     {
       id: 'left-sidebar',
       buttons: [], // Will be populated by adapters
+    },
+    {
+      id: 'panel-top',
+      el: '.panel-top',
+    },
+    {
+      id: 'panel-basic-actions',
+      el: '.panel-basic-actions',
+      buttons: [
+        {
+          id: 'visibility',
+          active: true, // active by default
+          className: 'btn-toggle-borders',
+          label: '<u>B</u>',
+          command: 'sw-visibility', // Built-in command
+        },
+        {
+          id: 'export',
+          className: 'btn-open-export',
+          label: 'Exp',
+          command: 'export-template',
+          context: 'export-template', // For grouping context of buttons from the same panel
+        },
+        {
+          id: 'import-book',
+          className: 'fa fa-upload',
+          command: 'import-book',
+          attributes: { title: 'Import eBook (EPUB)' }
+        },
+        {
+          id: 'preview',
+          className: 'fa fa-eye',
+          command: 'core:preview',
+          attributes: { title: 'Preview' }
+        },
+        {
+          id: 'export-book',
+          className: 'fa fa-download',
+          command: 'open-export-modal',
+          attributes: { title: 'Export eBook' }
+        },
+        {
+          id: 'show-json',
+          className: 'btn-show-json',
+          label: 'JSON',
+          context: 'show-json',
+          command: (editor: any) => {
+            editor.runCommand('core:canvas-clear'); // Just for testing
+            console.log('Components:', editor.getComponents());
+          },
+        },
+        {
+            id: 'undo',
+            className: 'fa fa-undo',
+            command: 'core:undo',
+        },
+        {
+            id: 'redo',
+            className: 'fa fa-repeat',
+            command: 'core:redo',
+        },
+        {
+            id: 'layout-controls-mount',
+            className: 'layout-controls-mount',
+            label: '',
+            command: 'custom-layout-controls',
+        }
+      ],
     },
     {
       id: 'commands',
