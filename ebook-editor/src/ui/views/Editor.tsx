@@ -6,7 +6,7 @@ import bookAdapter from '../../plugins/book-adapter';
 import reflowAdapter from '../../plugins/reflow-adapter/index';
 import fixedAdapter from '../../plugins/fixed-adapter/index';
 import leftPanel from '../../plugins/left-panel/index';
-import grapesjsRulers from 'grapesjs-rulers';
+import customRuler from '../../plugins/ruler/index';
 import { ExportModal } from '../../features/export/components/ExportModal';
 import { parseEPUB } from '../../features/import/utils/epubParser';
 import { useBookStore } from '../../core/store/bookStore';
@@ -18,7 +18,7 @@ interface EditorProps {
   // Add any props if needed
 }
 
-export const Editor: React.FC<EditorProps> = () => {
+const Editor: React.FC<EditorProps> = () => {
   const editorRef = useRef<HTMLDivElement>(null);
   const editorInstanceRef = useRef<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -146,11 +146,11 @@ export const Editor: React.FC<EditorProps> = () => {
             leftPanel,
             reflowAdapter,
             fixedAdapter,
-            grapesjsRulers,
+            customRuler,
             tuiImageEditorPlugin
           ],
           pluginsOpts: {
-            [grapesjsRulers as any]: {
+            [customRuler as any]: {
               dragMode: 'translate',
             },
             'core-setup': {
