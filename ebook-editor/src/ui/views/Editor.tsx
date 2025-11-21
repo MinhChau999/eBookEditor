@@ -6,7 +6,7 @@ import bookAdapter from '../../plugins/book-adapter';
 import reflowAdapter from '../../plugins/reflow-adapter/index';
 import fixedAdapter from '../../plugins/fixed-adapter/index';
 import leftPanel from '../../plugins/left-panel/index';
-import customRuler from '../../plugins/ruler/index';
+// import customRuler from '../../plugins/ruler/index';
 import { ExportModal } from '../../features/export/components/ExportModal';
 import { parseEPUB } from '../../features/import/utils/epubParser';
 import { useBookStore } from '../../core/store/bookStore';
@@ -146,13 +146,13 @@ const Editor: React.FC<EditorProps> = () => {
             leftPanel,
             reflowAdapter,
             fixedAdapter,
-            customRuler,
+            // customRuler,
             tuiImageEditorPlugin
           ],
           pluginsOpts: {
-            [customRuler as any]: {
-              dragMode: 'translate',
-            },
+            // [customRuler as any]: {
+            //   dragMode: 'translate',
+            // },
             'core-setup': {
               textCleanCanvas: 'Are you sure you want to clear the canvas?',
             },

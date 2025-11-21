@@ -570,7 +570,6 @@ button:focus-visible {
 .gjs-mode-fixed .gjs-frame {
   width: 794px !important; /* A4 Width at 96 DPI */
   height: 1123px !important; /* A4 Height at 96 DPI */
-  margin: 30px auto; /* Center with margin */
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
   background: white;
   transition: all 0.3s ease;
