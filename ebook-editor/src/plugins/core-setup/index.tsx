@@ -1,4 +1,12 @@
+import React from 'react';
 import grapesjs, { Editor } from 'grapesjs';
+import { createRoot } from 'react-dom/client';
+import { useBookStore } from '../../core/store/bookStore';
+import { PAGE_TEMPLATES } from '../../features/fixed-layout/utils/pageTemplates';
+import { PageSizeControls } from '../../features/fixed-layout/components/PageSizeControls';
+import { ZoomControls } from '../../features/fixed-layout/components/ZoomControls';
+import '../../features/fixed-layout/styles/fixed-layout.css';
+import '../../features/fixed-layout/styles/grid.css';
 
 export interface CoreSetupOptions {
   textCleanCanvas?: string;
@@ -10,8 +18,124 @@ export default grapesjs.plugins.add('core-setup', (editor: Editor, options: Core
     ...options,
   };
 
+  // DeviceManager is now configured in Editor.tsx
+
+
   const commands = editor.Commands;
   const panels = editor.Panels;
+
+  // --- Fixed Layout Logic ---
+  let layoutRoot: ReturnType<typeof createRoot> | null = null;
+
+  const updateCanvasSize = () => {
+    const { currentBook } = useBookStore.getState();
+    const templateId = currentBook?.template || 'A4_PORTRAIT';
+    const template = PAGE_TEMPLATES[templateId];
+    const container = editor.getContainer();
+    const isSpread = container?.classList.contains('gjs-view-spread');
+
+    if (template) {
+      const frameBody = editor.Canvas.getBody();
+      
+      if (frameBody) {
+        const widthVal = isSpread ? template.width * 2 : template.width;
+        const width = `${widthVal}${template.unit}`;
+        const height = `${template.height}${template.unit}`;
+        
+        const fixedDevice = editor.Devices.get('fixed');
+        if (fixedDevice) {
+            fixedDevice.set('width', width);
+            fixedDevice.set('height', height);
+            fixedDevice.set('widthMedia', width);
+            
+            if (editor.Devices.getSelected()?.id === 'fixed') {
+                editor.refresh();
+            }
+        }
+
+        // Inject/Update Page Container
+        let pageContainer = frameBody.querySelector('.page-container') as HTMLElement;
+        if (!pageContainer) {
+            pageContainer = document.createElement('section');
+            pageContainer.className = 'page-container';
+            while (frameBody.firstChild) {
+                pageContainer.appendChild(frameBody.firstChild);
+            }
+            frameBody.appendChild(pageContainer);
+        }
+
+        // Apply Strict Dimensions
+        pageContainer.style.width = `${width}${template.unit}`;
+        pageContainer.style.height = `${template.height}${template.unit}`;
+        pageContainer.style.minHeight = `${template.height}${template.unit}`;
+        
+        // Add bleed guide class
+        pageContainer.classList.add('page-bleed-guide');
+
+        // Handle Spread Guide
+        let spreadGuide = pageContainer.querySelector('.spread-guide');
+        if (isSpread) {
+            if (!spreadGuide) {
+                spreadGuide = document.createElement('div');
+                spreadGuide.className = 'spread-guide';
+                (spreadGuide as HTMLElement).style.position = 'absolute';
+                (spreadGuide as HTMLElement).style.top = '0';
+                (spreadGuide as HTMLElement).style.bottom = '0';
+                (spreadGuide as HTMLElement).style.left = '50%';
+                (spreadGuide as HTMLElement).style.width = '1px';
+                (spreadGuide as HTMLElement).style.backgroundColor = '#ddd';
+                (spreadGuide as HTMLElement).style.zIndex = '100';
+                (spreadGuide as HTMLElement).style.pointerEvents = 'none';
+                pageContainer.appendChild(spreadGuide);
+            }
+        } else {
+            if (spreadGuide) {
+                spreadGuide.remove();
+            }
+        }
+      }
+    }
+  };
+
+  const mountLayoutControls = () => {
+      const mountPoint = document.querySelector('.gjs-pn-btn.layout-controls-mount');
+      if (mountPoint && !layoutRoot) {
+          mountPoint.innerHTML = ''; 
+          (mountPoint as HTMLElement).style.width = 'auto';
+          (mountPoint as HTMLElement).style.padding = '0 10px';
+          
+          layoutRoot = createRoot(mountPoint);
+          layoutRoot.render(
+              <div className="fixed-layout-controls" onClick={(e) => e.stopPropagation()}>
+                  <PageSizeControls />
+                  <ZoomControls editor={editor} />
+              </div>
+          );
+      }
+  };
+
+  const unmountLayoutControls = () => {
+      if (layoutRoot) {
+          layoutRoot.unmount();
+          layoutRoot = null;
+      }
+      const mountPoint = document.querySelector('.gjs-pn-btn.layout-controls-mount');
+      if (mountPoint) {
+          mountPoint.innerHTML = '';
+      }
+  };
+
+  // --- Reflow Logic ---
+  const enableReflowMode = () => {
+    const canvas = editor.Canvas;
+    const frameBody = canvas.getBody();
+    if (frameBody) {
+      const pageContainer = frameBody.querySelector('.page-container') as HTMLElement;
+      if (pageContainer) {
+         pageContainer.removeAttribute('style');
+      }
+    }
+  };
 
   // --- Commands ---
 
@@ -22,6 +146,9 @@ export default grapesjs.plugins.add('core-setup', (editor: Editor, options: Core
       container.classList.remove('gjs-mode-reflow', 'gjs-mode-fixed');
       container.classList.add(`gjs-mode-${mode}`);
     }
+    
+    // Switch Device
+    editor.Devices.select(mode);
     
     const pn = editor.Panels;
     const btnReflow = pn.getButton('devices-c', 'set-mode-reflow');
@@ -40,6 +167,17 @@ export default grapesjs.plugins.add('core-setup', (editor: Editor, options: Core
             btnSpread.set('active', false); // Reset spread when leaving fixed mode
             if (container) container.classList.remove('gjs-view-spread');
         }
+    }
+
+    // Trigger Logic
+    if (mode === 'fixed') {
+        updateCanvasSize();
+        mountLayoutControls();
+        editor.runCommand('ruler-visibility');
+    } else {
+        enableReflowMode();
+        unmountLayoutControls();
+        editor.stopCommand('ruler-visibility');
     }
 
     editor.trigger('mode:change', { mode });
@@ -65,12 +203,19 @@ export default grapesjs.plugins.add('core-setup', (editor: Editor, options: Core
         if (container) {
             container.classList.toggle('gjs-view-spread');
             console.log('Toggled Spread View');
+            // Update canvas if in fixed mode
+            if (editor.Devices.getSelected()?.id === 'fixed') {
+                updateCanvasSize();
+            }
         }
     }
   });
 
+  commands.add('fixed:update-canvas', updateCanvasSize);
+
   // Initialize default mode
   editor.on('load', () => {
+    // Default to fixed
     updateMode('fixed');
   });
 

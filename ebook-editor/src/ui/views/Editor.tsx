@@ -3,8 +3,6 @@ import grapesjs from 'grapesjs';
 import tuiImageEditorPlugin from 'grapesjs-tui-image-editor';
 import coreSetup from '../../plugins/core-setup';
 import bookAdapter from '../../plugins/book-adapter';
-import reflowAdapter from '../../plugins/reflow-adapter/index';
-import fixedAdapter from '../../plugins/fixed-adapter/index';
 import leftPanel from '../../plugins/left-panel/index';
 // import customRuler from '../../plugins/ruler/index';
 import { ExportModal } from '../../features/export/components/ExportModal';
@@ -144,11 +142,27 @@ const Editor: React.FC<EditorProps> = () => {
             coreSetup,
             bookAdapter,
             leftPanel,
-            reflowAdapter,
-            fixedAdapter,
             // customRuler,
             tuiImageEditorPlugin
           ],
+          deviceManager: {
+            devices: [
+              {
+                id: 'fixed',
+                name: 'Fixed',
+                width: '816px', // A4 width approx
+                height: '1056px', // A4 height approx
+                widthMedia: '816px',
+              },
+              {
+                id: 'reflow',
+                name: 'Reflow',
+                width: '100%',
+                widthMedia: '',
+              },
+            ],
+            default: 'fixed',
+          },
           pluginsOpts: {
             // [customRuler as any]: {
             //   dragMode: 'translate',

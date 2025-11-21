@@ -551,10 +551,10 @@ button:focus-visible {
   height: 100%;
 }
 
+/* In Reflow mode, the frame is fluid (handled by DeviceManager) */
 .gjs-mode-reflow .gjs-frame {
-  width: 100% !important;
-  max-width: 1200px !important;
   margin: 0 auto;
+  display: block;
 }
 
 /* Fixed Layout Mode */
@@ -567,13 +567,12 @@ button:focus-visible {
   background-size: 20px 20px;
 }
 
+/* In Fixed mode, the frame is fixed size (handled by DeviceManager) */
 .gjs-mode-fixed .gjs-frame {
-  width: 794px !important; /* A4 Width at 96 DPI */
-  height: 1123px !important; /* A4 Height at 96 DPI */
+  margin: 0 auto !important; 
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
-  background: white;
-  transition: all 0.3s ease;
-  display: block; /* Ensure it takes up space */
+  transition: width 0.3s ease, height 0.3s ease;
+  display: block;
 }
 
 /* Spread View */
@@ -582,24 +581,33 @@ button:focus-visible {
 }
 
 .gjs-mode-fixed.gjs-view-spread .gjs-frame {
-    /* In a real implementation, this would handle 2 pages. 
-       For now, we simulate the space or visual indication. 
-       Since GrapesJS core renders one frame, we might just make it look like a spread 
-       or this is a placeholder for the multi-frame logic. */
+    /* Dimensions handled by DeviceManager */
     box-shadow: 0 0 15px rgba(0,0,0,0.2);
-    /* Potential future logic: width: calc(794px * 2); */
 }
 
-/* Page Container Styles (Moved from inline styles) */
-.page-fixed-layout {
-  position: relative;
+/* Page Container Styles */
+.page-container {
   width: 100%;
   height: 100%;
-  background-color: transparent;
-  overflow: hidden;
+  box-sizing: border-box;
 }
 
-.page-bleed-guide {
+/* Reflow Mode: Page Container is just a wrapper */
+.gjs-mode-reflow .page-container {
+  padding: 20px;
+  overflow: visible;
+}
+
+/* Fixed Mode: Page Container is the artboard */
+.gjs-mode-fixed .page-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  background-color: transparent; /* Transparent to show frame background if needed, or white */
+}
+
+.gjs-mode-fixed .page-bleed-guide {
   outline: 1px dashed #ff0000;
   outline-offset: -3mm; /* Bleed inside the frame */
 }
@@ -608,4 +616,21 @@ button:focus-visible {
   /* Dimensions handled by the frame now */
   width: 100%;
   height: 100%;
+}
+
+/* Spread Guide (Only in Fixed Mode) */
+.spread-guide {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  background-color: #ddd;
+  z-index: 100;
+  pointer-events: none;
+  display: none;
+}
+
+.gjs-mode-fixed .spread-guide {
+  display: block;
 }
