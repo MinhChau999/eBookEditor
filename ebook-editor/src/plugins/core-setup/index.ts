@@ -1,10 +1,10 @@
-import grapesjs from 'grapesjs';
+import grapesjs, { Editor } from 'grapesjs';
 
 export interface CoreSetupOptions {
   textCleanCanvas?: string;
 }
 
-export default grapesjs.plugins.add('core-setup', (editor, options: CoreSetupOptions = {}) => {
+export default grapesjs.plugins.add('core-setup', (editor: Editor, options: CoreSetupOptions = {}) => {
   const config = {
     textCleanCanvas: 'Are you sure you want to clear the canvas?',
     ...options,
@@ -46,21 +46,21 @@ export default grapesjs.plugins.add('core-setup', (editor, options: CoreSetupOpt
   };
 
   commands.add('set-mode-reflow', {
-    run: (editor: any) => {
+    run: () => {
       updateMode('reflow');
       console.log('Switched to Reflow Mode');
     },
   });
 
   commands.add('set-mode-fixed', {
-    run: (editor: any) => {
+    run: () => {
       updateMode('fixed');
       console.log('Switched to Fixed Layout Mode');
     },
   });
 
   commands.add('toggle-spread', {
-    run: (editor: any) => {
+    run: (editor: Editor) => {
         const container = editor.getContainer();
         if (container) {
             container.classList.toggle('gjs-view-spread');
@@ -75,7 +75,7 @@ export default grapesjs.plugins.add('core-setup', (editor, options: CoreSetupOpt
   });
 
   // Canvas clear
-  commands.add('canvas-clear', (editor: any) => {
+  commands.add('canvas-clear', (editor: Editor) => {
     return confirm(config.textCleanCanvas) && editor.runCommand('core:canvas-clear');
   });
 
@@ -137,7 +137,7 @@ export default grapesjs.plugins.add('core-setup', (editor, options: CoreSetupOpt
           className: 'btn-show-json',
           label: 'JSON',
           context: 'show-json',
-          command: (editor: any) => {
+          command: (editor: Editor) => {
             editor.runCommand('core:canvas-clear'); // Just for testing
             console.log('Components:', editor.getComponents());
           },
@@ -202,7 +202,7 @@ export default grapesjs.plugins.add('core-setup', (editor, options: CoreSetupOpt
         {
           id: 'preview',
           context: 'preview',
-          command: (editor: any) => editor.runCommand('preview'),
+          command: (editor: Editor) => editor.runCommand('preview'),
           label: `<svg ${iconStyle} viewBox="0 0 24 24"><path fill="currentColor" d="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5Z" /></svg>`,
         },
         {
@@ -213,12 +213,12 @@ export default grapesjs.plugins.add('core-setup', (editor, options: CoreSetupOpt
         },
         {
           id: 'export-template',
-          command: (editor: any) => editor.runCommand('export-template'),
+          command: (editor: Editor) => editor.runCommand('export-template'),
           label: `<svg ${iconStyle} viewBox="0 0 24 24"><path fill="currentColor" d="M12.89,3L14.85,3.4L11.11,21L9.15,20.6L12.89,3M19.59,12L16,8.41V5.58L22.42,12L16,18.41V15.58L19.59,12M1.58,12L8,5.58V8.41L4.41,12L8,15.58V18.41L1.58,12Z" /></svg>`,
         },
         {
           id: 'canvas-clear',
-          command: (editor: any) => editor.runCommand('canvas-clear'),
+          command: (editor: Editor) => editor.runCommand('canvas-clear'),
           label: `<svg ${iconStyle} viewBox="0 0 24 24"><path fill="currentColor" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" /></svg>`,
         },
       ],

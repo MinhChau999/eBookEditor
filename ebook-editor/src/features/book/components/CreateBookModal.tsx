@@ -7,8 +7,17 @@ interface CreateBookModalProps {
   onClose: () => void;
 }
 
+type BookMode = 'reflow' | 'fixed-layout';
+type TemplateType = 'A4' | 'A5' | 'Letter';
+
+interface PageSize {
+  width: number;
+  height: number;
+  unit: 'px';
+}
+
 export const CreateBookModal: React.FC<CreateBookModalProps> = ({ isOpen, onClose }) => {
-  const createBook = useBookStore((state: any) => state.createBook);
+  const createBook = useBookStore((state) => state.createBook);
   const [formData, setFormData] = useState<Partial<BookInfo>>({
     title: '',
     author: '',
@@ -16,33 +25,33 @@ export const CreateBookModal: React.FC<CreateBookModalProps> = ({ isOpen, onClos
     template: 'A4',
   });
 
+  const getPageSize = (template?: TemplateType): PageSize => {
+    switch (template) {
+      case 'A4': return { width: 794, height: 1123, unit: 'px' }; // 96 DPI
+      case 'A5': return { width: 559, height: 794, unit: 'px' };
+      case 'Letter': return { width: 816, height: 1056, unit: 'px' };
+      default: return { width: 794, height: 1123, unit: 'px' };
+    }
+  };
+
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.title) return;
 
-    const pageSize = formData.mode === 'fixed-layout' ? getPageSize(formData.template) : undefined;
+    const pageSize = formData.mode === 'fixed-layout' ? getPageSize(formData.template as TemplateType) : undefined;
 
     createBook({
       title: formData.title!,
       author: formData.author,
-      mode: formData.mode as 'reflow' | 'fixed-layout',
-      template: formData.template as any,
+      mode: formData.mode as BookMode,
+      template: formData.template,
       pageSize,
     });
 
     onClose();
     setFormData({ title: '', author: '', mode: 'reflow', template: 'A4' });
-  };
-
-  const getPageSize = (template?: string) => {
-    switch (template) {
-      case 'A4': return { width: 794, height: 1123, unit: 'px' as const }; // 96 DPI
-      case 'A5': return { width: 559, height: 794, unit: 'px' as const };
-      case 'Letter': return { width: 816, height: 1056, unit: 'px' as const };
-      default: return { width: 794, height: 1123, unit: 'px' as const };
-    }
   };
 
   return (
@@ -76,7 +85,7 @@ export const CreateBookModal: React.FC<CreateBookModalProps> = ({ isOpen, onClos
             <select
               className="w-full border rounded px-3 py-2"
               value={formData.mode}
-              onChange={(e) => setFormData({ ...formData, mode: e.target.value as any })}
+              onChange={(e) => setFormData({ ...formData, mode: e.target.value as BookMode })}
             >
               <option value="reflow">Reflowable (Standard eBook)</option>
               <option value="fixed-layout">Fixed Layout (Comics, Kids)</option>
@@ -89,7 +98,7 @@ export const CreateBookModal: React.FC<CreateBookModalProps> = ({ isOpen, onClos
               <select
                 className="w-full border rounded px-3 py-2"
                 value={formData.template}
-                onChange={(e) => setFormData({ ...formData, template: e.target.value as any })}
+                onChange={(e) => setFormData({ ...formData, template: e.target.value as TemplateType })}
               >
                 <option value="A4">A4</option>
                 <option value="A5">A5</option>

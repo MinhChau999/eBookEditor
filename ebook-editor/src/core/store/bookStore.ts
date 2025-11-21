@@ -14,7 +14,15 @@ interface BookStore extends BookState {
   deletePage: (id: string) => void;
   setReflowSettings: (settings: Partial<ReflowSettings>) => void;
   syncContent: (sourceMode: 'reflow' | 'fixed', targetMode: 'reflow' | 'fixed') => void;
-  importBook: (bookData: any) => void;
+  importBook: (bookData: {
+    title?: string;
+    author?: string;
+    pages?: Array<{
+      name?: string;
+      content?: string;
+      styles?: Record<string, unknown>;
+    }>;
+  }) => void;
 }
 
 export const useBookStore = create<BookStore>()(
@@ -114,31 +122,40 @@ export const useBookStore = create<BookStore>()(
         console.log(`Syncing content from ${sourceMode} to ${targetMode}`);
       },
 
-      importBook: (bookData: any) => {
-          const newBook = {
+      importBook: (bookData: {
+        title?: string;
+        author?: string;
+        pages?: Array<{
+          name?: string;
+          content?: string;
+          styles?: Record<string, unknown>;
+        }>;
+      }) => {
+          const newBook: BookInfo = {
               id: 'imported-' + Date.now(),
-              title: bookData.title,
-              author: bookData.author,
+              title: bookData.title || 'Imported Book',
+              author: bookData.author || 'Unknown Author',
               mode: 'reflow', // Default to reflow for imported books usually
               createdAt: new Date(),
               updatedAt: new Date(),
               reflowSettings: {
                   fontSize: 16,
                   lineHeight: 1.5,
+                  fontFamily: 'Georgia',
                   theme: 'light'
               }
           };
-          
-          const newPages = bookData.pages.map((p: any, i: number) => ({
+
+          const newPages: PageData[] = (bookData.pages || []).map((p, i: number) => ({
               id: 'page-' + Date.now() + '-' + i,
-              name: p.name,
-              content: p.content,
-              styles: p.styles,
+              name: p.name || `Page ${i + 1}`,
+              content: p.content || '',
+              styles: p.styles ? JSON.stringify(p.styles) : '{}',
               pageNumber: i + 1,
               type: 'content'
           }));
 
-          set({ currentBook: newBook as any, pages: newPages, currentPageId: newPages[0]?.id });
+          set({ currentBook: newBook, pages: newPages, currentPageId: newPages[0]?.id });
       }
     }),
     {

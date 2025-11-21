@@ -1,4 +1,4 @@
-import grapesjs from 'grapesjs';
+import grapesjs, { Editor } from 'grapesjs';
 import { createRoot } from 'react-dom/client';
 import { useBookStore } from '../../core/store/bookStore';
 import { PAGE_TEMPLATES } from '../../features/fixed-layout/utils/pageTemplates';
@@ -7,7 +7,8 @@ import { ZoomControls } from '../../features/fixed-layout/components/ZoomControl
 import '../../features/fixed-layout/styles/fixed-layout.css';
 import '../../features/fixed-layout/styles/grid.css';
 
-export default grapesjs.plugins.add('fixed-adapter', (editor) => {
+const FixedAdapterPlugin = () => {
+  grapesjs.plugins.add('fixed-adapter', (editor: Editor) => {
   
   const updateCanvasSize = () => {
     const { currentBook } = useBookStore.getState();
@@ -147,4 +148,7 @@ export default grapesjs.plugins.add('fixed-adapter', (editor) => {
   });
 
   editor.Commands.add('fixed:update-canvas', updateCanvasSize);
-});
+  });
+};
+
+export default FixedAdapterPlugin;

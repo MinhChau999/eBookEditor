@@ -1,8 +1,7 @@
-import grapesjs from 'grapesjs';
-import { createRoot } from 'react-dom/client';
+import grapesjs, { Editor } from 'grapesjs';
 
-export default grapesjs.plugins.add('reflow-adapter', (editor) => {
-  let navRoot: ReturnType<typeof createRoot> | null = null;
+const ReflowAdapterPlugin = () => {
+  grapesjs.plugins.add('reflow-adapter', (editor: Editor) => {
   
   const onModeChange = ({ mode }: { mode: 'reflow' | 'fixed' }) => {
     if (mode === 'reflow') {
@@ -49,9 +48,6 @@ export default grapesjs.plugins.add('reflow-adapter', (editor) => {
       }
     }
 
-    // Create a container for Chapter Navigation (Left Sidebar replacement/overlay)
-    // REMOVED: We now use the unified StructurePanel for both modes.
-    // The StructurePanel persists in the left sidebar and handles navigation.
   };
 
   const disableReflowMode = () => {
@@ -72,7 +68,7 @@ export default grapesjs.plugins.add('reflow-adapter', (editor) => {
 
   editor.on('mode:change', onModeChange);
 
-  // Check initial mode
-  // We can't easily get the "current mode" state from core-setup without a shared state or querying the DOM.
-  // But core-setup triggers 'load' which calls updateMode('reflow'), so we should catch the event.
-});
+  });
+};
+
+export default ReflowAdapterPlugin;

@@ -1,11 +1,19 @@
-import grapesjs from 'grapesjs';
-import React from 'react';
+/* eslint-disable react-refresh/only-export-components */
+import grapesjs, { Editor } from 'grapesjs';
 import { createRoot } from 'react-dom/client';
 import { StructurePanel } from '../../features/page/components/StructurePanel';
 
-export default grapesjs.plugins.add('left-panel', (editor, options = {}) => {
-  const config = { ...options };
+export interface LeftPanelOptions {
+  showStructure?: boolean;
+  showAssets?: boolean;
+  defaultTab?: string;
+  [key: string]: unknown;
+}
 
+export default grapesjs.plugins.add('left-panel', (editor: Editor, options: LeftPanelOptions = {}) => {
+  const config = { ...options };
+  console.log('config', config);
+  
   // Create the main left panel container
   const headerLeftSidebar = document.createElement('div');
   headerLeftSidebar.className = 'gjs-pn-header-left-sidebar gjs-pn-panel gjs-one-bg gjs-two-color';
