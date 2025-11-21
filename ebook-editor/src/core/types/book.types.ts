@@ -2,16 +2,12 @@ export interface BookInfo {
   id: string;
   title: string;
   author?: string;
-  mode: 'reflow' | 'fixed-layout';
-  pageSize?: {
-    width: number;
-    height: number;
-    unit: 'px' | 'mm' | 'in';
-  };
-  template?: 'A4' | 'A5' | 'Letter' | 'Custom';
+  description?: string;
+  coverImage?: string;
+  layoutMode: 'fixed' | 'reflow';
+  template?: string; // For fixed layout page size
   createdAt: Date;
   updatedAt: Date;
-  coverImage?: string;
   reflowSettings?: ReflowSettings;
 }
 

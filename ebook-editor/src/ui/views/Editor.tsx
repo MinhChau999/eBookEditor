@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import grapesjs from 'grapesjs';
 import tuiImageEditorPlugin from 'grapesjs-tui-image-editor';
 import coreSetup from '../../plugins/core-setup';
 import bookAdapter from '../../plugins/book-adapter';
-import leftPanel from '../../plugins/left-panel/index';
+import leftPanel from '../../plugins/left-panel';
 // import customRuler from '../../plugins/ruler/index';
 import { ExportModal } from '../../features/export/components/ExportModal';
 import { parseEPUB } from '../../features/import/utils/epubParser';
@@ -17,13 +18,31 @@ interface EditorProps {
 }
 
 const Editor: React.FC<EditorProps> = () => {
+  const { bookId } = useParams<{ bookId: string }>();
+  const navigate = useNavigate();
   const editorRef = useRef<HTMLDivElement>(null);
   const editorInstanceRef = useRef<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showExportModal, setShowExportModal] = useState(false);
-  const { importBook } = useBookStore();
+  
+  const { books, importBook, setCurrentBook } = useBookStore();
   const { toasts, addToast, removeToast } = useUIStore();
+
+  // Find the current book
+  const currentBook = books.find(b => b.id === bookId);
+
+  useEffect(() => {
+    if (!bookId) {
+        navigate('/');
+        return;
+    }
+    if (!currentBook) {
+        navigate('/');
+        return;
+    }
+    setCurrentBook(currentBook.id);
+  }, [bookId, currentBook, navigate, setCurrentBook]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -43,7 +62,7 @@ const Editor: React.FC<EditorProps> = () => {
   };
 
   useEffect(() => {
-    if (!editorRef.current) return;
+    if (!editorRef.current || !currentBook) return;
 
     const initializeEditor = async () => {
       try {
@@ -84,7 +103,7 @@ const Editor: React.FC<EditorProps> = () => {
                       <div class="container w-full h-full flex flex-col">
                         <h2 class="chapter-title text-4xl mb-8 text-blue-600 font-bold">Chương 1: Khởi đầu hành trình</h2>
                         <p class="chapter-intro text-lg leading-relaxed mb-6">Trong thế giới của chữ nghĩa và cảm xúc, mỗi trang sách là một cánh cửa mở ra những chân trời mới. Từng câu thơ như mạch nguồn trong veo, chảy trôi qua những thung lũng của tâm hồn, mang theo hương thơm của ký ức và màu sắc của hiện tại.</p>
-
+                        
                         <h3 class="section-title text-2xl mt-8 mb-4 text-green-600 font-semibold">Vẻ đẹp của sự đơn sơ</h3>
                         <div class="feature-list leading-relaxed mb-4 pl-4 border-l-4 border-green-100">
                           <p>• Mỗi vần thơ là một trang đời</p>
@@ -155,20 +174,29 @@ const Editor: React.FC<EditorProps> = () => {
                 widthMedia: '816px',
               },
               {
-                id: 'reflow',
-                name: 'Reflow',
-                width: '100%',
-                widthMedia: '',
+                id: 'desktop',
+                name: 'Desktop',
+                width: '',
+              },
+              {
+                id: 'tablet',
+                name: 'Tablet',
+                width: '768px',
+                widthMedia: '992px',
+              },
+              {
+                id: 'mobile',
+                name: 'Mobile',
+                width: '320px',
+                widthMedia: '480px',
               },
             ],
-            default: 'fixed',
+            // Default will be set by core-setup based on layoutMode
           },
           pluginsOpts: {
-            // [customRuler as any]: {
-            //   dragMode: 'translate',
-            // },
             'core-setup': {
               textCleanCanvas: 'Are you sure you want to clear the canvas?',
+              layoutMode: currentBook.layoutMode,
             },
             [tuiImageEditorPlugin as any]: {
               config: {
@@ -321,9 +349,6 @@ const Editor: React.FC<EditorProps> = () => {
           }
         `);
 
-
-
-
         editorInstanceRef.current = editorInstance;
         setIsLoading(false);
       } catch (error) {
@@ -339,7 +364,11 @@ const Editor: React.FC<EditorProps> = () => {
         editorInstanceRef.current.destroy();
       }
     };
-  }, []);
+  }, [currentBook]); // Re-run if currentBook changes (though it should be stable after initial load)
+
+  if (!currentBook) {
+      return null; // Or a loading spinner
+  }
 
   return (
     <div style={{

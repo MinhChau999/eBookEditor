@@ -1,4 +1,4 @@
-import React from 'react';
+
 import grapesjs, { Editor } from 'grapesjs';
 import { createRoot } from 'react-dom/client';
 import { useBookStore } from '../../core/store/bookStore';
@@ -10,16 +10,17 @@ import '../../features/fixed-layout/styles/grid.css';
 
 export interface CoreSetupOptions {
   textCleanCanvas?: string;
+  layoutMode?: 'fixed' | 'reflow';
 }
 
 export default grapesjs.plugins.add('core-setup', (editor: Editor, options: CoreSetupOptions = {}) => {
   const config = {
     textCleanCanvas: 'Are you sure you want to clear the canvas?',
+    layoutMode: 'fixed', // Default fallback
     ...options,
   };
 
-  // DeviceManager is now configured in Editor.tsx
-
+  // DeviceManager is now configured in Editor.tsx, but we control visibility here
 
   const commands = editor.Commands;
   const panels = editor.Panels;
@@ -139,42 +140,22 @@ export default grapesjs.plugins.add('core-setup', (editor: Editor, options: Core
 
   // --- Commands ---
 
-  // Layout Mode commands
-  const updateMode = (mode: 'reflow' | 'fixed') => {
+  // Layout Mode Initialization (Internal, not exposed as commands anymore)
+  const initializeMode = (mode: 'reflow' | 'fixed') => {
     const container = editor.getContainer();
     if (container) {
       container.classList.remove('gjs-mode-reflow', 'gjs-mode-fixed');
       container.classList.add(`gjs-mode-${mode}`);
     }
     
-    // Switch Device
-    editor.Devices.select(mode);
-    
-    const pn = editor.Panels;
-    const btnReflow = pn.getButton('devices-c', 'set-mode-reflow');
-    const btnFixed = pn.getButton('devices-c', 'set-mode-fixed');
-    const btnSpread = pn.getButton('devices-c', 'toggle-spread');
-
-    if (btnReflow) btnReflow.set('active', mode === 'reflow');
-    if (btnFixed) btnFixed.set('active', mode === 'fixed');
-    
-    // Show/Hide Spread button based on mode
-    if (btnSpread) {
-        if (mode === 'fixed') {
-            btnSpread.set('visible', true);
-        } else {
-            btnSpread.set('visible', false);
-            btnSpread.set('active', false); // Reset spread when leaving fixed mode
-            if (container) container.classList.remove('gjs-view-spread');
-        }
-    }
-
-    // Trigger Logic
     if (mode === 'fixed') {
+        editor.Devices.select('fixed');
+
         updateCanvasSize();
         mountLayoutControls();
         editor.runCommand('ruler-visibility');
     } else {
+        editor.Devices.select('desktop'); // Default to desktop for reflow
         enableReflowMode();
         unmountLayoutControls();
         editor.stopCommand('ruler-visibility');
@@ -183,40 +164,84 @@ export default grapesjs.plugins.add('core-setup', (editor: Editor, options: Core
     editor.trigger('mode:change', { mode });
   };
 
-  commands.add('set-mode-reflow', {
-    run: () => {
-      updateMode('reflow');
-      console.log('Switched to Reflow Mode');
-    },
+  // Device Commands
+  commands.add('set-device-desktop', {
+    run: (editor: Editor) => editor.Devices.select('desktop'),
+    stop: () => {},
+  });
+  commands.add('set-device-tablet', {
+    run: (editor: Editor) => editor.Devices.select('tablet'),
+    stop: () => {},
+  });
+  commands.add('set-device-mobile', {
+    run: (editor: Editor) => editor.Devices.select('mobile'),
+    stop: () => {},
   });
 
-  commands.add('set-mode-fixed', {
-    run: () => {
-      updateMode('fixed');
-      console.log('Switched to Fixed Layout Mode');
-    },
-  });
-
-  commands.add('toggle-spread', {
+  commands.add('set-view-single', {
     run: (editor: Editor) => {
         const container = editor.getContainer();
         if (container) {
-            container.classList.toggle('gjs-view-spread');
-            console.log('Toggled Spread View');
+            container.classList.remove('gjs-view-spread');
+            
+            // Update buttons manually
+            const pn = editor.Panels;
+            const btnSingle = pn.getButton('devices-c', 'set-view-single');
+            const btnSpread = pn.getButton('devices-c', 'set-view-spread');
+
+            if (btnSingle) {
+                btnSingle.set('active', true);
+                btnSingle.set('className', 'gjs-four-color');
+            }
+            if (btnSpread) {
+                btnSpread.set('active', false);
+                btnSpread.set('className', '');
+            }
+
             // Update canvas if in fixed mode
             if (editor.Devices.getSelected()?.id === 'fixed') {
                 updateCanvasSize();
             }
         }
-    }
+    },
+    stop: () => {},
+  });
+
+  commands.add('set-view-spread', {
+    run: (editor: Editor) => {
+        const container = editor.getContainer();
+        if (container) {
+            container.classList.add('gjs-view-spread');
+
+            // Update buttons manually
+            const pn = editor.Panels;
+            const btnSingle = pn.getButton('devices-c', 'set-view-single');
+            const btnSpread = pn.getButton('devices-c', 'set-view-spread');
+
+            if (btnSingle) {
+                btnSingle.set('active', false);
+                btnSingle.set('className', '');
+            }
+            if (btnSpread) {
+                btnSpread.set('active', true);
+                btnSpread.set('className', 'gjs-four-color');
+            }
+
+            // Update canvas if in fixed mode
+            if (editor.Devices.getSelected()?.id === 'fixed') {
+                updateCanvasSize();
+            }
+        }
+    },
+    stop: () => {},
   });
 
   commands.add('fixed:update-canvas', updateCanvasSize);
 
-  // Initialize default mode
+  // Initialize default mode based on options
   editor.on('load', () => {
-    // Default to fixed
-    updateMode('fixed');
+    console.log('Initializing Editor with Layout Mode:', config.layoutMode);
+    initializeMode(config.layoutMode as 'fixed' | 'reflow');
   });
 
   // Canvas clear
@@ -231,7 +256,51 @@ export default grapesjs.plugins.add('core-setup', (editor: Editor, options: Core
   const editorConfig = editor.getConfig();
   editorConfig.showDevices = false;
 
-  // Reset panels to a clean state
+  // Determine which device buttons to show based on initial mode
+  const deviceButtons = [];
+  
+  if (config.layoutMode === 'reflow') {
+      deviceButtons.push(
+        {
+            id: 'set-device-desktop',
+            command: 'set-device-desktop',
+            active: true,
+            label: `<svg ${iconStyle} viewBox="0 0 24 24"><path fill="currentColor" d="M21,16H3V4H21M21,2H3C1.89,2 1,2.89 1,4V16A2,2 0 0,0 3,18H10V20H8V22H16V20H14V18H21A2,2 0 0,0 23,16V4C23,2.89 22.1,2 21,2Z" /></svg>`,
+            attributes: { title: 'Desktop' },
+        },
+        {
+            id: 'set-device-tablet',
+            command: 'set-device-tablet',
+            label: `<svg ${iconStyle} viewBox="0 0 24 24"><path fill="currentColor" d="M19,18H5V6H19M19,4H5C3.89,4 3,4.89 3,6V18A2,2 0 0,0 5,20H19A2,2 0 0,0 21,18V6C21,4.89 20.1,4 19,4Z" /></svg>`,
+            attributes: { title: 'Tablet' },
+        },
+        {
+            id: 'set-device-mobile',
+            command: 'set-device-mobile',
+            label: `<svg ${iconStyle} viewBox="0 0 24 24"><path fill="currentColor" d="M17,19H7V5H17M17,1H7C5.89,1 5,1.89 5,3V21A2,2 0 0,0 7,23H17A2,2 0 0,0 19,21V3C19,1.89 18.1,1 17,1Z" /></svg>`,
+            attributes: { title: 'Mobile' },
+        }
+      );
+  } else {
+      // Fixed Mode
+      deviceButtons.push(
+        {
+          id: 'set-view-single',
+          command: 'set-view-single',
+          label: `<svg ${iconStyle} viewBox="0 0 24 24"><path fill="currentColor" d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" /></svg>`,
+          attributes: { title: 'Single Page View' },
+          active: true, // Default
+          className: 'gjs-four-color'
+        },
+        {
+          id: 'set-view-spread',
+          command: 'set-view-spread',
+          label: `<svg ${iconStyle} viewBox="0 0 24 24"><path fill="currentColor" d="M21,5C19.89,4.65 18.67,4.5 17.5,4.5C15.55,4.5 13.45,4.9 12,6C10.55,4.9 8.45,4.5 6.5,4.5C4.55,4.5 2.45,4.9 1,6V20.65C1,20.9 1.25,21.15 1.5,21.15C1.6,21.15 1.65,21.1 1.75,21.1C3.1,20.45 5.05,20 6.5,20C8.45,20 10.55,20.4 12,21.5C13.35,20.65 15.8,20 17.5,20C19.15,20 20.85,20.3 22.25,21.05C22.35,21.1 22.4,21.1 22.5,21.1C22.75,21.1 23,20.85 23,20.6V6C22.4,5.55 21.75,5.25 21,5M21,18.5C19.9,18.15 18.7,18 17.5,18C15.8,18 13.35,18.65 12,19.5V8C13.35,7.15 15.8,6.5 17.5,6.5C18.7,6.5 19.9,6.65 21,7V18.5Z" /></svg>`,
+          attributes: { title: 'Spread View' },
+        }
+      );
+  }
+
   panels.getPanels().reset([
     {
       id: 'left-sidebar',
@@ -311,29 +380,7 @@ export default grapesjs.plugins.add('core-setup', (editor: Editor, options: Core
     },
     {
       id: 'devices-c',
-      buttons: [
-        {
-          id: 'set-mode-reflow',
-          command: 'set-mode-reflow',
-          active: true,
-          label: 'Reflow',
-          attributes: { title: 'Reflowable Layout' }
-        },
-        {
-          id: 'set-mode-fixed',
-          command: 'set-mode-fixed',
-          label: 'Fixed',
-          attributes: { title: 'Fixed Layout' }
-        },
-        {
-          id: 'toggle-spread',
-          command: 'toggle-spread',
-          label: '<i class="fas fa-book-open"></i>',
-          attributes: { title: 'Toggle Spread View' },
-          togglable: true,
-          visible: false // Hidden by default (only for fixed mode)
-        },
-      ],
+      buttons: deviceButtons,
     },
     {
       id: 'options',

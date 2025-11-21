@@ -135,7 +135,7 @@ export const useBookStore = create<BookStore>()(
               id: 'imported-' + Date.now(),
               title: bookData.title || 'Imported Book',
               author: bookData.author || 'Unknown Author',
-              mode: 'reflow', // Default to reflow for imported books usually
+              layoutMode: 'reflow', // Default to reflow for imported books usually
               createdAt: new Date(),
               updatedAt: new Date(),
               reflowSettings: {

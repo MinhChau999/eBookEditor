@@ -585,6 +585,11 @@ export default class Ruler {
         const dimension = lineDimension || HORIZONTAL;
         let moveCB = movecb;
 
+        // Capture class context for use in inner functions
+        const classContext = this;
+        const classUtils = this.utils;
+        const classCanvasPointerEvents = this.canvasPointerEvents;
+
         const curPosDelta = (val?: number): number => {
             if (typeof val === 'undefined') {
                 return _curPosDelta;
@@ -608,17 +613,17 @@ export default class Ruler {
 
         const draggable = {
             cv: (): HTMLElement => {
-                return this.options.canvas;
+                return classContext.options.canvas;
             },
             move: (xpos: number, ypos: number): void => {
-                guideLine.style.left = this.utils.pixelize(xpos);
-                guideLine.style.top = this.utils.pixelize(ypos);
+                guideLine.style.left = classUtils.pixelize(xpos);
+                guideLine.style.top = classUtils.pixelize(ypos);
                 updateToolTip(xpos, ypos);
-                moveCB(self, xpos, ypos);
+                if (self) moveCB(self, xpos, ypos);
             },
             startMoving: (evt?: MouseEvent): void => {
                 draggable.cv().style.pointerEvents = 'none';
-                this.utils.addClasss(guideLine, ['rul_line_dragged']);
+                classUtils.addClasss(guideLine, ['rul_line_dragged']);
                 const posX = evt?.clientX || 0;
                 const posY = evt?.clientY || 0;
                 const divTop = parseInt(guideLine.style.top || '0');
@@ -659,12 +664,12 @@ export default class Ruler {
                 showToolTip();
             },
             stopMoving: (): void => {
-                draggable.cv().style.pointerEvents = this.canvasPointerEvents;
+                draggable.cv().style.pointerEvents = classCanvasPointerEvents;
                 options.container.style.cursor = '';
                 guideLine.style.cursor = '';
                 document.onmousemove = null;
                 hideToolTip();
-                this.utils.removeClasss(guideLine, ['rul_line_dragged']);
+                classUtils.removeClasss(guideLine, ['rul_line_dragged']);
             }
         };
 
@@ -672,7 +677,7 @@ export default class Ruler {
             if (!options.enableToolTip) {
                 return;
             }
-            this.utils.addClasss(guideLine, 'rul_tooltip');
+            classUtils.addClasss(guideLine, 'rul_tooltip');
         };
 
         const updateToolTip = (x: number, y: number): void => {
@@ -684,7 +689,7 @@ export default class Ruler {
         };
 
         const hideToolTip = (): void => {
-            this.utils.removeClasss(guideLine, 'rul_tooltip');
+            classUtils.removeClasss(guideLine, 'rul_tooltip');
         };
 
         const destroy = (): void => {
