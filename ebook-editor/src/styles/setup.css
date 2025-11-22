@@ -1,117 +1,72 @@
-/* Left Sidebar Styles - Using GrapesJS Theme Variables */
+/* Left Sidebar Styles - Modern Redesign (Compact Text) */
 .gjs-pn-header-left-sidebar {
-  /* Inherit from GrapesJS panel patterns */
-  display: inline-block;
   position: absolute;
-  box-sizing: border-box;
-  text-align: center;
-  padding: 3px;
-  z-index: 3;
-
-  /* Specific positioning for left sidebar header */
-  left: 0;
   top: 0;
-  height: var(--gjs-canvas-top);
-  width: var(--gjs-left-width);
-  z-index: 4;
-
-  /* Flex layout for tabs - evenly distributed like right bar */
+  left: 0;
+  width: var(--gjs-left-width, 15%);
+  height: 35px; /* Compact height */
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
   display: flex;
-  align-items: center;
-  justify-content: space-around;
-  gap: 1px;
-
-  /* GrapesJS color scheme */
-  background-color: var(--gjs-primary-color);
-  color: var(--gjs-secondary-color);
-  border-bottom: 2px solid var(--gjs-main-dark-color);
-  font-family: var(--gjs-main-font);
+  align-items: stretch;
+  justify-content: flex-start;
+  z-index: 10;
+  padding: 0;
 }
 
 .gjs-pn-content-left-sidebar {
-  height: 100%;
-  padding: calc(var(--gjs-canvas-top) + 2px) 0 0;
+  position: absolute;
+  top: 35px; /* Push content below header */
   left: 0;
-  width: var(--gjs-left-width);
+  width: var(--gjs-left-width, 15%);
+  height: calc(100% - 35px);
   overflow-y: auto;
   overflow-x: hidden;
-  box-shadow: 0 0 5px var(--gjs-main-dark-color);
-  background-color: var(--gjs-main-color);
-  font-family: var(--gjs-main-font);
-  color: var(--gjs-font-color);
+  background-color: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+  color: var(--color-text-primary);
 }
 
+/* Tab Buttons - Compact Text Style */
 .gjs-pn-tab-btn {
-  /* Match GrapesJS .gjs-pn-btn styles exactly */
-  box-sizing: border-box;
-  min-height: var(--gjs-canvas-top);
-  min-width: 30px;
-  line-height: 21px;
-  background-color: rgba(0, 0, 0, 0);
-  border: none;
-  font-size: 18px;
-  margin: 0;
-  border-radius: 2px;
-  padding: 6px 2px;
-  position: relative;
-  cursor: pointer;
-
-  /* Flex layout for icon + text */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-
-  /* Inactive state: use gray/white text color */
-  color: var(--gjs-font-color);
-
-  /* Override flex properties for tab layout */
   flex: 1;
-  transition: all var(--gjs-animation-duration) ease;
-}
-
-/* Icon container to ensure proper size */
-.gjs-pn-tab-btn > div:first-child {
-  width: 16px;
-  height: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  background: transparent;
+  padding: 0 8px;
+  user-select: none;
+  border-right: 1px solid var(--color-border); /* Separator */
 }
 
-/* SVG styling to match GrapesJS patterns */
-.gjs-pn-tab-btn svg {
-  fill: currentColor;
-  width: 14px;
-  height: 14px;
-  display: block;
-}
-
-.gjs-pn-tab-btn.gjs-pn-tab-active {
-  /* Match GrapesJS .gjs-pn-active styles exactly */
-  background-color: rgba(0, 0, 0, 0.15);
-  box-shadow: 0 0 3px rgba(0, 0, 0, 0.25) inset;
-
-  /* Active state: use cyan color like Style Manager button */
-  color: var(--gjs-quaternary-color);
+.gjs-pn-tab-btn:last-child {
+  border-right: none;
 }
 
 .gjs-pn-tab-btn:hover {
-  background-color: rgba(0, 0, 0, 0.1);
+  color: var(--color-text-primary);
+  background-color: rgba(255, 255, 255, 0.03);
 }
 
-.structure-view,
-.assets-view,
-.settings-view {
-  padding: var(--gjs-input-padding-multiple);
-  color: var(--gjs-font-color);
-  font-size: var(--gjs-font-size);
-  font-family: var(--gjs-main-font);
+.gjs-pn-tab-btn.gjs-pn-tab-active {
+  color: var(--color-text-primary);
+  background-color: var(--color-background); /* Active tab blends with content background */
+  box-shadow: inset 0 2px 0 var(--gjs-quaternary-color); /* Top highlight like standard panels */
+  font-weight: 600;
 }
 
-.gjs-category-title,
-.gjs-sm-sector-title {
+.gjs-pn-tab-label {
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.left-sidebar-title {
   margin: 0 0 var(--gjs-input-padding) 0;
   font-size: calc(var(--gjs-font-size) * 1.1);
   font-weight: 500;
@@ -123,24 +78,22 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
   transition: all var(--gjs-animation-duration) ease;
 }
 
-.gjs-category-title:hover,
-.gjs-sm-sector-title:hover {
+.left-sidebar-title:hover {
   background-color: var(--gjs-main-dark-color);
 }
 
-.gjs-category-title:after,
-.gjs-sm-sector-title:after {
+.left-sidebar-title:after {
   content: '▼';
   font-size: 10px;
   transition: transform var(--gjs-animation-duration) ease;
   color: var(--gjs-secondary-light-color);
 }
 
-.gjs-category-title.collapsed:after,
-.gjs-sm-sector-title.collapsed:after {
+.left-sidebar-title.collapsed:after {
   transform: rotate(-90deg);
 }
 
@@ -195,7 +148,7 @@
   color: var(--gjs-font-color);
 }
 
-.gjs-btn-prim {
+.gjs-btn-prim, .btn-full {
   color: inherit;
   background-color: var(--gjs-main-light-color);
   border-radius: 2px;
@@ -206,38 +159,14 @@
   font-family: var(--gjs-main-font);
   font-size: var(--gjs-font-size);
   color: var(--gjs-font-color);
+  width: 100%;
 }
 
-.gjs-btn-prim:hover {
+.gjs-btn-prim:hover, .btn-full:hover {
   background-color: var(--gjs-main-dark-color);
 }
 
-.gjs-sm-field {
-  background-color: var(--gjs-main-dark-color);
-  border: 1px solid var(--gjs-main-light-color);
-  box-shadow: 1px 1px 0 var(--gjs-main-light-color);
-  color: var(--gjs-secondary-light-color);
-  border-radius: 2px;
-  box-sizing: border-box;
-  padding: 0;
-  width: 100%;
-  position: relative;
-}
-
-.gjs-sm-field input,
-.gjs-sm-field select {
-  background-color: var(--gjs-main-color);
-  color: var(--gjs-secondary-light-color);
-  border: none;
-  width: 100%;
-  padding: var(--gjs-input-padding);
-  font-family: var(--gjs-main-font);
-  font-size: var(--gjs-font-size);
-}
-
-.gjs-btn,
-.gjs-clm-tags-btn,
-.gjs-sm-btn {
+.gjs-sm-btn, .gjs-sm-btn {
   background-color: var(--gjs-main-light-color);
   border-radius: 2px;
   box-shadow: 1px 1px 0 var(--gjs-main-light-color);
@@ -251,65 +180,60 @@
   opacity: 0.85;
 }
 
-.gjs-btn:hover,
-.gjs-clm-tags-btn:hover,
 .gjs-sm-btn:hover {
   background-color: var(--gjs-main-dark-color);
   opacity: 1;
 }
 
-/* ===== INDESIGN-STYLE PAGES PANEL ===== */
-
-/* Pages Panel Header - InDesign Style */
-.pages-panel-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 12px;
-  background: linear-gradient(to bottom, var(--gjs-secondary-dark-color), var(--gjs-main-color));
-  border-bottom: 1px solid var(--gjs-main-dark-color);
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--gjs-font-color-active);
-  font-family: var(--gjs-main-font);
+/* Media Grid */
+.media-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 8px;
+  padding: 10px;
 }
 
-.pages-panel-title {
+.media-item {
+  position: relative;
+  aspect-ratio: 1;
+  border: 1px solid #555;
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: pointer;
+  background-color: #222;
   display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--gjs-font-color-active);
-}
-
-.pages-panel-actions {
-  display: flex;
-  gap: 2px;
-}
-
-.panel-action-btn {
-  width: 22px;
-  height: 22px;
-  background: var(--gjs-main-light-color);
-  border: 1px solid var(--gjs-main-dark-color);
-  border-radius: 3px;
-  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  font-size: 10px;
-  color: var(--gjs-font-color);
-  transition: all var(--gjs-animation-duration) ease;
 }
 
-.panel-action-btn:hover {
-  background: var(--gjs-tertiary-color);
-  color: var(--gjs-font-color-active);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+.media-item:hover {
+  border-color: var(--gjs-color-highlight);
 }
 
-/* View Options Bar - InDesign Style */
+.media-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.media-empty, .media-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  color: #777;
+  text-align: center;
+}
+
+.media-icon {
+  font-size: 24px;
+  margin-bottom: 8px;
+  opacity: 0.5;
+}
+
+/* Pages View Styles (InDesign Style) */
 .pages-view-options {
   display: flex;
   align-items: center;
@@ -339,17 +263,12 @@
   box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
 }
 
-.view-btn:hover:not(.active) {
-  background: var(--gjs-main-dark-color);
-}
-
-/* Master Pages Section - InDesign Style */
 .master-pages-section {
   border-bottom: 2px solid var(--gjs-main-dark-color);
   background: var(--gjs-secondary-dark-color);
 }
 
-.master-pages-header {
+.master-pages-header, .pages-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -357,12 +276,6 @@
   background: linear-gradient(to bottom, var(--gjs-main-dark-color), var(--gjs-secondary-dark-color));
   border-bottom: 1px solid var(--gjs-main-dark-color);
   cursor: pointer;
-}
-
-.master-pages-title {
-  display: flex;
-  align-items: center;
-  gap: 6px;
   font-size: 11px;
   font-weight: 600;
   color: var(--gjs-font-color-active);
@@ -370,195 +283,20 @@
   letter-spacing: 0.5px;
 }
 
-.master-master-icon {
-  width: 12px;
-  height: 12px;
-  background: var(--gjs-tertiary-color);
-  border: 1px solid var(--gjs-main-dark-color);
-  border-radius: 2px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 8px;
-  color: var(--gjs-font-color-active);
-}
-
-.master-pages-list {
-  padding: 8px;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 8px;
-}
-
-.master-page-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-  position: relative;
-}
-
-.master-page-item:hover .master-page-delete-btn {
-  opacity: 1;
-  transform: scale(1);
-}
-
-.master-page-thumbnail {
-  width: 60px;
-  aspect-ratio: 1/1.414;
-  border: 2px solid var(--gjs-tertiary-color);
-  background: #ffffff;
-  border-radius: 3px;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-  transition: all var(--gjs-animation-duration) ease;
-}
-
-.master-page-item.active .master-page-thumbnail {
-  border-color: var(--gjs-color-highlight);
-  box-shadow: 0 0 0 3px rgba(var(--gjs-color-highlight-rgb, 65, 155, 249), 0.3);
-}
-
-.master-page-thumbnail::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 3px,
-    var(--gjs-main-light-color) 3px,
-    var(--gjs-main-light-color) 6px
-  );
-  opacity: 0.3;
-}
-
-.master-page-label {
-  font-size: 9px;
-  font-weight: 500;
-  color: var(--gjs-font-color-active);
-  background: var(--gjs-main-dark-color);
-  padding: 1px 4px;
-  border-radius: 2px;
-  border: 1px solid var(--gjs-main-light-color);
-}
-
-.master-page-delete-btn {
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  width: 16px;
-  height: 16px;
-  background: transparent;
-  border: none;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 9px;
-  color: #666;
-  opacity: 0;
-  transform: scale(0.8);
-  transition: all var(--gjs-animation-duration) ease;
-  z-index: 10;
-}
-
-.master-page-delete-btn:hover {
-  color: #ff4444;
-  transform: scale(1);
-}
-
-/* Pages Section - InDesign Style */
-.pages-section {
-  flex: 1;
-  background: var(--gjs-main-color);
-}
-
-.pages-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 12px;
-  background: linear-gradient(to bottom, var(--gjs-main-dark-color), var(--gjs-secondary-dark-color));
-  border-bottom: 1px solid var(--gjs-main-dark-color);
-  cursor: pointer;
-}
-
-.pages-title {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--gjs-font-color-active);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.pages-count {
-  background: var(--gjs-tertiary-color);
-  color: var(--gjs-font-color-active);
-  padding: 2px 6px;
-  border-radius: 10px;
-  font-size: 9px;
-  font-weight: 600;
-  border: 1px solid var(--gjs-main-dark-color);
-}
-
-.pages-list {
+.master-pages-list, .pages-list {
   padding: 8px;
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-/* Cover Page - Full Width */
-.cover-page-container {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 12px;
-}
-
-.page-item.page-cover {
-  position: relative;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-}
-
-.page-item.page-cover.page-active .page {
-  border-color: var(--gjs-color-highlight);
-  box-shadow: 0 0 0 3px rgba(var(--gjs-color-highlight-rgb, 65, 155, 249), 0.3);
-}
-
-/* Page Spreads - Two Page Layout */
 .page-spread {
-  display: flex;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 10px;
   margin-bottom: 10px;
   position: relative;
-}
-
-.page-spread::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 8px;
-  height: 80%;
-  background: linear-gradient(to bottom, transparent, var(--gjs-main-dark-color) 20%, var(--gjs-main-dark-color) 80%, transparent);
-  opacity: 0.3;
-  pointer-events: none;
+  justify-items: center;
 }
 
 .page-item {
@@ -571,22 +309,9 @@
   transition: all var(--gjs-animation-duration) ease;
 }
 
-.page-item:hover {
-  transform: translateY(-2px);
-}
-
-.page-item.page-active {
-  filter: drop-shadow(0 4px 8px rgba(var(--gjs-color-highlight-rgb, 65, 155, 249), 0.4));
-}
-
 .page-item.page-active .page {
   border-color: var(--gjs-color-highlight);
   box-shadow: 0 0 0 3px rgba(var(--gjs-color-highlight-rgb, 65, 155, 249), 0.3);
-}
-
-.page-item:hover .page-delete-btn {
-  opacity: 1;
-  transform: scale(1);
 }
 
 .page {
@@ -601,16 +326,10 @@
   aspect-ratio: 1/1.414;
 }
 
-.page:hover {
-  border-color: var(--gjs-tertiary-color);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-}
-
 .page.cover-page {
   width: 85px;
 }
 
-/* Page Content Preview */
 .page-content {
   position: absolute;
   top: 0;
@@ -620,7 +339,6 @@
   padding: 6px;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 
 .page-content-line {
@@ -631,7 +349,6 @@
   opacity: 0.6;
 }
 
-/* Page Numbers and Navigation */
 .page-number {
   font-size: 9px;
   font-weight: 600;
@@ -644,40 +361,6 @@
   min-width: 20px;
 }
 
-.page-item.page-active .page-number {
-  background: var(--gjs-tertiary-color);
-  color: var(--gjs-font-color-active);
-  border-color: var(--gjs-color-highlight);
-}
-
-/* Delete Button - InDesign Style */
-.page-delete-btn {
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  width: 16px;
-  height: 16px;
-  background: transparent;
-  border: none;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 9px;
-  color: #666;
-  opacity: 0;
-  transform: scale(0.8);
-  transition: all var(--gjs-animation-duration) ease;
-  z-index: 10;
-}
-
-.page-delete-btn:hover {
-  color: #ff4444;
-  transform: scale(1);
-}
-
-/* Panel Footer - Page Info */
 .pages-panel-footer {
   display: flex;
   justify-content: space-between;
@@ -704,16 +387,11 @@
   letter-spacing: 0.3px;
 }
 
-.page-info-label {
-  opacity: 0.7;
-}
-
 .page-info-value {
   font-weight: 600;
   color: var(--gjs-font-color-active);
 }
 
-/* Master Page Indicator */
 .master-applied-indicator {
   position: absolute;
   top: 2px;
@@ -733,209 +411,124 @@
   z-index: 5;
 }
 
-/* Responsive and State Management */
-.pages-section.collapsed .pages-list,
-.master-pages-section.collapsed .master-pages-list {
+.page-delete-btn, .master-page-delete-btn {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 16px;
+  height: 16px;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 9px;
+  color: #666;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: all var(--gjs-animation-duration) ease;
+  z-index: 10;
+}
+
+.page-item:hover .page-delete-btn,
+.master-page-item:hover .master-page-delete-btn {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.page-delete-btn:hover, .master-page-delete-btn:hover {
+  color: #ff4444;
+  transform: scale(1);
+}
+
+/* Layout Modes */
+.gjs-mode-reflow .gjs-cv-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+/* In Reflow mode, the frame is fluid (handled by DeviceManager) */
+.gjs-mode-reflow .gjs-frame {
+  margin: 0 auto;
+  display: block;
+}
+
+/* Fixed Layout Mode */
+.gjs-mode-fixed .gjs-cv-canvas {
+  width: 100%;
+  height: 100%;
+  overflow: auto !important; /* Enable scrolling */
+  display: block; /* Ensure block display for scrolling */
+  background-image: radial-gradient(#d1d1d1 1px, transparent 1px); /* Subtle grid dots */
+  background-size: 20px 20px;
+}
+
+/* In Fixed mode, the frame is fixed size (handled by DeviceManager) */
+.gjs-mode-fixed .gjs-frame {
+  margin: 0 auto !important; 
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  transition: width 0.3s ease, height 0.3s ease;
+  display: block;
+}
+
+/* Spread View */
+.gjs-mode-fixed.gjs-view-spread .gjs-cv-canvas {
+    /* Adjust canvas to accommodate spread if needed */
+}
+
+.gjs-mode-fixed.gjs-view-spread .gjs-frame {
+    /* Dimensions handled by DeviceManager */
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+}
+
+/* Page Container Styles */
+.page-container {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+/* Reflow Mode: Page Container is just a wrapper */
+.gjs-mode-reflow .page-container {
+  padding: 20px;
+  overflow: visible;
+}
+
+/* Fixed Mode: Page Container is the artboard */
+.gjs-mode-fixed .page-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  background-color: transparent; /* Transparent to show frame background if needed, or white */
+}
+
+.gjs-mode-fixed .page-bleed-guide {
+  outline: 1px dashed #ff0000;
+  outline-offset: -3mm; /* Bleed inside the frame */
+}
+
+.page-size-a4 {
+  /* Dimensions handled by the frame now */
+  width: 100%;
+  height: 100%;
+}
+
+/* Spread Guide (Only in Fixed Mode) */
+.spread-guide {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  background-color: #ddd;
+  z-index: 100;
+  pointer-events: none;
   display: none;
 }
 
-.master-pages-header.collapsed::after,
-.pages-header.collapsed::after {
-  content: '▶';
-  margin-left: auto;
-  font-size: 10px;
-  transition: transform var(--gjs-animation-duration) ease;
-}
-
-.master-pages-header:not(.collapsed)::after,
-.pages-header:not(.collapsed)::after {
-  content: '▼';
-  margin-left: auto;
-  font-size: 10px;
-  transition: transform var(--gjs-animation-duration) ease;
-}
-
-/* Accessibility */
-.page-item:focus,
-.master-page-item:focus {
-  outline: 2px solid var(--gjs-color-highlight);
-  outline-offset: 2px;
-}
-
-.panel-action-btn:focus,
-.view-btn:focus {
-  outline: 1px solid var(--gjs-color-highlight);
-  outline-offset: 1px;
-}
-
-/* Legacy content styles - removed for cleaner InDesign-style layout */
-
-.spread-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: var(--gjs-flex-item-gap);
-}
-
-.spread-chapter {
-  font-size: calc(var(--gjs-font-size) * 0.8);
-  color: var(--gjs-font-color);
-  font-family: var(--gjs-main-font);
-}
-
-.spread-actions {
-  display: flex;
-  gap: var(--gjs-flex-item-gap);
-}
-
-.page-counter {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: var(--gjs-input-padding-multiple);
-  padding-top: var(--gjs-input-padding);
-  border-top: 1px solid var(--gjs-main-dark-color);
-  font-size: calc(var(--gjs-font-size) * 0.9);
-  color: var(--gjs-font-color);
-  font-family: var(--gjs-main-font);
-}
-
-.media-section {
-  margin-bottom: var(--gjs-input-padding-multiple);
-}
-
-.media-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--gjs-input-padding-multiple);
-}
-
-.media-title {
-  margin: 0;
-  font-size: calc(var(--gjs-font-size) * 1.1);
-  font-weight: 600;
-  color: var(--gjs-font-color-active);
-  font-family: var(--gjs-main-font);
-}
-
-.media-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--gjs-flex-item-gap);
-}
-
-.media-placeholder {
-  border: 1px solid var(--gjs-main-dark-color);
-  border-radius: 2px;
-  aspect-ratio: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: var(--gjs-font-size);
-  background: var(--gjs-secondary-dark-color);
-  cursor: pointer;
-  transition: all var(--gjs-animation-duration) ease;
-  font-family: var(--gjs-main-font);
-}
-
-.media-icon {
-  font-size: 24px;
-  color: var(--gjs-font-color);
-  margin-bottom: var(--gjs-input-padding);
-}
-
-.media-label {
-  font-size: calc(var(--gjs-font-size) * 0.9);
-}
-
-.media-empty {
-  border: 1px solid var(--gjs-main-dark-color);
-  border-radius: 2px;
-  padding: var(--gjs-input-padding-multiple);
-  text-align: center;
-  font-size: var(--gjs-font-size);
-  background: var(--gjs-secondary-dark-color);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 60px;
-  font-family: var(--gjs-main-font);
-}
-
-.checkbox-label {
-  flex-direction: row;
-  align-items: center;
-  display: flex;
-  font-size: var(--gjs-font-size);
-  cursor: pointer;
-  color: var(--gjs-font-color);
-  font-family: var(--gjs-main-font);
-}
-
-.checkbox-input {
-  margin-right: var(--gjs-input-padding);
-}
-
-.settings-section {
-  margin-bottom: var(--gjs-input-padding-multiple);
-}
-
-.settings-title {
-  margin: 0 0 var(--gjs-input-padding) 0;
-  font-size: var(--gjs-font-size);
-  font-weight: 600;
-  color: var(--gjs-font-color-active);
-  font-family: var(--gjs-main-font);
-}
-
-.btn-full {
-  background: var(--gjs-tertiary-color);
-  color: var(--gjs-font-color-active);
-  border: 1px solid var(--gjs-main-dark-color);
-  padding: var(--gjs-input-padding) calc(var(--gjs-input-padding) * 2);
-  border-radius: 2px;
-  font-size: var(--gjs-font-size);
-  cursor: pointer;
-  width: 100%;
-  font-family: var(--gjs-main-font);
-  transition: all var(--gjs-animation-duration) ease;
-}
-
-.btn-full:hover {
-  background: var(--gjs-main-light-color);
-  color: var(--gjs-font-color);
-}
-
-/* Left sidebar title class for reusable styling */
-.left-sidebar-title {
-  margin: 0 0 var(--gjs-input-padding) 0;
-  font-size: calc(var(--gjs-font-size) * 1.1);
-  font-weight: 500;
-  color: var(--gjs-font-color-active);
-  background-color: var(--gjs-secondary-dark-color);
-  padding: 10px;
-  border-bottom: 1px solid var(--gjs-main-dark-color);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  transition: all var(--gjs-animation-duration) ease;
-}
-
-.left-sidebar-title:hover {
-  background-color: var(--gjs-main-dark-color);
-}
-
-
-/* Tab button text labels */
-.gjs-pn-tab-label {
+.gjs-mode-fixed .spread-guide {
   display: block;
-  font-size: 9px;
-  margin-top: 0;
-  text-align: center;
-  font-family: var(--gjs-main-font);
-  font-weight: 500;
-  line-height: 1;
 }

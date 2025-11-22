@@ -336,7 +336,7 @@ const plugin = grapesjs.plugins.add('setup', (editor: any, options: SetupOptions
 
     // Content area
     const contentLeftSidebar = document.createElement('div');
-    contentLeftSidebar.className = 'gjs-pn-content-left-sidebar gjs-pn-panel gjs-one-bg gjs-two-color left-sidebar-content';
+    contentLeftSidebar.className = 'gjs-pn-content-left-sidebar gjs-one-bg gjs-two-color left-sidebar-content';
 
     // Create book structure view
     const createBookStructureView = (container: HTMLElement) => {

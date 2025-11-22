@@ -13,7 +13,7 @@ export const StructurePanel: React.FC<StructurePanelProps> = ({ editor }) => {
   const [viewMode, setViewMode] = useState<'spreads' | 'single'>('spreads');
 
   return (
-    <div className="structure-view" style={{ padding: 0 }}>
+    <>
       {/* 1. Book Info Section */}
       <BookInfoCard />
 
@@ -62,6 +62,6 @@ export const StructurePanel: React.FC<StructurePanelProps> = ({ editor }) => {
           <PageList editor={editor} viewMode={viewMode} />
         </div>
       </div>
-    </div>
+    </>
   );
 };

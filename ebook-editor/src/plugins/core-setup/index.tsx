@@ -18,16 +18,7 @@ export interface CoreSetupOptions {
   importViewerOptions?: Record<string, unknown>;
 }
 
-interface ImportCommand {
-  codeViewer: any | null;
-  container: HTMLElement | null;
-  run(editor: any): void;
-  stop(): void;
-  getContainer(): HTMLElement;
-  getCodeViewer(): any;
-}
-
-export default grapesjs.plugins.add('core-setup', (editor: Editor, options: CoreSetupOptions = {}) => {
+const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, options: CoreSetupOptions = {}) => {
   const config = {
     textCleanCanvas: 'Are you sure you want to clear the canvas?',
     layoutMode: 'fixed', // Default fallback
@@ -462,6 +453,6 @@ export default grapesjs.plugins.add('core-setup', (editor: Editor, options: Core
     },
   ]);
 
-  // --- Sidebar Tab Management ---
-  // (Moved to left-panel plugin)
 });
+
+export default coreSetupPlugin;

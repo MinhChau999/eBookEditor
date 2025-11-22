@@ -5,20 +5,15 @@ import tuiImageEditorPlugin from 'grapesjs-tui-image-editor';
 import coreSetup from '../../plugins/core-setup';
 import bookAdapter from '../../plugins/book-adapter';
 import leftPanel from '../../plugins/left-panel';
-// import customRuler from '../../plugins/ruler/index';
 import { ExportModal } from '../../features/export/components/ExportModal';
 import { useBookStore } from '../../core/store/bookStore';
 
 // Define GrapesJS editor type
-interface EditorProps {
-  // Add any props if needed
-}
-
-const Editor: React.FC<EditorProps> = () => {
+const Editor: React.FC = () => {
   const { bookId } = useParams<{ bookId: string }>();
   const navigate = useNavigate();
   const editorRef = useRef<HTMLDivElement>(null);
-  const editorInstanceRef = useRef<any>(null);
+  const editorInstanceRef = useRef<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
   const [isLoading, setIsLoading] = useState(true);
   const [showExportModal, setShowExportModal] = useState(false);
   
@@ -138,7 +133,6 @@ const Editor: React.FC<EditorProps> = () => {
             coreSetup,
             bookAdapter,
             leftPanel,
-            // customRuler,
             tuiImageEditorPlugin
           ],
           deviceManager: {
@@ -324,6 +318,7 @@ const Editor: React.FC<EditorProps> = () => {
         editorInstanceRef.current = editorInstance;
         setIsLoading(false);
       } catch (error) {
+        console.error('Editor initialization error:', error);
         setIsLoading(false);
       }
     };

@@ -19,7 +19,7 @@ export default grapesjs.plugins.add('left-panel', (editor: Editor, options: Left
   headerLeftSidebar.className = 'gjs-pn-header-left-sidebar gjs-pn-panel gjs-one-bg gjs-two-color';
 
   const contentLeftSidebar = document.createElement('div');
-  contentLeftSidebar.className = 'gjs-pn-content-left-sidebar gjs-pn-panel gjs-one-bg gjs-two-color left-sidebar-content';
+  contentLeftSidebar.className = 'gjs-pn-content-left-sidebar gjs-one-bg gjs-two-color left-sidebar-content';
 
   // Tab configuration
   const leftSidebarTabs = [
@@ -66,7 +66,7 @@ export default grapesjs.plugins.add('left-panel', (editor: Editor, options: Left
     tabButton.className = `gjs-pn-tab-btn ${index === 0 ? 'gjs-pn-tab-active' : ''}`;
     tabButton.setAttribute('data-tab', tab.id);
     tabButton.title = tab.label;
-    tabButton.innerHTML = `<div>${tab.icon}</div><div class="gjs-pn-tab-label">${tab.label}</div>`;
+    tabButton.innerHTML = `<div class="gjs-pn-tab-label">${tab.label}</div>`;
     
     tabButton.addEventListener('click', () => {
       headerLeftSidebar.querySelectorAll('.gjs-pn-tab-btn').forEach(btn => btn.classList.remove('gjs-pn-tab-active'));
