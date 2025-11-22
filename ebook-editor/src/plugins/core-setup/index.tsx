@@ -11,12 +11,31 @@ import '../../features/fixed-layout/styles/grid.css';
 export interface CoreSetupOptions {
   textCleanCanvas?: string;
   layoutMode?: 'fixed' | 'reflow';
+  modalImportTitle?: string;
+  modalImportButton?: string;
+  modalImportLabel?: string;
+  modalImportContent?: string | ((editor: Editor) => string);
+  importViewerOptions?: Record<string, unknown>;
+}
+
+interface ImportCommand {
+  codeViewer: any | null;
+  container: HTMLElement | null;
+  run(editor: any): void;
+  stop(): void;
+  getContainer(): HTMLElement;
+  getCodeViewer(): any;
 }
 
 export default grapesjs.plugins.add('core-setup', (editor: Editor, options: CoreSetupOptions = {}) => {
   const config = {
     textCleanCanvas: 'Are you sure you want to clear the canvas?',
     layoutMode: 'fixed', // Default fallback
+    modalImportTitle: 'Import',
+    modalImportButton: 'Import',
+    modalImportLabel: '',
+    modalImportContent: '',
+    importViewerOptions: {},
     ...options,
   };
 
@@ -330,9 +349,9 @@ export default grapesjs.plugins.add('core-setup', (editor: Editor, options: Core
         },
         {
           id: 'import-book',
-          className: 'fa fa-upload',
-          command: 'import-book',
-          attributes: { title: 'Import eBook (EPUB)' }
+          className: 'fa fa-code',
+          command: 'gjs-open-import-webpage',
+          attributes: { title: 'Import Code' }
         },
         {
           id: 'preview',

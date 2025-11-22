@@ -9,6 +9,7 @@ export interface BookInfo {
   createdAt: Date;
   updatedAt: Date;
   reflowSettings?: ReflowSettings;
+  styles?: string; // Book-specific CSS
 }
 
 export interface ReflowSettings {
@@ -24,14 +25,14 @@ export interface PageData {
   content: string; // HTML content
   styles?: string; // Page-specific CSS
   pageNumber: number;
-  type: 'cover' | 'chapter' | 'content' | 'toc';
-  chapterId?: string; // Group pages by chapter
+  type: 'cover' | 'content' | 'toc';
 }
 
 export interface BookState {
   books: BookInfo[];
   currentBook: BookInfo | null;
   pages: PageData[];
+  currentPageId: string | null;
   isLoading: boolean;
   error: string | null;
 }

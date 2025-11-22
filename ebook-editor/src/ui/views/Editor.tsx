@@ -7,10 +7,7 @@ import bookAdapter from '../../plugins/book-adapter';
 import leftPanel from '../../plugins/left-panel';
 // import customRuler from '../../plugins/ruler/index';
 import { ExportModal } from '../../features/export/components/ExportModal';
-import { parseEPUB } from '../../features/import/utils/epubParser';
 import { useBookStore } from '../../core/store/bookStore';
-import { useUIStore } from '../../core/store/uiStore';
-import { Toast } from '../components/Toast';
 
 // Define GrapesJS editor type
 interface EditorProps {
@@ -22,15 +19,12 @@ const Editor: React.FC<EditorProps> = () => {
   const navigate = useNavigate();
   const editorRef = useRef<HTMLDivElement>(null);
   const editorInstanceRef = useRef<any>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showExportModal, setShowExportModal] = useState(false);
   
-  const { books, importBook, setCurrentBook } = useBookStore();
-  const { toasts, addToast, removeToast } = useUIStore();
-
-  // Find the current book
-  const currentBook = books.find(b => b.id === bookId);
+  // Optimize store selectors - only subscribe to what we need
+  const currentBook = useBookStore(state => state.books.find(b => b.id === bookId));
+  const setCurrentBook = useBookStore(state => state.setCurrentBook);
 
   useEffect(() => {
     if (!bookId) {
@@ -44,30 +38,13 @@ const Editor: React.FC<EditorProps> = () => {
     setCurrentBook(currentBook.id);
   }, [bookId, currentBook, navigate, setCurrentBook]);
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      try {
-        setIsLoading(true);
-        const bookData = await parseEPUB(file);
-        importBook(bookData);
-        addToast(`Imported "${bookData.title}" successfully!`, 'success');
-        setIsLoading(false);
-      } catch (error) {
-        console.error('Import failed:', error);
-        addToast('Import failed. Please check the file.', 'error');
-        setIsLoading(false);
-      }
-    }
-  };
+
 
   useEffect(() => {
     if (!editorRef.current || !currentBook) return;
 
     const initializeEditor = async () => {
       try {
-        // Let GrapesJS create its own structure with blocks-basic plugin
-
         const editorInstance = grapesjs.init({
           container: editorRef.current as HTMLElement,
           height: '100%',
@@ -198,7 +175,7 @@ const Editor: React.FC<EditorProps> = () => {
               textCleanCanvas: 'Are you sure you want to clear the canvas?',
               layoutMode: currentBook.layoutMode,
             },
-            [tuiImageEditorPlugin as any]: {
+            'tuiImageEditorPlugin': {
               config: {
                 includeUI: {
                   initMenu: 'filter',
@@ -263,11 +240,6 @@ const Editor: React.FC<EditorProps> = () => {
         editorInstance.Commands.add('open-export-modal', () => {
             setShowExportModal(true);
         });
-
-        editorInstance.Commands.add('import-book', () => {
-            fileInputRef.current?.click();
-        });
-
         editorInstance.addStyle(`
           * {
             box-sizing: border-box;
@@ -352,7 +324,6 @@ const Editor: React.FC<EditorProps> = () => {
         editorInstanceRef.current = editorInstance;
         setIsLoading(false);
       } catch (error) {
-        console.error('Error initializing GrapesJS editor:', error);
         setIsLoading(false);
       }
     };
@@ -397,13 +368,7 @@ const Editor: React.FC<EditorProps> = () => {
         </div>
       ) : null}
 
-      <input 
-        type="file" 
-        ref={fileInputRef} 
-        style={{ display: 'none' }} 
-        accept=".epub"
-        onChange={handleFileChange}
-      />
+
       <div
         ref={editorRef}
         style={{
@@ -414,18 +379,6 @@ const Editor: React.FC<EditorProps> = () => {
       />
 
       {showExportModal && <ExportModal onClose={() => setShowExportModal(false)} />}
-      
-      {/* Toast Container */}
-      <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
-        {toasts.map((toast) => (
-          <Toast 
-            key={toast.id} 
-            message={toast.message} 
-            type={toast.type} 
-            onClose={() => removeToast(toast.id)} 
-          />
-        ))}
-      </div>
     </div>
   );
 };

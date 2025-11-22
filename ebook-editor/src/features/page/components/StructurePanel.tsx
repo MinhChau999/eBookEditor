@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { PageList } from './PageList';
 import { MasterPageList } from './MasterPageList';
 import { BookInfoCard } from '../../book/components/BookInfoCard';
-import { ChapterList } from '../../chapter/components/ChapterList';
+import { TableOfContents } from '../../toc/components/TableOfContents';
 
 interface StructurePanelProps {
   editor: any;
@@ -17,8 +17,8 @@ export const StructurePanel: React.FC<StructurePanelProps> = ({ editor }) => {
       {/* 1. Book Info Section */}
       <BookInfoCard />
 
-      {/* 2. Chapters Section */}
-      <ChapterList />
+      {/* 2. Table of Contents Section */}
+      <TableOfContents editor={editor} />
 
       {/* 3. Pages Section */}
       <div className="pages-panel-container">
