@@ -4,7 +4,7 @@
   top: 0;
   left: 0;
   width: var(--gjs-left-width, 15%);
-  height: 35px; /* Compact height */
+  height: 40px;
   background-color: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
   display: flex;
@@ -16,10 +16,10 @@
 
 .gjs-pn-content-left-sidebar {
   position: absolute;
-  padding-top: 42px;
+  padding-top: var(--gjs-header-height, 42px);
   left: 0;
   width: var(--gjs-left-width, 15%);
-  height: calc(100% - 35px - 35px); /* Adjust for header and footer */
+  height: calc(100% - var(--gjs-header-height, 42px) - var(--gjs-footer-height, 35px)); /* Adjust for header and footer */
   overflow-y: auto;
   overflow-x: hidden;
   border-right: 1px solid var(--color-border);
