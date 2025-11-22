@@ -7,7 +7,9 @@ export const BookInfoCard: React.FC = () => {
   return (
     <div className="left-sidebar-title">
       <i className="fas fa-book"></i>
-      <span>{currentBook?.title || 'Book Info'}</span>
+      <span className="gjs-text-truncate gjs-two-color" title={currentBook?.title || 'Book Info'}>
+        {currentBook?.title || 'Book Info'}
+      </span>
     </div>
   );
 };

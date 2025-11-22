@@ -5,7 +5,12 @@ export interface BookInfo {
   description?: string;
   coverImage?: string;
   layoutMode: 'fixed' | 'reflow';
-  template?: string; // For fixed layout page size
+  template?: string; // For fixed layout page size preset (deprecated, use pageSize)
+  pageSize?: {
+    width: number;  // in mm or px
+    height: number;
+    unit: 'mm' | 'px' | 'in';
+  };
   createdAt: Date;
   updatedAt: Date;
   reflowSettings?: ReflowSettings;

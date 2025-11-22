@@ -72,10 +72,10 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ editor }) => {
   };
 
   return (
-    <div>
-      <div className="left-sidebar-title" onClick={() => setIsExpanded(!isExpanded)}>
-        <i className="fas fa-list-ol" style={{ marginRight: '8px' }}></i>
-        <span>Table of Contents</span>
+    <>
+      <div className={`left-sidebar-title ${!isExpanded ? 'collapsed' : ''}`} onClick={() => setIsExpanded(!isExpanded)}>
+        <i className="fas fa-list-ol"></i>
+        <span className="gjs-text-truncate gjs-two-color" title="Table of Contents">Table of Contents</span>
         <button 
             className="gjs-sm-btn" 
             style={{ marginLeft: 'auto' }}
@@ -90,43 +90,31 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ editor }) => {
       </div>
       
       {isExpanded && (
-        <div className="gjs-category-content" style={{ padding: 'var(--gjs-input-padding-multiple)' }}>
+        <div className="gjs-category-content" style={{ display: isExpanded ? 'block' : 'none' }}>
           {headings.length === 0 ? (
-            <div style={{ padding: 'var(--gjs-input-padding)', color: '#aaa', fontStyle: 'italic', fontSize: '0.9em' }}>
-              No headings found.
+            <div className="toc-empty">
+              <i className="fas fa-stream"></i>
+              <span>No headings found</span>
             </div>
           ) : (
-            <div id="toc-list" style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginBottom: '8px' }}>
+            <div className="toc-list">
               {headings.map((item) => (
                 <div 
                   key={item.id} 
-                  className="gjs-field toc-item" 
-                  style={{ 
-                    padding: '6px var(--gjs-input-padding)', 
-                    cursor: 'pointer',
-                    marginLeft: getIndent(item.tagName),
-                    fontSize: '0.9em',
-                    borderLeft: '2px solid transparent',
-                    transition: 'all 0.2s ease'
-                  }}
+                  className="toc-item" 
+                  style={{ paddingLeft: `calc(12px + ${getIndent(item.tagName)})` }}
                   onClick={() => handleItemClick(item)}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
-                    e.currentTarget.style.borderLeftColor = 'var(--gjs-primary-color, #444)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                    e.currentTarget.style.borderLeftColor = 'transparent';
-                  }}
                 >
-                  <span style={{ opacity: 0.7, marginRight: '6px', fontSize: '0.8em' }}>{item.tagName.toUpperCase()}</span>
-                  {item.text.replace(/<[^>]*>/g, '')}
+                  <span className="toc-item-tag">{item.tagName}</span>
+                  <span className="toc-item-text" title={item.text.replace(/<[^>]*>/g, '')}>
+                    {item.text.replace(/<[^>]*>/g, '')}
+                  </span>
                 </div>
               ))}
             </div>
           )}
         </div>
       )}
-    </div>
+    </>
   );
 };
