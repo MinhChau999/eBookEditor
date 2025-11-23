@@ -5,6 +5,7 @@ import tuiImageEditorPlugin from 'grapesjs-tui-image-editor';
 import coreSetup from '../../plugins/core-setup';
 import bookAdapter from '../../plugins/book-adapter';
 import leftPanel from '../../plugins/left-panel';
+import basicBlocks from '../../plugins/basic-blocks';
 import { ExportModal } from '../../features/export/components/ExportModal';
 import { useBookStore } from '../../core/store/bookStore';
 
@@ -74,7 +75,8 @@ const Editor: React.FC = () => {
             coreSetup,
             bookAdapter,
             leftPanel,
-            tuiImageEditorPlugin
+            tuiImageEditorPlugin,
+            basicBlocks
           ],
           deviceManager: {
             devices: [
