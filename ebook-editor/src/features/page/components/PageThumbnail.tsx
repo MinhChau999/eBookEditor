@@ -1,56 +1,99 @@
 import React from 'react';
+import { useBookStore } from '../../../core/store/bookStore';
 
 interface PageThumbnailProps {
   page: any;
-  index: number;
+  pageNumber: number;
   isActive: boolean;
   onSelect: () => void;
   onDelete: (e: React.MouseEvent) => void;
+  editor: any;
 }
 
 export const PageThumbnail: React.FC<PageThumbnailProps> = ({ 
   page, 
-  index, 
+  pageNumber, 
   isActive, 
   onSelect, 
-  onDelete 
+  onDelete,
+  editor
 }) => {
-  // Determine if it's a cover page (first page)
-  const isCover = index === 0;
+  const [html, setHtml] = React.useState('');
+  const [css, setCss] = React.useState('');
+  const currentBook = useBookStore((state: any) => state.currentBook);
+
+  React.useEffect(() => {
+    if (page && editor) {
+      setHtml(page.getMainComponent().toHTML());
+      setCss(editor.getCss());
+    }
+  }, [page, editor]);
+
+  const srcDoc = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <style>
+          ${css}
+          ${currentBook?.styles || ''}
+          body { 
+            overflow: hidden; 
+            background-color: white; 
+            transform: scale(0.07); 
+            transform-origin: top left; 
+            width: 1000px; 
+            min-height: 1414px;
+          }
+        </style>
+      </head>
+      ${html}
+    </html>
+  `;
 
   return (
     <div 
-      className={`page-item ${isActive ? 'page-active' : ''} ${isCover ? 'page-cover' : ''}`}
+      className={`page-item ${isActive ? 'page-active' : ''}`}
       onClick={onSelect}
     >
-      <button 
-        onClick={onDelete}
-        className="page-delete-btn"
-        title="Delete Page"
-      >
-        <i className="fas fa-trash"></i>
-      </button>
+      <div className="page-actions">
+        <button 
+          className="page-btn page-settings-btn"
+          title="Page Settings"
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
+        >
+          <i className="fas fa-cog"></i>
+        </button>
+        <button 
+          onClick={onDelete}
+          className="page-btn page-delete-btn"
+          title="Delete Page"
+        >
+          <i className="fas fa-trash"></i>
+        </button>
+      </div>
       
       <div className="master-applied-indicator">A</div>
       
-      <div className={`page ${isCover ? 'cover-page' : ''}`}>
-        <div className="page-content">
-          {/* Simulated content lines based on legacy CSS */}
-          <div style={{ position: 'absolute', top: '4px', left: '4px', right: '4px' }}>
-            <div className="page-content-line" style={{ width: isCover ? '40%' : '50%', height: '1px' }}></div>
-          </div>
-          <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '90%' }}>
-            <div className="page-content-line" style={{ width: '100%', height: '1px', margin: '1px 0' }}></div>
-            <div className="page-content-line" style={{ width: '92%', height: '1px', margin: '1px 0' }}></div>
-            <div className="page-content-line" style={{ width: '96%', height: '1px', margin: '1px 0' }}></div>
-            <div className="page-content-line" style={{ width: '88%', height: '1px', margin: '1px 0' }}></div>
-            <div className="page-content-line" style={{ width: '94%', height: '1px', margin: '1px 0' }}></div>
-          </div>
+      <div className="page">
+        <div className="page-content" style={{ padding: 0, overflow: 'hidden' }}>
+          <iframe
+            srcDoc={srcDoc}
+            style={{
+              width: '100%',
+              height: '100%',
+              border: 'none',
+              pointerEvents: 'none',
+              backgroundColor: '#fff'
+            }}
+            title={`Page ${pageNumber}`}
+          />
         </div>
       </div>
       
       <div className="page-number">
-        {isCover ? 'Cover' : index + 1}
+        {pageNumber}
       </div>
     </div>
   );

@@ -17,9 +17,9 @@ export const PageList: React.FC<PageListProps> = ({ editor, viewMode }) => {
   useEffect(() => {
     updatePages();
     
-    editor.on('page:add page:remove page:update', updatePages);
+    editor.on('page:add page:remove page:update page:select', updatePages);
     return () => {
-      editor.off('page:add page:remove page:update', updatePages);
+      editor.off('page:add page:remove page:update page:select', updatePages);
     };
   }, [editor]);
 
@@ -43,10 +43,6 @@ export const PageList: React.FC<PageListProps> = ({ editor, viewMode }) => {
       const attributes = page.get('attributes');
       const pageName = (page.get('name') || '').toLowerCase();
       
-      // Cover page is either:
-      // 1. Has type === 'cover' in attributes
-      // 2. Is first page (index 0)
-      // 3. Page name contains 'cover' or 'bìa'
       const isCover = attributes?.type === 'cover' || 
                       index === 0 || 
                       pageName.includes('cover') || 
@@ -65,20 +61,22 @@ export const PageList: React.FC<PageListProps> = ({ editor, viewMode }) => {
           {/* Left Page */}
           <PageThumbnail
             page={leftPage}
-            index={localPages.indexOf(leftPage)}
+            pageNumber={i + 1}
             isActive={editor.Pages.getSelected()?.getId() === leftPage.getId()}
             onSelect={() => handleSelectPage(leftPage)}
             onDelete={(e) => handleDeletePage(e, leftPage)}
+            editor={editor}
           />
 
           {/* Right Page (if exists) */}
           {rightPage && (
             <PageThumbnail
               page={rightPage}
-              index={localPages.indexOf(rightPage)}
+              pageNumber={i + 2}
               isActive={editor.Pages.getSelected()?.getId() === rightPage.getId()}
               onSelect={() => handleSelectPage(rightPage)}
               onDelete={(e) => handleDeletePage(e, rightPage)}
+              editor={editor}
             />
           )}
         </div>
@@ -95,10 +93,6 @@ export const PageList: React.FC<PageListProps> = ({ editor, viewMode }) => {
       const attributes = page.get('attributes');
       const pageName = (page.get('name') || '').toLowerCase();
       
-      // Cover page is either:
-      // 1. Has type === 'cover' in attributes
-      // 2. Is first page (index 0)
-      // 3. Page name contains 'cover' or 'bìa'
       const isCover = attributes?.type === 'cover' || 
                       index === 0 || 
                       pageName.includes('cover') || 
@@ -109,14 +103,15 @@ export const PageList: React.FC<PageListProps> = ({ editor, viewMode }) => {
 
     return (
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', padding: '0 8px' }}>
-        {nonCoverPages.map((page) => (
+        {nonCoverPages.map((page, index) => (
           <div key={page.getId()} style={{ display: 'flex', justifyContent: 'center' }}>
             <PageThumbnail
               page={page}
-              index={localPages.indexOf(page)}
+              pageNumber={index + 1}
               isActive={editor.Pages.getSelected()?.getId() === page.getId()}
               onSelect={() => handleSelectPage(page)}
               onDelete={(e) => handleDeletePage(e, page)}
+              editor={editor}
             />
           </div>
         ))}

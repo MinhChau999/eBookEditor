@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import grapesjs from 'grapesjs';
 import tuiImageEditorPlugin from 'grapesjs-tui-image-editor';
-import grapesRulers from 'grapesjs-rulers';
 import coreSetup from '../../plugins/core-setup';
 import bookAdapter from '../../plugins/book-adapter';
 import leftPanel from '../../plugins/left-panel';
@@ -72,7 +71,6 @@ const Editor: React.FC = () => {
             ]
           },
           plugins: [
-            grapesRulers,
             coreSetup,
             bookAdapter,
             leftPanel,
@@ -108,11 +106,6 @@ const Editor: React.FC = () => {
             // Default will be set by core-setup based on layoutMode
           },
           pluginsOpts: {
-            'grapesjs-rulers': {
-              // Account for left sidebar offset
-              rulerOffsetH: 0, // Horizontal ruler (top)
-              rulerOffsetV: 0, // Vertical ruler (left) - will be adjusted by CSS
-            },
             'core-setup': {
               textCleanCanvas: 'Are you sure you want to clear the canvas?',
               layoutMode: currentBook.layoutMode,

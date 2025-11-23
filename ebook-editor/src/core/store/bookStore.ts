@@ -3,6 +3,7 @@ import type { BookInfo, PageData, BookState, ReflowSettings } from '../types/boo
 
 
 interface BookStore extends BookState {
+  pagesByBookId: Record<string, PageData[]>;
   // Actions
   createBook: (book: Omit<BookInfo, 'id' | 'createdAt' | 'updatedAt'>) => void;
   updateBook: (id: string, updates: Partial<BookInfo>) => void;
@@ -473,6 +474,7 @@ export const useBookStore = create<BookStore>()((set, get) => ({
   books: MOCK_BOOKS,
   currentBook: null,
   pages: [],
+  pagesByBookId: MOCK_PAGES,
   currentPageId: null,
   isLoading: false,
   error: null,
@@ -513,6 +515,7 @@ export const useBookStore = create<BookStore>()((set, get) => ({
       books: [...state.books, newBook],
       currentBook: newBook,
       pages: [], // New book has no pages initially
+      pagesByBookId: { ...state.pagesByBookId, [newBook.id]: [] },
       currentPageId: null
     }));
   },
@@ -536,14 +539,16 @@ export const useBookStore = create<BookStore>()((set, get) => ({
     set((state: BookStore) => {
       const updatedBooks = state.books.filter((b) => b.id !== id);
       const currentBook = state.currentBook?.id === id ? null : state.currentBook;
-      return { books: updatedBooks, currentBook };
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { [id]: deleted, ...restPages } = state.pagesByBookId;
+      return { books: updatedBooks, currentBook, pagesByBookId: restPages };
     });
   },
 
   setCurrentBook: (id: string) => {
     const book = get().books.find((b) => b.id === id) || null;
-    const mockPages = MOCK_PAGES[id] || [];
-    set({ currentBook: book, pages: mockPages, currentPageId: mockPages[0]?.id || null });
+    const bookPages = get().pagesByBookId[id] || [];
+    set({ currentBook: book, pages: bookPages, currentPageId: bookPages[0]?.id || null });
   },
 
   addPage: (page: Omit<PageData, 'id'>) => {
@@ -552,21 +557,45 @@ export const useBookStore = create<BookStore>()((set, get) => ({
       id: crypto.randomUUID(),
     };
 
-    set((state: BookStore) => ({
-      pages: [...state.pages, newPage],
-    }));
+    set((state: BookStore) => {
+      if (!state.currentBook) return {};
+      const updatedPages = [...state.pages, newPage];
+      return {
+        pages: updatedPages,
+        pagesByBookId: {
+          ...state.pagesByBookId,
+          [state.currentBook!.id]: updatedPages
+        }
+      };
+    });
   },
 
   updatePage: (id: string, updates: Partial<PageData>) => {
-    set((state: BookStore) => ({
-      pages: state.pages.map((p) => (p.id === id ? { ...p, ...updates } : p)),
-    }));
+    set((state: BookStore) => {
+      if (!state.currentBook) return {};
+      const updatedPages = state.pages.map((p) => (p.id === id ? { ...p, ...updates } : p));
+      return {
+        pages: updatedPages,
+        pagesByBookId: {
+          ...state.pagesByBookId,
+          [state.currentBook!.id]: updatedPages
+        }
+      };
+    });
   },
 
   deletePage: (id: string) => {
-    set((state: BookStore) => ({
-      pages: state.pages.filter((p) => p.id !== id),
-    }));
+    set((state: BookStore) => {
+      if (!state.currentBook) return {};
+      const updatedPages = state.pages.filter((p) => p.id !== id);
+      return {
+        pages: updatedPages,
+        pagesByBookId: {
+          ...state.pagesByBookId,
+          [state.currentBook!.id]: updatedPages
+        }
+      };
+    });
   },
 
   syncContent: (sourceMode: 'reflow' | 'fixed', targetMode: 'reflow' | 'fixed') => {
@@ -613,6 +642,7 @@ export const useBookStore = create<BookStore>()((set, get) => ({
         books: [...state.books, newBook],
         currentBook: newBook,
         pages: newPages,
+        pagesByBookId: { ...state.pagesByBookId, [newBook.id]: newPages },
         currentPageId: newPages[0]?.id || null,
         isLoading: false,
         error: null,
@@ -628,6 +658,7 @@ export const useBookStore = create<BookStore>()((set, get) => ({
       books: MOCK_BOOKS,
       currentBook: null,
       pages: [],
+      pagesByBookId: MOCK_PAGES,
       currentPageId: null,
       isLoading: false,
       error: null,

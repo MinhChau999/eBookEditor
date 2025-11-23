@@ -64,27 +64,8 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
             }
         }
 
-        // Inject/Update Page Container
-        let pageContainer = frameBody.querySelector('.page-container') as HTMLElement;
-        if (!pageContainer) {
-            pageContainer = document.createElement('section');
-            pageContainer.className = 'page-container';
-            while (frameBody.firstChild) {
-                pageContainer.appendChild(frameBody.firstChild);
-            }
-            frameBody.appendChild(pageContainer);
-        }
-
-        // Apply Strict Dimensions
-        pageContainer.style.width = `${width}${template.unit}`;
-        pageContainer.style.height = `${template.height}${template.unit}`;
-        pageContainer.style.minHeight = `${template.height}${template.unit}`;
-        
-        // Add bleed guide class
-        pageContainer.classList.add('page-bleed-guide');
-
         // Handle Spread Guide
-        let spreadGuide = pageContainer.querySelector('.spread-guide');
+        let spreadGuide = frameBody.querySelector('.spread-guide');
         if (isSpread) {
             if (!spreadGuide) {
                 spreadGuide = document.createElement('div');
@@ -97,7 +78,7 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
                 (spreadGuide as HTMLElement).style.backgroundColor = '#ddd';
                 (spreadGuide as HTMLElement).style.zIndex = '100';
                 (spreadGuide as HTMLElement).style.pointerEvents = 'none';
-                pageContainer.appendChild(spreadGuide);
+                frameBody.appendChild(spreadGuide);
             }
         } else {
             if (spreadGuide) {

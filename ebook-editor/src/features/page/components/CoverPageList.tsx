@@ -41,9 +41,9 @@ export const CoverPageList: React.FC<CoverPageListProps> = ({ editor }) => {
   useEffect(() => {
     updateCoverPages();
     
-    editor.on('page:add page:remove page:update', updateCoverPages);
+    editor.on('page:add page:remove page:update page:select', updateCoverPages);
     return () => {
-      editor.off('page:add page:remove page:update', updateCoverPages);
+      editor.off('page:add page:remove page:update page:select', updateCoverPages);
     };
   }, [editor]);
 
