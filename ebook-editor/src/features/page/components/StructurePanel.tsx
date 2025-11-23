@@ -14,7 +14,7 @@ export const StructurePanel: React.FC<StructurePanelProps> = ({ editor }) => {
   return (
     <>
       {/* 1. Book Info Section */}
-      <BookInfoCard />
+      <BookInfoCard editor={editor} />
 
       {/* 2. Table of Contents Section */}
       <TableOfContents editor={editor} />

@@ -32,7 +32,7 @@ interface BookStore extends BookState {
 const MOCK_BOOKS: BookInfo[] = [
   {
     id: 'book-1',
-    title: 'Thơ ca Đời sống (Fixed)',
+    title: 'Thơ ca Đời sống',
     author: 'Nguyễn Văn A',
     layoutMode: 'fixed',
     template: 'A4_PORTRAIT',
@@ -69,7 +69,7 @@ const MOCK_BOOKS: BookInfo[] = [
   },
   {
     id: 'book-2',
-    title: 'Tạp chí Thời trang (Fixed)',
+    title: 'Tạp chí Thời trang',
     author: 'Le Thi B',
     layoutMode: 'fixed',
     template: 'A4_PORTRAIT',

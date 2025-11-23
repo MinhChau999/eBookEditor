@@ -9,6 +9,7 @@ interface PageThumbnailProps {
   onDelete: (e: React.MouseEvent) => void;
   editor: any;
   hideMasterIndicator?: boolean;
+  minimal?: boolean;
 }
 
 export const PageThumbnail: React.FC<PageThumbnailProps> = ({ 
@@ -18,7 +19,8 @@ export const PageThumbnail: React.FC<PageThumbnailProps> = ({
   onSelect, 
   onDelete,
   editor,
-  hideMasterIndicator
+  hideMasterIndicator,
+  minimal
 }) => {
   const [html, setHtml] = React.useState('');
   const [css, setCss] = React.useState('');
@@ -57,26 +59,28 @@ export const PageThumbnail: React.FC<PageThumbnailProps> = ({
       className={`page-item ${isActive ? 'page-active' : ''}`}
       onClick={onSelect}
     >
-      <div className="page-actions">
-        <button 
-          className="page-btn page-settings-btn"
-          title="Page Settings"
-          onClick={(e) => {
-            e.stopPropagation();
-          }}
-        >
-          <i className="fas fa-cog"></i>
-        </button>
-        <button 
-          onClick={onDelete}
-          className="page-btn page-delete-btn"
-          title="Delete Page"
-        >
-          <i className="fas fa-trash"></i>
-        </button>
-      </div>
+      {!minimal && (
+        <div className="page-actions">
+          <button 
+            className="page-btn page-settings-btn"
+            title="Page Settings"
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+          >
+            <i className="fas fa-cog"></i>
+          </button>
+          <button 
+            onClick={onDelete}
+            className="page-btn page-delete-btn"
+            title="Delete Page"
+          >
+            <i className="fas fa-trash"></i>
+          </button>
+        </div>
+      )}
       
-      {!hideMasterIndicator && <div className="master-applied-indicator">A</div>}
+      {!hideMasterIndicator && !minimal && <div className="master-applied-indicator">A</div>}
       
       <div className="page">
         <div className="page-content" style={{ padding: 0, overflow: 'hidden' }}>
@@ -94,9 +98,11 @@ export const PageThumbnail: React.FC<PageThumbnailProps> = ({
         </div>
       </div>
       
-      <div className="page-number">
-        {pageNumber}
-      </div>
+      {!minimal && (
+        <div className="page-number">
+          {pageNumber}
+        </div>
+      )}
     </div>
   );
 };
