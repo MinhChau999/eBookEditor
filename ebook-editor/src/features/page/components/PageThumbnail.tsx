@@ -3,11 +3,12 @@ import { useBookStore } from '../../../core/store/bookStore';
 
 interface PageThumbnailProps {
   page: any;
-  pageNumber: number;
+  pageNumber: number | string;
   isActive: boolean;
   onSelect: () => void;
   onDelete: (e: React.MouseEvent) => void;
   editor: any;
+  hideMasterIndicator?: boolean;
 }
 
 export const PageThumbnail: React.FC<PageThumbnailProps> = ({ 
@@ -16,7 +17,8 @@ export const PageThumbnail: React.FC<PageThumbnailProps> = ({
   isActive, 
   onSelect, 
   onDelete,
-  editor
+  editor,
+  hideMasterIndicator
 }) => {
   const [html, setHtml] = React.useState('');
   const [css, setCss] = React.useState('');
@@ -74,7 +76,7 @@ export const PageThumbnail: React.FC<PageThumbnailProps> = ({
         </button>
       </div>
       
-      <div className="master-applied-indicator">A</div>
+      {!hideMasterIndicator && <div className="master-applied-indicator">A</div>}
       
       <div className="page">
         <div className="page-content" style={{ padding: 0, overflow: 'hidden' }}>

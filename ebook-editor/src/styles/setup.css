@@ -631,9 +631,11 @@
 .page-spread {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
+  gap: 10px;
   position: relative;
   justify-items: center;
+  width: auto;
+  margin: auto;
 }
 
 .page-item {

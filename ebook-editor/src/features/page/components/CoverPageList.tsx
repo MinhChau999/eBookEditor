@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CoverPageThumbnail } from './CoverPageThumbnail';
+import { PageThumbnail } from './PageThumbnail';
 
 interface CoverPageListProps {
   editor: any;
@@ -11,36 +11,19 @@ export const CoverPageList: React.FC<CoverPageListProps> = ({ editor }) => {
 
   const updateCoverPages = () => {
     const allPages = editor.Pages.getAll();
-    console.log('All pages:', allPages.map((p: any) => ({ 
-      id: p.getId(), 
-      name: p.get('name'),
-      attributes: p.get('attributes'),
-      index: allPages.indexOf(p)
-    })));
-    
-    // Filter to only get cover type pages
-    // Check both attributes.type and if it's the first page
     const covers = allPages.filter((page: any, index: number) => {
       const attributes = page.get('attributes');
       const pageName = (page.get('name') || '').toLowerCase();
-      
-      // Cover page is either:
-      // 1. Has type === 'cover' in attributes
-      // 2. Is first page (index 0)
-      // 3. Page name contains 'cover' or 'bìa'
       return attributes?.type === 'cover' || 
              index === 0 || 
              pageName.includes('cover') || 
              pageName.includes('bìa');
     });
-    
-    console.log('Cover pages found:', covers.length);
     setCoverPages(covers);
   };
 
   useEffect(() => {
     updateCoverPages();
-    
     editor.on('page:add page:remove page:update page:select', updateCoverPages);
     return () => {
       editor.off('page:add page:remove page:update page:select', updateCoverPages);
@@ -58,7 +41,6 @@ export const CoverPageList: React.FC<CoverPageListProps> = ({ editor }) => {
     }
   };
 
-  // Don't show if no cover pages
   if (coverPages.length === 0) {
     return null;
   }
@@ -75,18 +57,22 @@ export const CoverPageList: React.FC<CoverPageListProps> = ({ editor }) => {
       
       {isExpanded && (
         <div className="cover-pages-list">
-          {coverPages.map((page) => {
+          {coverPages.map((page: any) => {
             const isActive = editor.Pages.getSelected()?.getId() === page.getId();
             const pageName = page.get('name') || 'Cover';
             
             return (
-              <CoverPageThumbnail
-                key={page.getId()}
-                pageName={pageName}
-                isActive={isActive}
-                onSelect={() => handleSelectPage(page)}
-                onDelete={(e) => handleDeletePage(e, page)}
-              />
+              <div key={page.getId()} style={{ display: 'flex', justifyContent: 'center' }}>
+                <PageThumbnail
+                  page={page}
+                  pageNumber={pageName}
+                  isActive={isActive}
+                  onSelect={() => handleSelectPage(page)}
+                  onDelete={(e) => handleDeletePage(e, page)}
+                  editor={editor}
+                  hideMasterIndicator={true}
+                />
+              </div>
             );
           })}
         </div>
