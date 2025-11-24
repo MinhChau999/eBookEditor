@@ -7,8 +7,10 @@ import bookAdapter from '../../plugins/book-adapter';
 import leftPanel from '../../plugins/left-panel';
 import basicBlocks from '../../plugins/basic-blocks';
 import coverSyncPlugin from '../../plugins/cover-sync';
+import grapesjsRulers from 'grapesjs-rulers';
 import { ExportModal } from '../../features/export/components/ExportModal';
 import { useBookStore } from '../../core/store/bookStore';
+import '../../styles/setup.css'
 
 // Define GrapesJS editor type
 const Editor: React.FC = () => {
@@ -71,8 +73,9 @@ const Editor: React.FC = () => {
           },
           plugins: [
             coreSetup,
-            leftPanel,
+            grapesjsRulers,
             bookAdapter,
+            leftPanel,
             tuiImageEditorPlugin,
             basicBlocks,
             coverSyncPlugin
@@ -108,6 +111,9 @@ const Editor: React.FC = () => {
           pluginsOpts: {
             [coreSetup as any]: { // eslint-disable-line @typescript-eslint/no-explicit-any
               layoutMode: currentBook.layoutMode,
+            },
+            [grapesjsRulers as any]: { // eslint-disable-line @typescript-eslint/no-explicit-any
+              dragMode: 'translate',
             },
           }
         });

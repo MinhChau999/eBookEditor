@@ -13,6 +13,7 @@ interface BookStore extends BookState {
   addPage: (page: PageData) => void;
   updatePage: (id: string, updates: Partial<PageData>) => void;
   deletePage: (id: string) => void;
+  reorderPages: (oldIndex: number, newIndex: number) => void;
   setReflowSettings: (settings: Partial<ReflowSettings>) => void;
   importBook: (bookData: {
     title?: string;
@@ -592,6 +593,24 @@ export const useBookStore = create<BookStore>()((set, get) => ({
         pagesByBookId: {
           ...state.pagesByBookId,
           [state.currentBook!.id]: updatedPages
+        }
+      };
+    });
+  },
+
+  reorderPages: (oldIndex: number, newIndex: number) => {
+    set((state: BookStore) => {
+      if (!state.currentBook) return {};
+      
+      const newPages = [...state.pages];
+      const [movedPage] = newPages.splice(oldIndex, 1);
+      newPages.splice(newIndex, 0, movedPage);
+      
+      return {
+        pages: newPages,
+        pagesByBookId: {
+          ...state.pagesByBookId,
+          [state.currentBook!.id]: newPages
         }
       };
     });
