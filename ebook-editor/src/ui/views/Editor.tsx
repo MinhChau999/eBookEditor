@@ -71,8 +71,8 @@ const Editor: React.FC = () => {
           },
           plugins: [
             coreSetup,
-            bookAdapter,
             leftPanel,
+            bookAdapter,
             tuiImageEditorPlugin,
             basicBlocks,
             coverSyncPlugin
@@ -106,68 +106,9 @@ const Editor: React.FC = () => {
             ],
           },
           pluginsOpts: {
-            [coreSetup as any]: {
-              layoutMode: currentBook.layoutMode
+            [coreSetup as any]: { // eslint-disable-line @typescript-eslint/no-explicit-any
+              layoutMode: currentBook.layoutMode,
             },
-            [tuiImageEditorPlugin as any]: {
-              config: {
-                includeUI: {
-                  initMenu: 'filter',
-                  menuBarPosition: 'bottom',
-                  theme: {
-                    'common.bi.image': 'https://uicdn.toast.com/tui-image-editor/latest/svg/icon-b.svg',
-                    'common.bisize.width': '251px',
-                    'common.bisize.height': '21px',
-                    'common.backgroundImage': 'none',
-                    'common.backgroundColor': '#f3f4f6',
-                    'common.border': '1px solid #ddd',
-                    'header.backgroundImage': 'none',
-                    'header.backgroundColor': '#f3f4f6',
-                    'header.border': '0px',
-                    'menu.normalIcon.color': '#8a8a8a',
-                    'menu.activeIcon.color': '#555555',
-                    'menu.disabledIcon.color': '#434343',
-                    'menu.hoverIcon.color': '#e9e9e9',
-                    'submenu.backgroundColor': '#ffffff',
-                    'submenu.partition.color': '#e5e5e5',
-                    'submenu.normalIcon.color': '#8a8a8a',
-                    'submenu.activeIcon.color': '#555555',
-                    'submenu.iconSize.width': '32px',
-                    'submenu.iconSize.height': '32px',
-                    'submenu.normalLabel.color': '#858585',
-                    'submenu.normalLabel.fontWeight': 'normal',
-                    'submenu.activeLabel.color': '#000',
-                    'submenu.activeLabel.fontWeight': 'normal',
-                    'checkbox.border': '1px solid #ccc',
-                    'checkbox.backgroundColor': '#fff',
-                    'range.pointer.color': '#333',
-                    'range.bar.color': '#ccc',
-                    'range.subbar.color': '#606060',
-                    'range.disabledPointer.color': '#d3d3d3',
-                    'range.disabledBar.color': 'rgba(85,85,85,0.06)',
-                    'range.disabledSubbar.color': 'rgba(51,51,51,0.2)',
-                    'range.value.color': '#000',
-                    'range.value.fontWeight': 'normal',
-                    'range.value.fontSize': '11px',
-                    'range.value.border': '0',
-                    'range.value.backgroundColor': '#f5f5f5',
-                    'range.title.color': '#000',
-                    'range.title.fontWeight': 'lighter',
-                    'colorpicker.button.border': '0px',
-                    'colorpicker.title.color': '#000'
-                  },
-                },
-                cssMaxWidth: 700,
-                cssMaxHeight: 500,
-                usageStatistics: false
-              },
-              labelImageEditor: 'Image Editor',
-              labelApply: 'Apply',
-              height: '700px',
-              width: '100%',
-              hideHeader: true,
-              addToAssets: true
-            }
           }
         });
 

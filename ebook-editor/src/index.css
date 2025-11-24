@@ -10,6 +10,12 @@
   --tertiary-color: #4a8c87;
   --quaternary-color: #6cdada;
 
+  --gjs-main-color: #444;
+	--gjs-primary-color: #3f3f3f;
+	--gjs-secondary-color: #e6e6e6;
+	--gjs-tertiary-color: #4a8c87;
+	--gjs-quaternary-color: #6cdada;
+
   /* Dark Theme Enhancements */
   --main-color: #444444;
   --font-color: #dddddd;
