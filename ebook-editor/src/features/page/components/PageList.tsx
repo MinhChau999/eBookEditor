@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { PageThumbnail } from './PageThumbnail';
 
 interface PageListProps {
@@ -6,22 +6,22 @@ interface PageListProps {
   viewMode: 'spreads' | 'single';
 }
 
-export const PageList: React.FC<PageListProps> = ({ editor, viewMode }) => {
+// Internal component that re-renders when editor changes
+const PageListContent: React.FC<{ editor: any; viewMode: 'spreads' | 'single' }> = ({ editor, viewMode }) => {
   const [localPages, setLocalPages] = useState<any[]>([]);
 
-  const updatePages = () => {
+  const updatePages = useCallback(() => {
     const allPages = editor.Pages.getAll();
     setLocalPages([...allPages]);
-  };
+  }, [editor]);
 
   useEffect(() => {
     updatePages();
-    
     editor.on('page:add page:remove page:update page:select', updatePages);
     return () => {
       editor.off('page:add page:remove page:update page:select', updatePages);
     };
-  }, [editor]);
+  }, [editor, updatePages]);
 
   const handleSelectPage = (page: any) => {
     editor.Pages.select(page.getId());
@@ -34,34 +34,34 @@ export const PageList: React.FC<PageListProps> = ({ editor, viewMode }) => {
     }
   };
 
+  // Filter content pages (type: 'content')
+  const getContentPages = () => {
+    return localPages.filter((page) => {
+      const attributes = page.get('attributes');
+      return attributes?.type === 'content';
+    });
+  };
+
   // Group pages into spreads
   const renderSpreads = () => {
     const spreads = [];
-    
-    // Filter out cover pages - they are handled by CoverPageList component
-    const nonCoverPages = localPages.filter((page, index) => {
-      const attributes = page.get('attributes');
-      const pageName = (page.get('name') || '').toLowerCase();
-      
-      const isCover = attributes?.type === 'cover' || 
-                      index === 0 || 
-                      pageName.includes('cover') || 
-                      pageName.includes('bìa');
-      
-      return !isCover;
-    });
+    const contentPages = getContentPages();
 
-    // Render spreads from non-cover pages
-    for (let i = 0; i < nonCoverPages.length; i += 2) {
-      const leftPage = nonCoverPages[i];
-      const rightPage = nonCoverPages[i + 1];
+    // Render spreads from content pages
+    for (let i = 0; i < contentPages.length; i += 2) {
+      const leftPage = contentPages[i];
+      const rightPage = contentPages[i + 1];
+
+      // Get page numbers from attributes
+      const leftPageNumber = leftPage.get('attributes')?.pageNumber || i + 1;
+      const rightPageNumber = rightPage ? rightPage.get('attributes')?.pageNumber || i + 2 : null;
 
       spreads.push(
         <div key={`spread-${i}`} className="page-spread">
           {/* Left Page */}
           <PageThumbnail
             page={leftPage}
-            pageNumber={i + 1}
+            pageNumber={leftPageNumber}
             isActive={editor.Pages.getSelected()?.getId() === leftPage.getId()}
             onSelect={() => handleSelectPage(leftPage)}
             onDelete={(e) => handleDeletePage(e, leftPage)}
@@ -72,7 +72,7 @@ export const PageList: React.FC<PageListProps> = ({ editor, viewMode }) => {
           {rightPage && (
             <PageThumbnail
               page={rightPage}
-              pageNumber={i + 2}
+              pageNumber={rightPageNumber}
               isActive={editor.Pages.getSelected()?.getId() === rightPage.getId()}
               onSelect={() => handleSelectPage(rightPage)}
               onDelete={(e) => handleDeletePage(e, rightPage)}
@@ -88,33 +88,25 @@ export const PageList: React.FC<PageListProps> = ({ editor, viewMode }) => {
 
   // Render single pages in a grid
   const renderSinglePages = () => {
-    // Filter out cover pages - they are handled by CoverPageList component
-    const nonCoverPages = localPages.filter((page, index) => {
-      const attributes = page.get('attributes');
-      const pageName = (page.get('name') || '').toLowerCase();
-      
-      const isCover = attributes?.type === 'cover' || 
-                      index === 0 || 
-                      pageName.includes('cover') || 
-                      pageName.includes('bìa');
-      
-      return !isCover;
-    });
+    const contentPages = getContentPages();
 
     return (
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', padding: '0 8px' }}>
-        {nonCoverPages.map((page, index) => (
-          <div key={page.getId()} style={{ display: 'flex', justifyContent: 'center' }}>
-            <PageThumbnail
-              page={page}
-              pageNumber={index + 1}
-              isActive={editor.Pages.getSelected()?.getId() === page.getId()}
-              onSelect={() => handleSelectPage(page)}
-              onDelete={(e) => handleDeletePage(e, page)}
-              editor={editor}
-            />
-          </div>
-        ))}
+        {contentPages.map((page) => {
+          const pageNumber = page.get('attributes')?.pageNumber;
+          return (
+            <div key={page.getId()} style={{ display: 'flex', justifyContent: 'center' }}>
+              <PageThumbnail
+                page={page}
+                pageNumber={pageNumber}
+                isActive={editor.Pages.getSelected()?.getId() === page.getId()}
+                onSelect={() => handleSelectPage(page)}
+                onDelete={(e) => handleDeletePage(e, page)}
+                editor={editor}
+              />
+            </div>
+          );
+        })}
       </div>
     );
   };
@@ -126,4 +118,9 @@ export const PageList: React.FC<PageListProps> = ({ editor, viewMode }) => {
       </div>
     </div>
   );
+};
+
+export const PageList: React.FC<PageListProps> = ({ editor, viewMode }) => {
+  // Use key to force re-render when editor instance changes
+  return <PageListContent key={editor?.id || 'editor'} editor={editor} viewMode={viewMode} />;
 };

@@ -16,7 +16,7 @@ export const BookSettings: React.FC = () => {
             <div className="font-medium">{currentBook.title}</div>
             <div className="text-sm text-gray-500">{currentBook.author}</div>
             <div className="text-xs mt-1 px-2 py-0.5 bg-blue-100 text-blue-800 rounded inline-block">
-              {currentBook.mode}
+              {currentBook.layoutMode === 'fixed' ? 'Fixed Layout' : 'Reflowable'}
             </div>
           </div>
         ) : (

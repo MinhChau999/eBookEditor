@@ -1,52 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useBookStore } from '../../../core/store/bookStore';
 import { BookSettingsModal } from './BookSettingsModal';
-import { PageThumbnail } from '../../page/components/PageThumbnail';
 
-interface BookInfoCardProps {
-  editor?: any;
-}
-
-export const BookInfoCard: React.FC<BookInfoCardProps> = ({ editor }) => {
+export const BookInfoCard: React.FC = () => {
   const { currentBook } = useBookStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isInfoExpanded, setIsInfoExpanded] = useState(true);
-  const [coverPage, setCoverPage] = useState<any>(null);
-
-  useEffect(() => {
-    if (editor) {
-      const findCoverPage = () => {
-        const allPages = editor.Pages.getAll();
-        const cover = allPages.find((page: any, index: number) => {
-          const attributes = page.get('attributes');
-          const pageName = (page.get('name') || '').toLowerCase();
-          return attributes?.type === 'cover' || 
-                 index === 0 || 
-                 pageName.includes('cover') || 
-                 pageName.includes('bìa');
-        });
-        setCoverPage(cover);
-      };
-
-      findCoverPage();
-      editor.on('page:add page:remove page:update', findCoverPage);
-      return () => {
-        editor.off('page:add page:remove page:update', findCoverPage);
-      };
-    }
-  }, [editor]);
 
   if (!currentBook) return null;
 
   return (
     <>
       <div className="left-sidebar-title" onClick={() => setIsInfoExpanded(!isInfoExpanded)}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}>
-          <i className="fas fa-book"></i>
-          <span className="gjs-text-truncate gjs-two-color" title={currentBook.title}>
-            {currentBook.title}
-          </span>
-        </div>
+        <i className="fas fa-book"></i>
+        <span className="gjs-text-truncate gjs-two-color" title={currentBook.title}>
+          {currentBook.title}
+        </span>
         <button 
           className="gjs-sm-btn"
           onClick={(e) => {

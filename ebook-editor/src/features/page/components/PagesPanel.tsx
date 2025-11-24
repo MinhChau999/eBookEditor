@@ -97,15 +97,24 @@ export const PagesPanel: React.FC<PagesPanelProps> = ({ editor, viewMode = 'spre
                 <i className="fas fa-layer-group" style={{ marginRight: '8px', width: '12px' }}></i>
                 New Master
               </div>
-              <div 
-                className="gjs-custom-dropdown-item" 
-                onClick={() => { editor.Pages.add({ name: 'New Page' }); setShowActions(false); }}
+              <div
+                className="gjs-custom-dropdown-item"
+                onClick={() => {
+                  editor.Pages.add({
+                    name: 'New Page',
+                    attributes: {
+                      type: 'content',
+                      pageNumber: editor.Pages.getAll().filter(p => p.get('attributes')?.type === 'content').length + 1
+                    }
+                  });
+                  setShowActions(false);
+                }}
               >
                 <i className="fas fa-plus" style={{ marginRight: '8px', width: '12px' }}></i>
                 Add Page
               </div>
-              <div 
-                className="gjs-custom-dropdown-item" 
+              <div
+                className="gjs-custom-dropdown-item"
                 onClick={() => { setShowActions(false); }}
               >
                 <i className="fas fa-cog" style={{ marginRight: '8px', width: '12px' }}></i>

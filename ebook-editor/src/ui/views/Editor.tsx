@@ -6,6 +6,7 @@ import coreSetup from '../../plugins/core-setup';
 import bookAdapter from '../../plugins/book-adapter';
 import leftPanel from '../../plugins/left-panel';
 import basicBlocks from '../../plugins/basic-blocks';
+import coverSyncPlugin from '../../plugins/cover-sync';
 import { ExportModal } from '../../features/export/components/ExportModal';
 import { useBookStore } from '../../core/store/bookStore';
 
@@ -41,11 +42,8 @@ const Editor: React.FC = () => {
 
     const initializeEditor = async () => {
       try {
-        // Get pages for current book from store
         const bookPages = useBookStore.getState().pages;
-        // TODO: Filter by current bookId when implementing proper page-book mapping
 
-        // Map pages to GrapesJS format
         const gjsPages = bookPages.map(page => ({
           id: page.id,
           name: page.name,
@@ -76,16 +74,17 @@ const Editor: React.FC = () => {
             bookAdapter,
             leftPanel,
             tuiImageEditorPlugin,
-            basicBlocks
+            basicBlocks,
+            coverSyncPlugin
           ],
           deviceManager: {
             devices: [
               {
                 id: 'fixed',
                 name: 'Fixed',
-                width: '816px', // A4 width approx
-                height: '1056px', // A4 height approx
-                widthMedia: '816px',
+                width: '210mm',
+                height: '297mm',
+                widthMedia: '210mm',
               },
               {
                 id: 'desktop',
@@ -105,14 +104,12 @@ const Editor: React.FC = () => {
                 widthMedia: '480px',
               },
             ],
-            // Default will be set by core-setup based on layoutMode
           },
           pluginsOpts: {
-            'core-setup': {
-              textCleanCanvas: 'Are you sure you want to clear the canvas?',
-              layoutMode: currentBook.layoutMode,
+            [coreSetup as any]: {
+              layoutMode: currentBook.layoutMode
             },
-            'tuiImageEditorPlugin': {
+            [tuiImageEditorPlugin as any]: {
               config: {
                 includeUI: {
                   initMenu: 'filter',

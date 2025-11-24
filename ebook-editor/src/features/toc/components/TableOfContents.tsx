@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 
 interface TableOfContentsProps {
   editor: any;
@@ -11,6 +11,7 @@ interface TocItem {
   componentId: string;
   pageId: string;
   pageName: string;
+  uniqueKey: string; // Add unique key for React rendering
 }
 
 export const TableOfContents: React.FC<TableOfContentsProps> = ({ editor }) => {
@@ -36,26 +37,27 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ editor }) => {
 
       // Use toHTML() to get the content even if not rendered
       const htmlContent = page.getMainComponent().toHTML();
-      // console.log(`TOC: Page ${index} HTML length:`, htmlContent.length);
       
       const doc = parser.parseFromString(htmlContent, 'text/html');
       
       const foundHeadings = doc.querySelectorAll('h1, h2, h3, h4, h5, h6');
-      console.log(`TOC: Page ${index} (${pageName}) - Headings found in HTML:`, foundHeadings.length);
       
-      const pageItems: TocItem[] = Array.from(foundHeadings).map((el: any) => ({
-        id: el.id || '', // GrapesJS usually adds IDs
-        tagName: el.tagName.toLowerCase(),
-        text: el.textContent || 'Untitled',
-        componentId: el.id || '',
-        pageId: page.getId(),
-        pageName: page.get('name') || `Page ${index + 1}`
-      }));
+      const pageItems: TocItem[] = Array.from(foundHeadings).map((el: any, elIndex: number) => {
+        const baseId = el.id || `heading-${page.getId()}-${elIndex}`;
+        return {
+          id: el.id || '',
+          tagName: el.tagName.toLowerCase(),
+          text: el.textContent || 'Untitled',
+          componentId: baseId,
+          pageId: page.getId(),
+          pageName: page.get('name') || `Page ${index + 1}`,
+          uniqueKey: `${page.getId()}-${baseId}-${elIndex}` // Ensure uniqueness
+        };
+      });
 
       allItems = [...allItems, ...pageItems];
     });
 
-    console.log('TOC: Total items found:', allItems.length);
     setHeadings(allItems);
   };
 
@@ -142,9 +144,9 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ editor }) => {
           ) : (
             <div className="toc-list">
               {headings.map((item) => (
-                <div 
-                  key={`${item.pageId}-${item.componentId}`} 
-                  className="toc-item" 
+                <div
+                  key={item.uniqueKey}
+                  className="toc-item"
                   style={{ paddingLeft: `calc(12px + ${getIndent(item.tagName)})` }}
                   onClick={() => handleItemClick(item)}
                 >

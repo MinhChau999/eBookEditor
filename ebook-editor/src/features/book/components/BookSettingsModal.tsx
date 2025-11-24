@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useBookStore } from '../../../core/store/bookStore';
 import type { BookInfo } from '../../../core/types/book.types';
 
@@ -7,22 +7,20 @@ interface BookSettingsModalProps {
   onClose: () => void;
 }
 
-export const BookSettingsModal: React.FC<BookSettingsModalProps> = ({ isOpen, onClose }) => {
-  const { currentBook, updateBook } = useBookStore();
-  const [formData, setFormData] = useState<Partial<BookInfo>>({});
+// Internal form component that gets re-mounted when book changes
+const BookSettingsForm: React.FC<{ currentBook: BookInfo; onClose: () => void }> = ({
+  currentBook,
+  onClose
+}) => {
+  const { updateBook } = useBookStore();
 
-  useEffect(() => {
-    if (isOpen && currentBook) {
-      setFormData({
-        title: currentBook.title,
-        author: currentBook.author || '',
-        description: currentBook.description || '',
-        coverImage: currentBook.coverImage || '',
-      });
-    }
-  }, [isOpen, currentBook]);
-
-  if (!isOpen || !currentBook) return null;
+  // Initialize form with current book data
+  const [formData, setFormData] = useState<Partial<BookInfo>>({
+    title: currentBook.title,
+    author: currentBook.author || '',
+    description: currentBook.description || '',
+    coverImage: currentBook.coverImage || '',
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,7 +45,7 @@ export const BookSettingsModal: React.FC<BookSettingsModalProps> = ({ isOpen, on
               required
             />
           </div>
-          
+
           <div className="mb-4">
             <label className="block text-sm font-medium mb-1">Author</label>
             <input
@@ -104,4 +102,13 @@ export const BookSettingsModal: React.FC<BookSettingsModalProps> = ({ isOpen, on
       </div>
     </div>
   );
+};
+
+export const BookSettingsModal: React.FC<BookSettingsModalProps> = ({ isOpen, onClose }) => {
+  const { currentBook } = useBookStore();
+
+  if (!isOpen || !currentBook) return null;
+
+  // Use key to force re-render and reset form when book changes
+  return <BookSettingsForm key={currentBook.id} currentBook={currentBook} onClose={onClose} />;
 };

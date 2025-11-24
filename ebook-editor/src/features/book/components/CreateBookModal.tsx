@@ -7,7 +7,6 @@ interface CreateBookModalProps {
   onClose: () => void;
 }
 
-type BookMode = 'reflow' | 'fixed-layout';
 type TemplateType = 'A4' | 'A5' | 'Letter';
 
 interface PageSize {
@@ -21,7 +20,7 @@ export const CreateBookModal: React.FC<CreateBookModalProps> = ({ isOpen, onClos
   const [formData, setFormData] = useState<Partial<BookInfo>>({
     title: '',
     author: '',
-    mode: 'reflow',
+    layoutMode: 'reflow',
     template: 'A4',
   });
 
@@ -40,18 +39,18 @@ export const CreateBookModal: React.FC<CreateBookModalProps> = ({ isOpen, onClos
     e.preventDefault();
     if (!formData.title) return;
 
-    const pageSize = formData.mode === 'fixed-layout' ? getPageSize(formData.template as TemplateType) : undefined;
+    const pageSize = formData.layoutMode === 'fixed' ? getPageSize(formData.template as TemplateType) : undefined;
 
     createBook({
       title: formData.title!,
       author: formData.author,
-      mode: formData.mode as BookMode,
+      layoutMode: formData.layoutMode as 'fixed' | 'reflow',
       template: formData.template,
       pageSize,
     });
 
     onClose();
-    setFormData({ title: '', author: '', mode: 'reflow', template: 'A4' });
+    setFormData({ title: '', author: '', layoutMode: 'reflow', template: 'A4' });
   };
 
   return (
@@ -84,15 +83,15 @@ export const CreateBookModal: React.FC<CreateBookModalProps> = ({ isOpen, onClos
             <label className="block text-sm font-medium mb-1">Mode</label>
             <select
               className="w-full border rounded px-3 py-2"
-              value={formData.mode}
-              onChange={(e) => setFormData({ ...formData, mode: e.target.value as BookMode })}
+              value={formData.layoutMode}
+              onChange={(e) => setFormData({ ...formData, layoutMode: e.target.value as 'fixed' | 'reflow' })}
             >
               <option value="reflow">Reflowable (Standard eBook)</option>
-              <option value="fixed-layout">Fixed Layout (Comics, Kids)</option>
+              <option value="fixed">Fixed Layout (Comics, Kids)</option>
             </select>
           </div>
 
-          {formData.mode === 'fixed-layout' && (
+          {formData.layoutMode === 'fixed' && (
             <div className="mb-4">
               <label className="block text-sm font-medium mb-1">Page Size</label>
               <select

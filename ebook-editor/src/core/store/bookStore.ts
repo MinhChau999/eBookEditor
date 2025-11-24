@@ -14,7 +14,6 @@ interface BookStore extends BookState {
   updatePage: (id: string, updates: Partial<PageData>) => void;
   deletePage: (id: string) => void;
   setReflowSettings: (settings: Partial<ReflowSettings>) => void;
-  syncContent: (sourceMode: 'reflow' | 'fixed', targetMode: 'reflow' | 'fixed') => void;
   importBook: (bookData: {
     title?: string;
     author?: string;
@@ -597,14 +596,6 @@ export const useBookStore = create<BookStore>()((set, get) => ({
       };
     });
   },
-
-  syncContent: (sourceMode: 'reflow' | 'fixed', targetMode: 'reflow' | 'fixed') => {
-    // Placeholder for advanced content synchronization logic
-    // For now, since we share the same 'pages' content, this is implicit.
-    // Future: Convert absolute positioning to relative for Reflow, etc.
-    console.log(`Syncing content from ${sourceMode} to ${targetMode}`);
-  },
-
   importBook: (bookData: {
     title?: string;
     author?: string;

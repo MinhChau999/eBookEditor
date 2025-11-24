@@ -4,16 +4,7 @@ import { createRoot } from 'react-dom/client';
 import { StructurePanel } from '../../features/page/components/StructurePanel';
 import { PagesPanelFooter } from '../../features/page/components/PagesPanelFooter';
 
-export interface LeftPanelOptions {
-  showStructure?: boolean;
-  showAssets?: boolean;
-  defaultTab?: string;
-  [key: string]: unknown;
-}
-
-export default grapesjs.plugins.add('left-panel', (editor: Editor, options: LeftPanelOptions = {}) => {
-  const config = { ...options };
-  console.log('config', config);
+export default grapesjs.plugins.add('left-panel', (editor: Editor) => {
   
   // Create the main left panel container
   const headerLeftSidebar = document.createElement('div');

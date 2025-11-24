@@ -21,7 +21,7 @@ export interface CoreSetupOptions {
 const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, options: CoreSetupOptions = {}) => {
   const config = {
     textCleanCanvas: 'Are you sure you want to clear the canvas?',
-    layoutMode: 'fixed', // Default fallback
+    layoutMode: 'fixed',
     modalImportTitle: 'Import',
     modalImportButton: 'Import',
     modalImportLabel: '',
@@ -29,6 +29,8 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
     importViewerOptions: {},
     ...options,
   };
+
+  console.log(config);
 
   // DeviceManager is now configured in Editor.tsx, but we control visibility here
 
@@ -231,7 +233,6 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
 
   // Initialize default mode based on options
   editor.on('load', () => {
-    console.log('Initializing Editor with Layout Mode:', config.layoutMode);
     initializeMode(config.layoutMode as 'fixed' | 'reflow');
   });
 
@@ -343,8 +344,7 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
           label: 'JSON',
           context: 'show-json',
           command: (editor: Editor) => {
-            editor.runCommand('core:canvas-clear'); // Just for testing
-            console.log('Components:', editor.getComponents());
+            editor.runCommand('core:canvas-clear');
           },
         },
         {

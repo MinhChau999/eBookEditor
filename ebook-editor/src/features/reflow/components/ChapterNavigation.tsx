@@ -23,7 +23,6 @@ export const ChapterNavigation: React.FC = () => {
                   className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-200 rounded-md transition-colors truncate"
                   onClick={() => {
                     // TODO: Scroll to page or set active page
-                    console.log('Navigate to page', page.id);
                   }}
                 >
                   {page.name || `Page ${index + 1}`}

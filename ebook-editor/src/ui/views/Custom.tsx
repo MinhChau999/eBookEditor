@@ -113,20 +113,6 @@ export const Custom: React.FC = () => {
 
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 2000));
-
-    console.log('Form submitted:', {
-      input: inputValue,
-      select: selectValue,
-      radio: radioValue,
-      textarea: textareaValue,
-      range: rangeValue,
-      checkboxes: {
-        terms: checkboxValue1,
-        newsletter: checkboxValue2,
-        notifications: checkboxValue3
-      }
-    });
-
     setIsLoading(false);
     alert('Form submitted! Check console for details.');
   };
@@ -873,7 +859,6 @@ export const Custom: React.FC = () => {
       <ToastManager
         toasts={toasts}
         onRemove={(id) => {
-          // Toast sẽ tự động removed bởi useToast hook
           console.log('Toast removed:', id);
         }}
         position="top-right"
