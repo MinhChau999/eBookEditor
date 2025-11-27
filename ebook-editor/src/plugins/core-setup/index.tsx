@@ -291,87 +291,21 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
 
   panels.getPanels().reset([
     {
-      id: 'left-sidebar',
-      buttons: [], // Will be populated by adapters
-    },
-    {
-      id: 'panel-top',
-      el: '.panel-top',
-    },
-    {
-      id: 'panel-basic-actions',
-      el: '.panel-basic-actions',
-      buttons: [
-        {
-          id: 'visibility',
-          active: true, // active by default
-          className: 'btn-toggle-borders',
-          label: '<u>B</u>',
-          command: 'sw-visibility', // Built-in command
-        },
-        {
-          id: 'export',
-          className: 'btn-open-export',
-          label: 'Exp',
-          command: 'export-template',
-          context: 'export-template', // For grouping context of buttons from the same panel
-        },
-        {
-          id: 'import-book',
-          className: 'fa fa-code',
-          command: 'gjs-open-import-webpage',
-          attributes: { title: 'Import Code' }
-        },
-        {
-          id: 'preview',
-          className: 'fa fa-eye',
-          command: 'core:preview',
-          attributes: { title: 'Preview' }
-        },
-        {
-          id: 'export-book',
-          className: 'fa fa-download',
-          command: 'open-export-modal',
-          attributes: { title: 'Export eBook' }
-        },
-        {
-          id: 'show-json',
-          className: 'btn-show-json',
-          label: 'JSON',
-          context: 'show-json',
-          command: (editor: Editor) => {
-            editor.runCommand('core:canvas-clear');
-          },
-        },
-        {
-            id: 'undo',
-            className: 'fa fa-undo',
-            command: 'core:undo',
-        },
-        {
-            id: 'redo',
-            className: 'fa fa-repeat',
-            command: 'core:redo',
-        },
-        {
-            id: 'layout-controls-mount',
-            className: 'layout-controls-mount',
-            label: '',
-            command: 'custom-layout-controls',
-        }
-      ],
-    },
-    {
-      id: 'commands',
-      buttons: [{}],
-    },
-    {
       id: 'devices-c',
       buttons: deviceButtons,
     },
     {
       id: 'options',
       buttons: [
+        {
+          id: 'ruler-toggle',
+          className: 'btn-toggle-ruler',
+          command: 'ruler-visibility',
+          context: 'ruler-visibility',
+          active: config.layoutMode === 'fixed', // Active by default in fixed mode
+          label: `<svg ${iconStyle} viewBox="0 0 24 24"><path fill="currentColor" d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1 .9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 10H3V8h2v4h2V8h2v4h2V8h2v4h2V8h2v4h2V8h2v8z" /></svg>`,
+          attributes: { title: 'Toggle Rulers' },
+        },
         {
           id: 'sw-visibility',
           active: true,
