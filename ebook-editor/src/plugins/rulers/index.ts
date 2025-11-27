@@ -2,11 +2,30 @@ import Ruler from './Ruler';
 import { Editor } from 'grapesjs';
 import './rulers.css';
 
+// Extend Editor interface to include Rulers property
+declare module 'grapesjs' {
+    interface Editor {
+        Rulers?: Ruler | null;
+    }
+}
+
 export interface RulersOptions {
-    dragMode?: string;
+    dragMode?: 'translate' | 'absolute';
     rulerHeight?: number;
     canvasZoom?: number;
-    rulerOpts?: any;
+    rulerOpts?: ConstructorParameters<typeof Ruler>[0];
+}
+
+interface SetGuidesOptions {
+    guides: {
+        dimension: number;
+        posX: number;
+        posY: number;
+    }[];
+}
+
+interface SetZoomOptions {
+    zoom: number;
 }
 
 export default (editor: Editor, opts: RulersOptions = {}) => {
@@ -24,36 +43,44 @@ export default (editor: Editor, opts: RulersOptions = {}) => {
     const defaultDragMode = editor.getConfig('dragMode');
     let zoom = options.canvasZoom!
     let scale = 100 / zoom;
-    let rulers: any;
+    let rulers: Ruler | null;
 
     cm.add('ruler-visibility', {
         run(editor) {
-            !rulers && (rulers = new Ruler({
-                container: editor.Canvas.getCanvasView().el,
-                canvas: editor.Canvas.getFrameEl(),
-                rulerHeight: rulH,
-                strokeStyle: 'white',
-                fillStyle: 'white',
-                cornerIcon: 'fa fa-trash',
-                ...options.rulerOpts
-            })) && editor.on('canvasScroll frame:scroll change:canvasOffset', () => {
-                setOffset();
-            });
-            (editor as any).Rulers = rulers;
+            if (!rulers) {
+                rulers = new Ruler({
+                    container: editor.Canvas.getCanvasView().el,
+                    canvas: editor.Canvas.getFrameEl(),
+                    rulerHeight: rulH,
+                    strokeStyle: 'white',
+                    fillStyle: 'white',
+                    cornerIcon: 'fa fa-trash',
+                    ...options.rulerOpts
+                });
+                editor.on('canvasScroll frame:scroll change:canvasOffset', () => {
+                    setOffset();
+                });
+            }
+            // Add rulers to editor instance
+            editor.Rulers = rulers;
             rulers.api.toggleRulerVisibility(true);
             editor.Canvas.setZoom(zoom);
-            editor.setDragMode(options.dragMode as any);
+            editor.setDragMode(options.dragMode || 'translate');
             setOffset();
             rulers.api.setScale(scale);
         },
         stop(editor) {
-            rulers && rulers.api.toggleRulerVisibility(false);
+            if (rulers) {
+                rulers.api.toggleRulerVisibility(false);
+            }
             editor.Canvas.setZoom(100);
-            editor.setDragMode(defaultDragMode as any);
+            editor.setDragMode(defaultDragMode || 'translate');
         }
     });
 
     const setOffset = () => {
+        if (!rulers) return;
+
         const { top, left } = editor.Canvas.getOffset();
         const scrollX = editor.Canvas.getBody().scrollLeft;
         const scrollY = editor.Canvas.getBody().scrollTop;
@@ -69,10 +96,14 @@ export default (editor: Editor, opts: RulersOptions = {}) => {
 
     cm.add('guides-visibility', {
         run() {
-            rulers && rulers.api.toggleGuideVisibility(true);
+            if (rulers) {
+                rulers.api.toggleGuideVisibility(true);
+            }
         },
         stop() {
-            rulers && rulers.api.toggleGuideVisibility(false);
+            if (rulers) {
+                rulers.api.toggleGuideVisibility(false);
+            }
         }
     });
 
@@ -85,7 +116,9 @@ export default (editor: Editor, opts: RulersOptions = {}) => {
     });
 
     cm.add('clear-guides', () => {
-        rulers && rulers.api.clearGuides();
+        if (rulers) {
+            rulers.api.clearGuides();
+        }
     });
 
     cm.add('get-guides', () => {
@@ -93,19 +126,25 @@ export default (editor: Editor, opts: RulersOptions = {}) => {
         else return 0;
     });
 
-    cm.add('set-guides', (editor: Editor, sender?: any, options: any = {}) => {
-        rulers && options.guides && rulers.api.setGuides(options.guides);
+    cm.add('set-guides', (editor: Editor, sender?: unknown, options: SetGuidesOptions = {} as SetGuidesOptions) => {
+        if (rulers && options.guides) {
+            rulers.api.setGuides(options.guides);
+        }
     });
 
-    cm.add('set-zoom', (editor: Editor, sender?: any, options: any = {}) => {
+    cm.add('set-zoom', (editor: Editor, sender?: unknown, options: SetZoomOptions = {} as SetZoomOptions) => {
         zoom = options.zoom;
         scale = 100 / zoom;
         editor.Canvas.setZoom(zoom);
         setOffset();
-        rulers && rulers.api.setScale(scale);
+        if (rulers) {
+            rulers.api.setScale(scale);
+        }
     });
 
     cm.add('destroy-ruler', () => {
-        rulers && rulers.api.destroy();
+        if (rulers) {
+            rulers.api.destroy();
+        }
     });
 };
