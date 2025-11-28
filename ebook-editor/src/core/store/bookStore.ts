@@ -43,7 +43,7 @@ const MOCK_BOOKS: BookInfo[] = [
     styles: `
       /* Poetry Book Styles */
       .poetry-cover {
-        height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;
+        height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px; text-align: center;
       }
       .poetry-cover-title { font-size: 3em; margin: 0 0 20px 0; font-family: 'Georgia', serif; }
@@ -80,26 +80,26 @@ const MOCK_BOOKS: BookInfo[] = [
     styles: `
       /* Fashion Magazine Styles */
       .magazine-cover {
-        height: 100%; background: #000; color: white; display: flex;
+        height: 100vh; background: #000; color: white; display: flex;
         flex-direction: column; justify-content: space-between; padding: 60px 40px;
       }
       .magazine-cover-label { font-size: 0.9em; letter-spacing: 3px; color: #ff6b9d; }
-      .magazine-cover-title { font-size: 4em; margin: 0; line-height: 1; font-weight: 900; }
-      .magazine-cover-year { font-size: 3em; margin: 10px 0 0 0; color: #ff6b9d; font-weight: 900; }
+      .magazine-cover-title { font-size: 4em; margin: 0; line-height: 1; font-weight: 900; text-align: center; }
+      .magazine-cover-year { font-size: 3em; margin: 10px 0 0 0; color: #ff6b9d; font-weight: 900; text-align: center; }
       .magazine-cover-footer { display: flex; justify-content: space-between; font-size: 0.85em; opacity: 0.8; }
-      .magazine-contents { padding: 60px 50px; background: #fafafa; }
+      .magazine-contents { padding: 60px 50px; background: #fafafa; height: 100vh; }
       .magazine-contents-title { font-size: 2.5em; margin-bottom: 40px; font-weight: 900; }
       .magazine-contents-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; font-size: 1em; }
       .magazine-contents-item { border-left: 3px solid #ff6b9d; padding-left: 20px; }
       .magazine-contents-item.alt { border-left-color: #000; }
       .magazine-contents-item-title { font-weight: bold; margin: 0; }
       .magazine-contents-item-desc { color: #666; margin: 5px 0 0 0; font-size: 0.9em; }
-      .magazine-article { padding: 60px 50px; }
+      .magazine-article { padding: 60px 50px; height: 100vh; }
       .magazine-article-label { color: #ff6b9d; font-size: 0.9em; letter-spacing: 2px; font-weight: bold; }
       .magazine-article-title { font-size: 3em; margin: 10px 0 30px 0; font-weight: 900; line-height: 1.1; }
       .magazine-article-columns { columns: 2; column-gap: 40px; font-size: 1em; line-height: 1.7; }
       .magazine-article-columns p:first-child { margin-top: 0; }
-      .magazine-dark-page { background: #000; color: white; padding: 60px 50px; height: 100%; }
+      .magazine-dark-page { background: #000; color: white; padding: 60px 50px; height: 100vh; }
       .magazine-dark-title { font-size: 2.5em; margin: 0 0 30px 0; font-weight: 900; }
       .magazine-dark-text { font-size: 1.2em; line-height: 1.7; color: #ddd; }
       .magazine-quote-box { margin-top: 40px; padding: 30px; border-left: 4px solid #ff6b9d; }
@@ -265,6 +265,30 @@ const MOCK_PAGES: Record<string, PageData[]> = {
               <p class="magazine-contents-item-title">16 | MÙA XUÂN TƯƠI MỚI</p>
               <p class="magazine-contents-item-desc">Bộ sưu tập mùa xuân đầy màu sắc</p>
             </div>
+            <div class="magazine-contents-item">
+              <p class="magazine-contents-item-title">20 | THỜI TRANG BỀN VỮNG</p>
+              <p class="magazine-contents-item-desc">Xu hướng xanh và các vật liệu tái chế</p>
+            </div>
+            <div class="magazine-contents-item alt">
+              <p class="magazine-contents-item-title">24 | PHỤ KIỆN 2024</p>
+              <p class="magazine-contents-item-desc">Túi xách, giày dép và những món đồ không thể thiếu</p>
+            </div>
+            <div class="magazine-contents-item">
+              <p class="magazine-contents-item-title">28 | THIẾT KẾ VIỆT</p>
+              <p class="magazine-contents-item-desc">Những tài năng trẻ của Việt Nam trên trường quốc tế</p>
+            </div>
+            <div class="magazine-contents-item alt">
+              <p class="magazine-contents-item-title">32 | MÀU TÓC XUẤN SẮC</p>
+              <p class="magazine-contents-item-desc">Xu hướng nhuộm tóc và chăm sóc tóc 2024</p>
+            </div>
+            <div class="magazine-contents-item">
+              <p class="magazine-contents-item-title">36 | TRANG ĐIỂM MÙA LỄ HỘI</p>
+              <p class="magazine-contents-item-desc">Makeup look nổi bật cho những dịp đặc biệt</p>
+            </div>
+            <div class="magazine-contents-item alt">
+              <p class="magazine-contents-item-title">40 | BẪY THỜI TRANG</p>
+              <p class="magazine-contents-item-desc">Những sai lầm cần tránh khi phối đồ</p>
+            </div>
           </div>
         </div>
       `
@@ -279,9 +303,12 @@ const MOCK_PAGES: Record<string, PageData[]> = {
           <span class="magazine-article-label">TRENDS</span>
           <h2 class="magazine-article-title">XU HƯỚNG<br/>THỜI TRANG 2024</h2>
           <div class="magazine-article-columns">
-            <p><strong>Màu sắc tươi sáng</strong> - Năm 2024 đánh dấu sự trở lại mạnh mẽ của các gam màu rực rỡ. Từ hồng neon đến xanh cobalt, các nhà thiết kế không ngại thử nghiệm với bảng màu táo bạo.</p>
-            <p><strong>Phong cách tối giản</strong> - Xu hướng minimalism tiếp tục thống trị với các đường nét đơn giản, thanh lịch. Less is more vẫn là phương châm được nhiều fashionista theo đuổi.</p>
-            <p><strong>Bền vững</strong> - Thời trang xanh không còn là lựa chọn mà trở thành tiêu chuẩn. Vật liệu tái chế và quy trình sản xuất thân thiện môi trường ngày càng được ưu tiên.</p>
+            <p><strong>Màu sắc tươi sáng</strong> - Năm 2024 đánh dấu sự trở lại mạnh mẽ của các gam màu rực rỡ. Từ hồng neon đến xanh cobalt, các nhà thiết kế không ngại thử nghiệm với bảng màu táo bạo. Những sàn diễn thời trang Paris, Milan, New York đều đồng loạt giới thiệu những bộ sưu tập sống động với màu sắc độc đáo.</p>
+            <p><strong>Phong cách tối giản</strong> - Xu hướng minimalism tiếp tục thống trị với các đường nét đơn giản, thanh lịch. Less is more vẫn là phương châm được nhiều fashionista theo đuổi. Các thiết kế đơn form nhưng tinh tế luôn chiếm được cảm tình của người mặc hiện đại.</p>
+            <p><strong>Bền vững</strong> - Thời trang xanh không còn là lựa chọn mà trở thành tiêu chuẩn. Vật liệu tái chế và quy trình sản xuất thân thiện môi trường ngày càng được ưu tiên. Các thương hiệu lớn đều cam kết giảm thiểu tác động đến môi trường.</p>
+            <p><strong>Oversized</strong> - Quần áo form rộng tiếp tục là xu hướng không thể thiếu. Từ blazer oversize đến quần baggy rộng dáng, phong cách này vừa thoải mái vừa tạo vẻ ngoài thời thượng. Các street style icon đều yêu thích sự tự do mà phong cách này mang lại.</p>
+            <p><strong>Chất liệu denim</strong> - Jeans không bao giờ lỗi thời, nhưng năm 2024 thấy sự trở lại của những mẫu jeans vintage, jeans rộng ống và các thiết kế denim sáng tạo. Từ áo khoác jeans đến chân váy denim, tất cả đều có mặt trong tủ đồ của fashionista.</p>
+            <p><strong>Màu pastel</strong> - Những gam màu nhẹ nhàng như xanh mint, hồng baby, lavender chiếm lĩnh bộ sưu tập mùa xuân. Các màu pastel mang lại cảm giác tươi mới, trẻ trung nhưng vẫn rất thanh lịch và tinh tế.</p>
           </div>
         </div>
       `
@@ -295,9 +322,14 @@ const MOCK_PAGES: Record<string, PageData[]> = {
         <div class="magazine-dark-page">
           <h2 class="magazine-dark-title">STREET STYLE</h2>
           <p class="magazine-dark-text">
-            Phong cách đường phố không chỉ là cách ăn mặc, mà còn là một tuyên ngôn về cá tính. 
-            Từ những con phố Paris lãng mạn đến Tokyo năng động, chúng ta chứng kiến sự pha trộn 
+            Phong cách đường phố không chỉ là cách ăn mặc, mà còn là một tuyên ngôn về cá tính.
+            Từ những con phố Paris lãng mạn đến Tokyo năng động, chúng ta chứng kiến sự pha trộn
             độc đáo giữa truyền thống và hiện đại.
+          </p>
+          <p class="magazine-dark-text">
+            Street style đã trở thành nguồn cảm hứng bất tận cho các nhà thiết kế. Những góc phố
+            thời trang Copenhagen, Seoul hay New York đều tạo nên những xu hướng độc đáo, phản ánh
+            văn hóa và lối sống của từng thành phố.
           </p>
           <div class="magazine-quote-box">
             <p class="magazine-quote-text">
@@ -305,6 +337,16 @@ const MOCK_PAGES: Record<string, PageData[]> = {
             </p>
             <p class="magazine-quote-author">- Oscar de la Renta</p>
           </div>
+          <p class="magazine-dark-text">
+            Sự đa dạng trong street style cho thấy thời trang không còn bị giới hạn bởi những quy tắc
+            cứng nhắc. Mỗi cá nhân có thể tự do thể hiện cái tôi qua trang phục, tạo nên một bức tranh
+            phong phú về văn hóa và thẩm mỹ.
+          </p>
+          <p class="magazine-dark-text">
+            Từ minimalist đến maximalist, từ vintage đến futuristic, street style đích thực là sự
+            giao thoa của nhiều phong cách khác nhau, tạo nên một ngôn ngữ thời trang đầy sức sống và
+            sáng tạo.
+          </p>
         </div>
       `
     },

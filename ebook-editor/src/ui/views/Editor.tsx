@@ -5,8 +5,7 @@ import tuiImageEditorPlugin from 'grapesjs-tui-image-editor';
 import coreSetup from '../../plugins/core-setup';
 import bookAdapter from '../../plugins/book-adapter';
 import basicBlocks from '../../plugins/basic-blocks';
-import coverSyncPlugin from '../../plugins/cover-sync';
-import grapesjsRulers from '../../plugins/rulers'; // Local rulers plugin
+import grapesjsRulers from '../../plugins/rulers';
 import { ExportModal } from '../../features/export/components/ExportModal';
 import { useBookStore } from '../../core/store/bookStore';
 import '../../styles/setup.css';
@@ -62,7 +61,6 @@ const Editor: React.FC = () => {
           storageManager: false,
           pageManager: {
             pages: gjsPages.length > 0 ? gjsPages : [
-              // Fallback if no pages found
               {
                 id: 'default-page',
                 name: 'Page 1',
@@ -75,8 +73,7 @@ const Editor: React.FC = () => {
             grapesjsRulers,
             bookAdapter,
             tuiImageEditorPlugin,
-            basicBlocks,
-            coverSyncPlugin
+            basicBlocks
           ],
           deviceManager: {
             devices: [

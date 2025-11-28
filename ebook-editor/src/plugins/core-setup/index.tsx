@@ -381,7 +381,6 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
     initializeMode(config.layoutMode as 'fixed' | 'reflow');
     initializeLeftPanel();
 
-    // Add Ctrl+Scroll zoom functionality - only in fixed mode
     if (config.layoutMode === 'fixed') {
       const canvasEl = editor.Canvas.getElement();
       if (canvasEl) {
