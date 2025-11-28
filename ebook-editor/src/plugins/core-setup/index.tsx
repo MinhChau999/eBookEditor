@@ -1,32 +1,33 @@
 
 import grapesjs, { Editor } from 'grapesjs';
-import { createRoot } from 'react-dom/client';
 import { useBookStore } from '../../core/store/bookStore';
-import { PAGE_TEMPLATES } from '../../features/fixed-layout/utils/pageTemplates';
-import { PageSizeControls } from '../../features/fixed-layout/components/PageSizeControls';
-import { ZoomControls } from '../../features/fixed-layout/components/ZoomControls';
-import '../../features/fixed-layout/styles/fixed-layout.css';
-import '../../features/fixed-layout/styles/grid.css';
-
+export interface PageTemplate {
+  id: string;
+  name: string;
+  width: number;
+  height: number;
+  unit: 'mm' | 'px' | 'in';
+}
+export const getTemplateById = (id: string): PageTemplate | undefined => {
+  return Object.values(PAGE_TEMPLATES).find(t => t.id === id);
+};
+export const PAGE_TEMPLATES: Record<string, PageTemplate> = {
+  A4_PORTRAIT: { id: 'A4_PORTRAIT', name: 'A4 Portrait', width: 210, height: 297, unit: 'mm' },
+  A4_LANDSCAPE: { id: 'A4_LANDSCAPE', name: 'A4 Landscape', width: 297, height: 210, unit: 'mm' },
+  A5_PORTRAIT: { id: 'A5_PORTRAIT', name: 'A5 Portrait', width: 148, height: 210, unit: 'mm' },
+  LETTER_PORTRAIT: { id: 'LETTER_PORTRAIT', name: 'Letter Portrait', width: 216, height: 279, unit: 'mm' },
+  IPAD_PORTRAIT: { id: 'IPAD_PORTRAIT', name: 'iPad Portrait', width: 768, height: 1024, unit: 'px' },
+  IPAD_LANDSCAPE: { id: 'IPAD_LANDSCAPE', name: 'iPad Landscape', width: 1024, height: 768, unit: 'px' },
+};
 export interface CoreSetupOptions {
   textCleanCanvas?: string;
   layoutMode?: 'fixed' | 'reflow';
-  modalImportTitle?: string;
-  modalImportButton?: string;
-  modalImportLabel?: string;
-  modalImportContent?: string | ((editor: Editor) => string);
-  importViewerOptions?: Record<string, unknown>;
 }
 
 const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, options: CoreSetupOptions = {}) => {
   const config = {
     textCleanCanvas: 'Are you sure you want to clear the canvas?',
     layoutMode: 'fixed',
-    modalImportTitle: 'Import',
-    modalImportButton: 'Import',
-    modalImportLabel: '',
-    modalImportContent: '',
-    importViewerOptions: {},
     ...options,
   };
 
@@ -34,21 +35,17 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
   const panels = editor.Panels;
 
   // --- Fixed Layout Logic ---
-  let layoutRoot: ReturnType<typeof createRoot> | null = null;
 
   const updateCanvasSize = () => {
     const { currentBook } = useBookStore.getState();
     const templateId = currentBook?.template || 'A4_PORTRAIT';
     const template = PAGE_TEMPLATES[templateId];
-    const container = editor.getContainer();
-    const isSpread = container?.classList.contains('gjs-view-spread');
 
     if (template) {
       const frameBody = editor.Canvas.getBody();
       
       if (frameBody) {
-        const widthVal = isSpread ? template.width * 2 : template.width;
-        const width = `${widthVal}${template.unit}`;
+        const width = `${template.width}${template.unit}`;
         const height = `${template.height}${template.unit}`;
         
         const fixedDevice = editor.Devices.get('fixed');
@@ -61,58 +58,8 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
                 editor.refresh();
             }
         }
-
-        // Handle Spread Guide
-        let spreadGuide = frameBody.querySelector('.spread-guide');
-        if (isSpread) {
-            if (!spreadGuide) {
-                spreadGuide = document.createElement('div');
-                spreadGuide.className = 'spread-guide';
-                (spreadGuide as HTMLElement).style.position = 'absolute';
-                (spreadGuide as HTMLElement).style.top = '0';
-                (spreadGuide as HTMLElement).style.bottom = '0';
-                (spreadGuide as HTMLElement).style.left = '50%';
-                (spreadGuide as HTMLElement).style.width = '1px';
-                (spreadGuide as HTMLElement).style.backgroundColor = '#ddd';
-                (spreadGuide as HTMLElement).style.zIndex = '100';
-                (spreadGuide as HTMLElement).style.pointerEvents = 'none';
-                frameBody.appendChild(spreadGuide);
-            }
-        } else {
-            if (spreadGuide) {
-                spreadGuide.remove();
-            }
-        }
       }
     }
-  };
-
-  const mountLayoutControls = () => {
-      const mountPoint = document.querySelector('.gjs-pn-btn.layout-controls-mount');
-      if (mountPoint && !layoutRoot) {
-          mountPoint.innerHTML = ''; 
-          (mountPoint as HTMLElement).style.width = 'auto';
-          (mountPoint as HTMLElement).style.padding = '0 10px';
-          
-          layoutRoot = createRoot(mountPoint);
-          layoutRoot.render(
-              <div className="fixed-layout-controls" onClick={(e) => e.stopPropagation()}>
-                  <PageSizeControls />
-                  <ZoomControls editor={editor} />
-              </div>
-          );
-      }
-  };
-
-  const unmountLayoutControls = () => {
-      if (layoutRoot) {
-          layoutRoot.unmount();
-          layoutRoot = null;
-      }
-      const mountPoint = document.querySelector('.gjs-pn-btn.layout-controls-mount');
-      if (mountPoint) {
-          mountPoint.innerHTML = '';
-      }
   };
 
   // --- Reflow Logic ---
@@ -126,9 +73,6 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
       }
     }
   };
-
-  // --- Commands ---
-
   // Layout Mode Initialization (Internal, not exposed as commands anymore)
   const initializeMode = (mode: 'reflow' | 'fixed') => {
     const container = editor.getContainer();
@@ -139,14 +83,11 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
     
     if (mode === 'fixed') {
         editor.Devices.select('fixed');
-
         updateCanvasSize();
-        mountLayoutControls();
         editor.runCommand('ruler-visibility');
     } else {
         editor.Devices.select('desktop'); // Default to desktop for reflow
         enableReflowMode();
-        unmountLayoutControls();
         editor.stopCommand('ruler-visibility');
     }
 
@@ -167,67 +108,8 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
     stop: () => {},
   });
 
-  commands.add('set-view-single', {
-    run: (editor: Editor) => {
-        const container = editor.getContainer();
-        if (container) {
-            container.classList.remove('gjs-view-spread');
-            
-            // Update buttons manually
-            const pn = editor.Panels;
-            const btnSingle = pn.getButton('devices-c', 'set-view-single');
-            const btnSpread = pn.getButton('devices-c', 'set-view-spread');
-
-            if (btnSingle) {
-                btnSingle.set('active', true);
-                btnSingle.set('className', 'gjs-four-color');
-            }
-            if (btnSpread) {
-                btnSpread.set('active', false);
-                btnSpread.set('className', '');
-            }
-
-            // Update canvas if in fixed mode
-            if (editor.Devices.getSelected()?.id === 'fixed') {
-                updateCanvasSize();
-            }
-        }
-    },
-    stop: () => {},
-  });
-
-  commands.add('set-view-spread', {
-    run: (editor: Editor) => {
-        const container = editor.getContainer();
-        if (container) {
-            container.classList.add('gjs-view-spread');
-
-            // Update buttons manually
-            const pn = editor.Panels;
-            const btnSingle = pn.getButton('devices-c', 'set-view-single');
-            const btnSpread = pn.getButton('devices-c', 'set-view-spread');
-
-            if (btnSingle) {
-                btnSingle.set('active', false);
-                btnSingle.set('className', '');
-            }
-            if (btnSpread) {
-                btnSpread.set('active', true);
-                btnSpread.set('className', 'gjs-four-color');
-            }
-
-            // Update canvas if in fixed mode
-            if (editor.Devices.getSelected()?.id === 'fixed') {
-                updateCanvasSize();
-            }
-        }
-    },
-    stop: () => {},
-  });
-
   commands.add('fixed:update-canvas', updateCanvasSize);
 
-  // Initialize default mode based on options
   editor.on('load', () => {
     initializeMode(config.layoutMode as 'fixed' | 'reflow');
   });
@@ -279,12 +161,6 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
           attributes: { title: 'Single Page View' },
           active: true, // Default
           className: 'gjs-four-color'
-        },
-        {
-          id: 'set-view-spread',
-          command: 'set-view-spread',
-          label: `<svg ${iconStyle} viewBox="0 0 24 24"><path fill="currentColor" d="M21,5C19.89,4.65 18.67,4.5 17.5,4.5C15.55,4.5 13.45,4.9 12,6C10.55,4.9 8.45,4.5 6.5,4.5C4.55,4.5 2.45,4.9 1,6V20.65C1,20.9 1.25,21.15 1.5,21.15C1.6,21.15 1.65,21.1 1.75,21.1C3.1,20.45 5.05,20 6.5,20C8.45,20 10.55,20.4 12,21.5C13.35,20.65 15.8,20 17.5,20C19.15,20 20.85,20.3 22.25,21.05C22.35,21.1 22.4,21.1 22.5,21.1C22.75,21.1 23,20.85 23,20.6V6C22.4,5.55 21.75,5.25 21,5M21,18.5C19.9,18.15 18.7,18 17.5,18C15.8,18 13.35,18.65 12,19.5V8C13.35,7.15 15.8,6.5 17.5,6.5C18.7,6.5 19.9,6.65 21,7V18.5Z" /></svg>`,
-          attributes: { title: 'Spread View' },
         }
       );
   }

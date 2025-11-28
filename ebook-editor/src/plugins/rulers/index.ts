@@ -41,7 +41,7 @@ export default (editor: Editor, opts: RulersOptions = {}) => {
     const cm = editor.Commands;
     const rulH = options.rulerHeight!;
     const defaultDragMode = editor.getConfig('dragMode');
-    let zoom = options.canvasZoom!
+    let zoom = options.canvasZoom!;
     let scale = 100 / zoom;
     let rulers: Ruler | null;
 

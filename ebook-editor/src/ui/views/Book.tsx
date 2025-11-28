@@ -5,7 +5,7 @@ import { Footer } from '../components/Footer';
 import { SimpleInput } from '../components/Input';
 import { CreateBookCard, BookItem, TemplateBookCard } from '../components/BookCard';
 import { useBookStore } from '../../core/store/bookStore';
-import { PAGE_TEMPLATES } from '../../features/fixed-layout/utils/pageTemplates';
+import { PAGE_TEMPLATES } from '../../plugins/core-setup';
 import '../../styles/book.css';
 
 export const Book: React.FC = () => {

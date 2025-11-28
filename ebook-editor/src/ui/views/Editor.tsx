@@ -10,7 +10,7 @@ import coverSyncPlugin from '../../plugins/cover-sync';
 import grapesjsRulers from '../../plugins/rulers'; // Local rulers plugin
 import { ExportModal } from '../../features/export/components/ExportModal';
 import { useBookStore } from '../../core/store/bookStore';
-import '../../styles/setup.css'
+import '../../styles/setup.css';
 
 // Define GrapesJS editor type
 const Editor: React.FC = () => {

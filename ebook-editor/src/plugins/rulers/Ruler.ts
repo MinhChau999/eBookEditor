@@ -4,7 +4,7 @@
  */
 
 interface RulerOptions {
-    canvas?: { style: { pointerEvents: string } };
+    canvas?: HTMLElement;
     container: HTMLElement;
     rulerHeight: number;
     fontFamily: string;
@@ -46,6 +46,7 @@ interface RulerInstance {
     getScale: () => number;
     setScale: (newScale: number) => number;
     drawRuler: (length: number, thickness: number, scale?: number) => void;
+    drawPoints: () => void;
     destroy: () => void;
     clearListeners?: () => void;
 }
@@ -81,7 +82,7 @@ export default class Ruler {
 
         // Default required options
         const defaultOptions: RulerOptions = {
-            canvas: { style: { pointerEvents: 'auto' } },
+            // canvas: { style: { pointerEvents: 'auto' } },
             container: document.body,
             rulerHeight: 15,
             fontFamily: 'arial',
@@ -205,7 +206,7 @@ export default class Ruler {
             const curDelta = dimension === VERTICAL ? CUR_DELTA_X : CUR_DELTA_Y;
             guide.title = 'Double click to delete';
             guide.dataset.id = guides.length.toString();
-            this.utils.addClasss(guide, ['rul_line', guideStyle]);
+            this.utils.addClass(guide, ['rul_line', guideStyle]);
             guide = theRulerDOM.appendChild(guide);
             if (dimension === VERTICAL) {
                 guide.style.left = this.utils.pixelize(x - options.container.getBoundingClientRect().left);
@@ -227,7 +228,7 @@ export default class Ruler {
             const rulerStyle = dimension === VERTICAL ? 'rul_ruler_Vertical' : 'rul_ruler_Horizontal';
             const element = document.createElement('canvas');
 
-            this.utils.addClasss(element, ['rul_ruler', rulerStyle, 'rul_align_' + alignment]);
+            this.utils.addClass(element, ['rul_ruler', rulerStyle, 'rul_align_' + alignment]);
             const canvas: HTMLCanvasElement = container.appendChild(element);
             rulerz[alignment] = this.rulerConstructor(canvas, options, dimension);
             rulerz[alignment].drawRuler(container.offsetWidth, options.rulerHeight);
@@ -241,7 +242,7 @@ export default class Ruler {
                 const cornerStyle = 'rul_corner' + side.toUpperCase();
 
                 corner.title = 'Clear Guide lines';
-                this.utils.addClasss(corner, ['rul_corner', cornerStyle, options.cornerIcon]);
+                this.utils.addClass(corner, ['rul_corner', cornerStyle, options.cornerIcon]);
                 corner.style.width = this.utils.pixelize(options.rulerHeight + 1);
                 corner.style.height = this.utils.pixelize(options.rulerHeight);
                 corner.style.lineHeight = this.utils.pixelize(options.rulerHeight);
@@ -275,7 +276,7 @@ export default class Ruler {
         };
 
         const constructRulers = (curOptions: RulerOptions) => {
-            theRulerDOM = this.utils.addClasss(theRulerDOM, 'rul_wrapper') as HTMLDivElement;
+            theRulerDOM = this.utils.addClass(theRulerDOM, 'rul_wrapper') as HTMLDivElement;
             options = { ...defaultOptions, ...curOptions };
             theRulerDOM = options.container.appendChild(theRulerDOM) as HTMLDivElement;
             options.sides.forEach((side: string) => {
@@ -475,7 +476,7 @@ export default class Ruler {
 
         const drawRuler = (_rulerLength: number, _rulerThickness: number, _rulerScale?: number) => {
             const dpr = window.devicePixelRatio || 1;
-            rulLength = _rulerLength * 8;
+            rulLength = _rulerLength * 4;
             rulThickness = _rulerThickness;
             rulScale = _rulerScale || rulScale;
 
@@ -563,7 +564,7 @@ export default class Ruler {
 
         const initTracker = () => {
             tracker = options.container.appendChild(tracker);
-            this.utils.addClasss(tracker, 'rul_tracker');
+            this.utils.addClass(tracker, 'rul_tracker');
             const height = this.utils.pixelize(options.rulerHeight);
             if (dimension === 2) {
                 tracker.style.height = height;
@@ -641,7 +642,7 @@ export default class Ruler {
                 },
                 startMoving: (evt?: MouseEvent) => {
                     draggable.cv().style.pointerEvents = 'none';
-                    this.utils.addClasss(guideLine, ['rul_line_dragged']);
+                    this.utils.addClass(guideLine, ['rul_line_dragged']);
                     evt = evt || window.event as MouseEvent;
                     const posX = evt ? evt.clientX : 0;
                     const posY = evt ? evt.clientY : 0;
@@ -688,7 +689,7 @@ export default class Ruler {
                     guideLine.style.cursor = '';
                     document.onmousemove = function () { };
                     hideToolTip();
-                    this.utils.removeClasss(guideLine, ['rul_line_dragged']);
+                    this.utils.removeClass(guideLine, ['rul_line_dragged']);
                 }
             }
         })();
@@ -697,7 +698,7 @@ export default class Ruler {
             if (!options.enableToolTip) {
                 return;
             }
-            this.utils.addClasss(guideLine, 'rul_tooltip');
+            this.utils.addClass(guideLine, 'rul_tooltip');
         };
 
         const updateToolTip = (x: number, y: number) => {
@@ -709,7 +710,7 @@ export default class Ruler {
         };
 
         const hideToolTip = () => {
-            this.utils.removeClasss(guideLine, 'rul_tooltip');
+            this.utils.removeClass(guideLine, 'rul_tooltip');
         };
 
         const destroy = () => {
@@ -787,7 +788,7 @@ export const utils = {
     prependChild(container: HTMLElement, element: HTMLElement) {
         return container.insertBefore(element, container.firstChild);
     },
-    addClasss(element: HTMLElement, classNames: string | string[]) {
+    addClass(element: HTMLElement, classNames: string | string[]) {
         if (!(classNames instanceof Array)) {
             classNames = [classNames];
         }
@@ -798,16 +799,16 @@ export const utils = {
 
         return element;
     },
-    removeClasss(element: HTMLElement, classNames: string | string[]) {
-        let curCalsss = element.className;
+    removeClass(element: HTMLElement, classNames: string | string[]) {
+        let curClass = element.className;
         if (!(classNames instanceof Array)) {
             classNames = [classNames];
         }
 
         classNames.forEach(function (name) {
-            curCalsss = curCalsss.replace(name, '');
+            curClass = curClass.replace(name, '');
         });
-        element.className = curCalsss;
+        element.className = curClass;
         return element;
     }
 }

@@ -17,7 +17,6 @@
     "@types/uuid": "^10.0.0",
     "file-saver": "^2.0.5",
     "grapesjs": "^0.22.13",
-    "grapesjs-rulers": "^1.0.8",
     "grapesjs-tui-image-editor": "^1.0.2",
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.4",
