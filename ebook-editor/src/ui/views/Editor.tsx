@@ -4,7 +4,6 @@ import grapesjs from 'grapesjs';
 import tuiImageEditorPlugin from 'grapesjs-tui-image-editor';
 import coreSetup from '../../plugins/core-setup';
 import bookAdapter from '../../plugins/book-adapter';
-import leftPanel from '../../plugins/left-panel';
 import basicBlocks from '../../plugins/basic-blocks';
 import coverSyncPlugin from '../../plugins/cover-sync';
 import grapesjsRulers from '../../plugins/rulers'; // Local rulers plugin
@@ -75,7 +74,6 @@ const Editor: React.FC = () => {
             coreSetup,
             grapesjsRulers,
             bookAdapter,
-            leftPanel,
             tuiImageEditorPlugin,
             basicBlocks,
             coverSyncPlugin
@@ -114,6 +112,10 @@ const Editor: React.FC = () => {
             },
             [grapesjsRulers as any]: { // eslint-disable-line @typescript-eslint/no-explicit-any
               dragMode: 'translate',
+              canvasZoom: 100,
+              rulerOpts: {
+                cornerIcon: 'fa fa-trash',
+              }
             },
           }
         });

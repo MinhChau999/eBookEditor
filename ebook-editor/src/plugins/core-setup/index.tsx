@@ -1,6 +1,9 @@
 
 import grapesjs, { Editor } from 'grapesjs';
 import { useBookStore } from '../../core/store/bookStore';
+import { createRoot } from 'react-dom/client';
+import { StructurePanel } from '../../features/page/components/StructurePanel';
+import { PagesPanelFooter } from '../../features/page/components/PagesPanelFooter';
 export interface PageTemplate {
   id: string;
   name: string;
@@ -24,6 +27,18 @@ export interface CoreSetupOptions {
   layoutMode?: 'fixed' | 'reflow';
 }
 
+// Type for editor with left panel extensions
+type EditorWithLeftPanel = Editor & {
+  leftPanelElements?: {
+    header: HTMLElement;
+    content: HTMLElement;
+    footer: HTMLElement;
+  };
+  adjustLeftPanelLayout?: (visible: boolean) => void;
+  leftSidebarVisible?: boolean;
+};
+
+
 const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, options: CoreSetupOptions = {}) => {
   const config = {
     textCleanCanvas: 'Are you sure you want to clear the canvas?',
@@ -33,6 +48,121 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
 
   const commands = editor.Commands;
   const panels = editor.Panels;
+
+  // --- Left Panel Logic ---
+  let structurePanelRoot: ReturnType<typeof createRoot> | null = null;
+  let footerPanelRoot: ReturnType<typeof createRoot> | null = null;
+
+  const createBookStructureView = (container: HTMLElement) => {
+    if (!structurePanelRoot) {
+      structurePanelRoot = createRoot(container);
+    }
+    structurePanelRoot.render(<StructurePanel editor={editor} />);
+  };
+
+  const createAssetsView = (container: HTMLElement) => {
+     container.innerHTML = '<div style="padding: 20px; text-align: center; color: #aaa;">Assets Panel (Coming Soon)</div>';
+  };
+
+  const createFooterView = (footerLeftSidebar: HTMLElement) => {
+    if (!footerPanelRoot) {
+      footerPanelRoot = createRoot(footerLeftSidebar);
+    }
+    footerPanelRoot.render(<PagesPanelFooter editor={editor} />);
+  };
+
+  const switchLeftSidebarContent = (tabId: string, contentLeftSidebar: HTMLElement) => {
+    if (tabId !== 'book-structure' && structurePanelRoot) {
+        structurePanelRoot.unmount();
+        structurePanelRoot = null;
+    }
+
+    contentLeftSidebar.innerHTML = '';
+
+    switch (tabId) {
+      case 'book-structure':
+        createBookStructureView(contentLeftSidebar);
+        break;
+      case 'assets':
+        createAssetsView(contentLeftSidebar);
+        break;
+    }
+  };
+
+  const initializeLeftPanel = () => {
+    const editorContainer = editor.getContainer();
+    if (!editorContainer) return;
+
+    const editorContent = editorContainer.querySelector('.gjs-editor');
+    if (!editorContent) return;
+
+    // Create left panel containers
+    const headerLeftSidebar = document.createElement('div');
+    headerLeftSidebar.className = 'gjs-pn-header-left-sidebar gjs-pn-panel gjs-one-bg gjs-two-color';
+
+    const contentLeftSidebar = document.createElement('div');
+    contentLeftSidebar.className = 'gjs-pn-content-left-sidebar gjs-one-bg gjs-two-color left-sidebar-content';
+
+    const footerLeftSidebar = document.createElement('div');
+    footerLeftSidebar.className = 'gjs-pn-footer-left-sidebar gjs-pn-panel gjs-one-bg gjs-two-color';
+
+    // Tab configuration
+    const leftSidebarTabs = [
+      { id: 'book-structure', label: 'Structure', icon: '<svg style="display:block;max-width:18px" viewBox="0 0 24 24"><path fill="currentColor" d="M21,5C19.89,4.65 18.67,4.5 17.5,4.5C15.55,4.5 13.45,4.9 12,6C10.55,4.9 8.45,4.5 6.5,4.5C4.55,4.5 2.45,4.9 1,6V20.65C1,20.9 1.25,21.15 1.5,21.15C1.6,21.15 1.65,21.1 1.75,21.1C3.1,20.45 5.05,20 6.5,20C8.45,20 10.55,20.4 12,21.5C13.35,20.65 15.8,20 17.5,20C19.15,20 20.85,20.3 22.25,21.05C22.35,21.1 22.4,21.1 22.5,21.1C22.75,21.1 23,20.85 23,20.6V6C22.4,5.55 21.75,5.25 21,5M21,18.5C19.9,18.15 18.7,18 17.5,18C15.8,18 13.35,18.65 12,19.5V8C13.35,7.15 15.8,6.5 17.5,6.5C18.7,6.5 19.9,6.65 21,7V18.5Z" /></svg>' },
+      { id: 'assets', label: 'Assets', icon: '<svg style="display:block;max-width:18px" viewBox="0 0 24 24"><path fill="currentColor" d="M5,1C3.89,1 3,1.89 3,3V7H5V5H19V19H5V17H3V21A2,2 0 0,0 5,23H19A2,2 0 0,0 21,21V3A2,2 0 0,0 19,1H5M7,9V11H9V9H7M11,9V11H13V9H11M15,9V11H17V9H15M7,13V15H9V13H7M11,13V15H13V13H11M15,13V15H17V13H15Z" /></svg>' }
+    ];
+
+    // Store references for toggle command
+    const editorWithExtensions = editor as EditorWithLeftPanel;
+
+    editorWithExtensions.leftPanelElements = {
+      header: headerLeftSidebar,
+      content: contentLeftSidebar,
+      footer: footerLeftSidebar
+    };
+
+    // Create tab buttons
+    leftSidebarTabs.forEach((tab, index) => {
+      const tabButton = document.createElement('div');
+      tabButton.className = `gjs-pn-tab-btn ${index === 0 ? 'gjs-pn-tab-active' : ''}`;
+      tabButton.setAttribute('data-tab', tab.id);
+      tabButton.title = tab.label;
+      tabButton.innerHTML = `<div class="gjs-pn-tab-label">${tab.label}</div>`;
+
+      tabButton.addEventListener('click', () => {
+        headerLeftSidebar.querySelectorAll('.gjs-pn-tab-btn').forEach(btn => btn.classList.remove('gjs-pn-tab-active'));
+        tabButton.classList.add('gjs-pn-tab-active');
+        switchLeftSidebarContent(tab.id, contentLeftSidebar);
+      });
+
+      headerLeftSidebar.appendChild(tabButton);
+    });
+
+    // Append to editor
+    editorContent.appendChild(headerLeftSidebar);
+    editorContent.appendChild(contentLeftSidebar);
+    editorContent.appendChild(footerLeftSidebar);
+    switchLeftSidebarContent('book-structure', contentLeftSidebar);
+    createFooterView(footerLeftSidebar);
+    const adjustLayout = (visible: boolean) => {
+      const leftWidth = visible ? 'var(--gjs-left-width, 15%)' : '0px';
+      const canvas = editorContainer.querySelector('.gjs-cv-canvas') as HTMLElement;
+      if (canvas) {
+        canvas.style.left = leftWidth;
+        canvas.style.width = visible ? 'calc(100% - var(--gjs-left-width, 15%) - var(--gjs-left-width, 15%))' : '100%';
+      }
+
+      const commandsPanel = editorContainer.querySelector('.gjs-pn-commands') as HTMLElement;
+      if (commandsPanel) commandsPanel.style.left = leftWidth;
+
+      const devicesPanel = editorContainer.querySelector('.gjs-pn-devices-c') as HTMLElement;
+      if (devicesPanel) devicesPanel.style.left = leftWidth;
+    };
+
+    adjustLayout(true);
+    editorWithExtensions.adjustLeftPanelLayout = adjustLayout;
+    editorWithExtensions.leftSidebarVisible = true; // Set initial state
+  };
 
   // --- Fixed Layout Logic ---
 
@@ -110,8 +240,163 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
 
   commands.add('fixed:update-canvas', updateCanvasSize);
 
+  // Zoom commands - only work in fixed mode
+  commands.add('zoom-in', (editor: Editor) => {
+    if (config.layoutMode !== 'fixed') return;
+    const currentZoom = editor.Canvas.getZoom();
+    const newZoom = Math.min(currentZoom + 5, 200); // Max 200%, 5% steps
+    editor.runCommand('set-zoom', { zoom: newZoom });
+  });
+
+  commands.add('zoom-out', (editor: Editor) => {
+    if (config.layoutMode !== 'fixed') return;
+    const currentZoom = editor.Canvas.getZoom();
+    const newZoom = Math.max(currentZoom - 5, 25); // Min 25%, 5% steps
+    editor.runCommand('set-zoom', { zoom: newZoom });
+  });
+
+  commands.add('zoom-reset', (editor: Editor) => {
+    if (config.layoutMode !== 'fixed') return;
+    editor.runCommand('set-zoom', { zoom: 100 });
+  });
+
+  // Left Panel Toggle Command (using GrapesJS pattern)
+  commands.add('left-panel-toggle', {
+    run: (editor: Editor) => {
+      const editorWithExtensions = editor as EditorWithLeftPanel;
+      const elements = editorWithExtensions.leftPanelElements;
+      const adjustLayout = editorWithExtensions.adjustLeftPanelLayout;
+      const isVisible = editorWithExtensions.leftSidebarVisible !== false;
+
+      if (!elements || !adjustLayout) return;
+
+      // Toggle visibility
+      const newVisibility = !isVisible;
+      const displayStyle = newVisibility ? 'block' : 'none';
+
+      elements.header.style.display = displayStyle;
+      elements.content.style.display = displayStyle;
+      elements.footer.style.display = displayStyle;
+
+      adjustLayout(newVisibility);
+      editorWithExtensions.leftSidebarVisible = newVisibility;
+    },
+    stop: () => {},
+  });
+
+  // Left Panel Show Command (kept for manual control)
+  commands.add('left-panel-show', {
+    run: (editor: Editor) => {
+      const editorWithExtensions = editor as EditorWithLeftPanel;
+      const elements = editorWithExtensions.leftPanelElements;
+      const adjustLayout = editorWithExtensions.adjustLeftPanelLayout;
+
+      if (!elements || !adjustLayout) return;
+
+      // Remove display style to restore default (flex for header)
+      elements.header.style.removeProperty('display');
+      elements.content.style.removeProperty('display');
+      elements.footer.style.removeProperty('display');
+
+      adjustLayout(true);
+      editorWithExtensions.leftSidebarVisible = true;
+    },
+    stop: () => {},
+  });
+
+  // Left Panel Hide Command (kept for manual control)
+  commands.add('left-panel-hide', {
+    run: (editor: Editor) => {
+      const editorWithExtensions = editor as EditorWithLeftPanel;
+      const elements = editorWithExtensions.leftPanelElements;
+      const adjustLayout = editorWithExtensions.adjustLeftPanelLayout;
+
+      if (!elements || !adjustLayout) return;
+
+      elements.header.style.display = 'none';
+      elements.content.style.display = 'none';
+      elements.footer.style.display = 'none';
+
+      adjustLayout(false);
+      editorWithExtensions.leftSidebarVisible = false;
+    },
+    stop: () => {},
+  });
+
+  // Modify existing preview command to hide/show left panel
+  editor.on('load', () => {
+    // Get the existing preview command
+    const previewCommand = commands.get('preview');
+
+    if (previewCommand) {
+      const originalRun = previewCommand.run;
+      const originalStop = previewCommand.stop;
+
+      // Override run method to hide left panel
+      previewCommand.run = (ed: Editor, sender?: unknown) => {
+        const editorWithExtensions = ed as EditorWithLeftPanel;
+        const elements = editorWithExtensions.leftPanelElements;
+        const adjustLayout = editorWithExtensions.adjustLeftPanelLayout;
+
+        // Hide left panel before running preview
+        if (elements && adjustLayout && editorWithExtensions.leftSidebarVisible !== false) {
+          elements.header.style.display = 'none';
+          elements.content.style.display = 'none';
+          elements.footer.style.display = 'none';
+          adjustLayout(false);
+          editorWithExtensions.leftSidebarVisible = false;
+        }
+
+        // Run original preview logic if it exists
+        if (originalRun) {
+          return originalRun.call(previewCommand, ed, sender, {});
+        }
+      };
+
+      // Override stop method to show left panel
+      previewCommand.stop = (ed: Editor, sender?: unknown) => {
+        const editorWithExtensions = ed as EditorWithLeftPanel;
+        const elements = editorWithExtensions.leftPanelElements;
+        const adjustLayout = editorWithExtensions.adjustLeftPanelLayout;
+
+        // Show left panel after stopping preview
+        if (elements && adjustLayout && editorWithExtensions.leftSidebarVisible === false) {
+          // Remove display style to restore default (flex for header)
+          elements.header.style.removeProperty('display');
+          elements.content.style.removeProperty('display');
+          elements.footer.style.removeProperty('display');
+          adjustLayout(true);
+          editorWithExtensions.leftSidebarVisible = true;
+        }
+
+        // Run original stop logic if it exists
+        if (originalStop) {
+          return originalStop.call(previewCommand, ed, sender, {});
+        }
+      };
+    }
+  });
+
   editor.on('load', () => {
     initializeMode(config.layoutMode as 'fixed' | 'reflow');
+    initializeLeftPanel();
+
+    // Add Ctrl+Scroll zoom functionality - only in fixed mode
+    if (config.layoutMode === 'fixed') {
+      const canvasEl = editor.Canvas.getElement();
+      if (canvasEl) {
+        canvasEl.addEventListener('wheel', (e: WheelEvent) => {
+          if (e.ctrlKey || e.metaKey) {
+            e.preventDefault();
+            e.stopPropagation();
+            const currentZoom = editor.Canvas.getZoom();
+            const delta = e.deltaY > 0 ? -1 : 1;
+            const newZoom = Math.max(25, Math.min(200, currentZoom + (delta * 5))); // 5% steps
+            editor.runCommand('set-zoom', { zoom: newZoom });
+          }
+        });
+      }
+    }
   });
 
   // Canvas clear
@@ -128,7 +413,7 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
 
   // Determine which device buttons to show based on initial mode
   const deviceButtons = [];
-  
+
   if (config.layoutMode === 'reflow') {
       deviceButtons.push(
         {
@@ -165,6 +450,36 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
       );
   }
 
+  // Zoom buttons - only show in fixed mode
+  const zoomButtons = config.layoutMode === 'fixed' ? [
+    {
+      id: 'zoom-in',
+      command: 'zoom-in',
+      label: `<svg ${iconStyle} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <path fill="currentColor" d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+  <path fill="none" d="M0 0h24v24H0V0z"/>
+  <path fill="currentColor" d="M12 10h-2v2H9v-2H7V9h2V7h1v2h2v1z"/>
+</svg>`,
+      attributes: { title: 'Zoom In' },
+    },
+    {
+      id: 'zoom-out',
+      command: 'zoom-out',
+      label: `<svg ${iconStyle} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <path fill="currentColor" d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+  <path fill="none" d="M0 0h24v24H0V0z"/>
+  <path fill="currentColor" d="M12 10h-5v-1h5v1z"/>
+</svg>`,
+      attributes: { title: 'Zoom Out' },
+    },
+    {
+      id: 'zoom-reset',
+      command: 'zoom-reset',
+      label: `<svg ${iconStyle} viewBox="0 0 24 24"><path fill="currentColor" d="M12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22C6.47,22 2,17.5 2,12A10,10 0 0,1 12,2M13,7H11V13H13V7Z" /></svg>`,
+      attributes: { title: 'Zoom 100%' },
+    }
+  ] : [];
+
   panels.getPanels().reset([
     {
       id: 'devices-c',
@@ -189,6 +504,7 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
           context: 'sw-visibility',
           label: `<svg ${iconStyle} viewBox="0 0 24 24"><path fill="currentColor" d="M15,5H17V3H15M15,21H17V19H15M11,5H13V3H11M19,5H21V3H19M19,9H21V7H19M19,21H21V19H19M19,13H21V11H19M19,17H21V15H19M3,5H5V3H3M3,9H5V7H3M3,13H5V11H3M3,17H5V15H3M3,21H5V19H3M11,21H13V19H11M7,21H9V19H7M7,5H9V3H7V5Z" /></svg>`,
         },
+        ...zoomButtons, // Only show zoom buttons in fixed mode
         {
           id: 'preview',
           context: 'preview',

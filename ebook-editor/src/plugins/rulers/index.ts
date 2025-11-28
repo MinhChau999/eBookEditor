@@ -126,13 +126,13 @@ export default (editor: Editor, opts: RulersOptions = {}) => {
         else return 0;
     });
 
-    cm.add('set-guides', (editor: Editor, sender?: unknown, options: SetGuidesOptions = {} as SetGuidesOptions) => {
+    cm.add('set-guides', (_editor: Editor, _sender?: unknown, options: SetGuidesOptions = {} as SetGuidesOptions) => {
         if (rulers && options.guides) {
             rulers.api.setGuides(options.guides);
         }
     });
 
-    cm.add('set-zoom', (editor: Editor, sender?: unknown, options: SetZoomOptions = {} as SetZoomOptions) => {
+    cm.add('set-zoom', (editor: Editor, _sender?: unknown, options: SetZoomOptions = {} as SetZoomOptions) => {
         zoom = options.zoom;
         scale = 100 / zoom;
         editor.Canvas.setZoom(zoom);

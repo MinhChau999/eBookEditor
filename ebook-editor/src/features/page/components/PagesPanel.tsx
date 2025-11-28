@@ -63,7 +63,7 @@ export const PagesPanel: React.FC<PagesPanelProps> = ({ editor, viewMode = 'spre
   };
 
   return (
-    <div className="pages-panel-container">
+    <>
       <div className={`left-sidebar-title ${!isExpanded ? 'collapsed' : ''}`} onClick={() => setIsExpanded(!isExpanded)}>
         <i className="fas fa-file-alt"></i>
         <span className="gjs-text-truncate gjs-two-color" title="Pages">Pages</span>
@@ -131,6 +131,6 @@ export const PagesPanel: React.FC<PagesPanelProps> = ({ editor, viewMode = 'spre
         <CoverPageList editor={editor} />
         <DocumentPagesSection editor={editor} viewMode={viewMode} />
       </div>
-    </div>
+      </>
   );
 };
