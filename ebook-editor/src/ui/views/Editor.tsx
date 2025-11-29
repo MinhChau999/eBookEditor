@@ -105,8 +105,8 @@ const Editor: React.FC = () => {
           pluginsOpts: {
             [coreSetup as any]: { // eslint-disable-line @typescript-eslint/no-explicit-any
               layoutMode: currentBook.layoutMode,
+              dragMode: '', // Default to empty string (Default mode)
               rulerOpts: {
-                dragMode: 'translate',
                 canvasZoom: 100,
               },
             },

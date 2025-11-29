@@ -23,8 +23,8 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
   const config = {
     textCleanCanvas: 'Are you sure you want to clear the canvas?',
     layoutMode: 'fixed',
+    dragMode: '' as 'translate' | 'absolute' | '',
     rulerOpts: {
-      dragMode: 'translate',
       rulerHeight: 15,
       canvasZoom: 100,
     },
@@ -33,6 +33,9 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
 
   const commands = editor.Commands;
   const panels = editor.Panels;
+
+  // Current drag mode state
+  let currentDragMode: 'translate' | 'absolute' | '' = config.dragMode;
 
   // --- Rulers Setup ---
   const rulH = config.rulerOpts?.rulerHeight || 15;
@@ -59,7 +62,11 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
     if (!footerPanelRoot) {
       footerPanelRoot = createRoot(footerLeftSidebar);
     }
-    footerPanelRoot.render(<PagesPanelFooter editor={editor} />);
+    footerPanelRoot.render(
+      <>
+        <PagesPanelFooter editor={editor} />
+      </>
+    );
   };
 
   const switchLeftSidebarContent = (tabId: string, contentLeftSidebar: HTMLElement) => {
@@ -426,9 +433,47 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
     }
   });
 
+  // Drag Mode Toggle Command
+  commands.add('toggle-drag-mode', {
+    run(editor) {
+      if (currentDragMode === '') {
+        currentDragMode = 'translate';
+      } else {
+        currentDragMode = '';
+      }
+      editor.setDragMode(currentDragMode);
+      editor.trigger('dragMode:changed', { mode: currentDragMode });
+    },
+    stop() {},
+  });
+
   editor.on('load', () => {
+    // Set initial drag mode
+    editor.setDragMode(currentDragMode);
     initializeMode(config.layoutMode as 'fixed' | 'reflow');
     initializeLeftPanel();
+
+    // Listen for drag mode changes to update UI
+    editor.on('dragMode:changed', ({ mode }) => {
+      const button = editor.Panels.getButton('options', 'toggle-drag-mode');
+      if (button) {
+        button.set('attributes', {
+          ...button.get('attributes'),
+          title: `Drag Mode: ${mode} (Click to switch)`,
+          'data-mode': mode
+        });
+      }
+    });
+
+    // Initialize button with current mode
+    const button = editor.Panels.getButton('options', 'toggle-drag-mode');
+    if (button) {
+      button.set('attributes', {
+        ...button.get('attributes'),
+        title: `Drag Mode: ${currentDragMode} (Click to switch)`,
+        'data-mode': currentDragMode
+      });
+    }
 
     if (config.layoutMode === 'fixed') {
       const canvasEl = editor.Canvas.getElement();
@@ -543,6 +588,16 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
           active: config.layoutMode === 'fixed', // Active by default in fixed mode
           label: `<svg ${iconStyle} viewBox="0 0 24 24"><path fill="currentColor" d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1 .9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 10H3V8h2v4h2V8h2v4h2V8h2v4h2V8h2v4h2V8h2v8z" /></svg>`,
           attributes: { title: 'Toggle Rulers' },
+        },
+        {
+          id: 'toggle-drag-mode',
+          command: 'toggle-drag-mode',
+          context: 'drag-mode',
+          label: `<svg ${iconStyle} viewBox="0 0 24 24"><path fill="currentColor" d="M13,6V11H18V7.75L22.25,12L18,16.25V13H13V18H16.25L12,22.25L7.75,18H11V13H6V16.25L1.75,12L6,7.75V11H11V6H7.75L12,1.75L16.25,6H13Z" /></svg>`,
+          attributes: {
+            title: 'Toggle Drag Mode (Default/Translate/Absolute)',
+            'data-mode': currentDragMode
+          },
         },
         {
           id: 'sw-visibility',
