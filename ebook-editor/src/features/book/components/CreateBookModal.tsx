@@ -21,8 +21,9 @@ export const CreateBookModal: React.FC<CreateBookModalProps> = ({ isOpen, onClos
     title: '',
     author: '',
     layoutMode: 'reflow',
-    template: 'A4',
+
   });
+  const [template, setTemplate] = useState<TemplateType>('A4');
 
   const getPageSize = (template?: TemplateType): PageSize => {
     switch (template) {
@@ -39,18 +40,18 @@ export const CreateBookModal: React.FC<CreateBookModalProps> = ({ isOpen, onClos
     e.preventDefault();
     if (!formData.title) return;
 
-    const pageSize = formData.layoutMode === 'fixed' ? getPageSize(formData.template as TemplateType) : undefined;
+    const pageSize = formData.layoutMode === 'fixed' ? getPageSize(template) : undefined;
 
     createBook({
       title: formData.title!,
       author: formData.author,
       layoutMode: formData.layoutMode as 'fixed' | 'reflow',
-      template: formData.template,
       pageSize,
     });
 
     onClose();
-    setFormData({ title: '', author: '', layoutMode: 'reflow', template: 'A4' });
+    setFormData({ title: '', author: '', layoutMode: 'reflow' });
+    setTemplate('A4');
   };
 
   return (
@@ -96,8 +97,8 @@ export const CreateBookModal: React.FC<CreateBookModalProps> = ({ isOpen, onClos
               <label className="block text-sm font-medium mb-1">Page Size</label>
               <select
                 className="w-full border rounded px-3 py-2"
-                value={formData.template}
-                onChange={(e) => setFormData({ ...formData, template: e.target.value as TemplateType })}
+                value={template}
+                onChange={(e) => setTemplate(e.target.value as TemplateType)}
               >
                 <option value="A4">A4</option>
                 <option value="A5">A5</option>

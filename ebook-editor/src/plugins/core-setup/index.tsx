@@ -4,28 +4,8 @@ import { useBookStore } from '../../core/store/bookStore';
 import { createRoot } from 'react-dom/client';
 import { StructurePanel } from '../../features/page/components/StructurePanel';
 import { PagesPanelFooter } from '../../features/page/components/PagesPanelFooter';
-export interface PageTemplate {
-  id: string;
-  name: string;
-  width: number;
-  height: number;
-  unit: 'mm' | 'px' | 'in';
-}
-export const getTemplateById = (id: string): PageTemplate | undefined => {
-  return Object.values(PAGE_TEMPLATES).find(t => t.id === id);
-};
-export const PAGE_TEMPLATES: Record<string, PageTemplate> = {
-  A4_PORTRAIT: { id: 'A4_PORTRAIT', name: 'A4 Portrait', width: 210, height: 297, unit: 'mm' },
-  A4_LANDSCAPE: { id: 'A4_LANDSCAPE', name: 'A4 Landscape', width: 297, height: 210, unit: 'mm' },
-  A5_PORTRAIT: { id: 'A5_PORTRAIT', name: 'A5 Portrait', width: 148, height: 210, unit: 'mm' },
-  LETTER_PORTRAIT: { id: 'LETTER_PORTRAIT', name: 'Letter Portrait', width: 216, height: 279, unit: 'mm' },
-  IPAD_PORTRAIT: { id: 'IPAD_PORTRAIT', name: 'iPad Portrait', width: 768, height: 1024, unit: 'px' },
-  IPAD_LANDSCAPE: { id: 'IPAD_LANDSCAPE', name: 'iPad Landscape', width: 1024, height: 768, unit: 'px' },
-};
-export interface CoreSetupOptions {
-  textCleanCanvas?: string;
-  layoutMode?: 'fixed' | 'reflow';
-}
+import { CoreSetupOptions } from '../../core/types/core-setup.types';
+import Ruler from '../rulers/Ruler';
 
 // Type for editor with left panel extensions
 type EditorWithLeftPanel = Editor & {
@@ -43,11 +23,22 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
   const config = {
     textCleanCanvas: 'Are you sure you want to clear the canvas?',
     layoutMode: 'fixed',
+    rulerOpts: {
+      dragMode: 'translate',
+      rulerHeight: 15,
+      canvasZoom: 100,
+    },
     ...options,
   };
 
   const commands = editor.Commands;
   const panels = editor.Panels;
+
+  // --- Rulers Setup ---
+  const rulH = config.rulerOpts?.rulerHeight || 15;
+  let zoom = config.rulerOpts?.canvasZoom || 100;
+  let scale = 100 / zoom;
+  let rulers: Ruler | null = null;
 
   // --- Left Panel Logic ---
   let structurePanelRoot: ReturnType<typeof createRoot> | null = null;
@@ -168,15 +159,14 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
 
   const updateCanvasSize = () => {
     const { currentBook } = useBookStore.getState();
-    const templateId = currentBook?.template || 'A4_PORTRAIT';
-    const template = PAGE_TEMPLATES[templateId];
-
-    if (template) {
+    const pageSize = currentBook?.pageSize;
+    
+    if (pageSize) {
       const frameBody = editor.Canvas.getBody();
       
       if (frameBody) {
-        const width = `${template.width}${template.unit}`;
-        const height = `${template.height}${template.unit}`;
+        const width = `${pageSize.width}${pageSize.unit}`;
+        const height = `${pageSize.height}${pageSize.unit}`;
         
         const fixedDevice = editor.Devices.get('fixed');
         if (fixedDevice) {
@@ -223,6 +213,65 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
 
     editor.trigger('mode:change', { mode });
   };
+
+  const setOffset = () => {
+    if (!rulers) return;
+    
+    const frameWindow = editor.Canvas.getWindow();
+    const { top, left } = editor.Canvas.getOffset();
+    
+    // Use window scroll instead of body scroll (for reflow mode compatibility)
+    const scrollX = frameWindow?.scrollX || 0;
+    const scrollY = frameWindow?.scrollY || 0;
+    
+    rulers.api.setPos({
+      x: left - rulH - scrollX / scale,
+      y: top - rulH - scrollY / scale
+    });
+    rulers.api.setScroll({
+      x: scrollX,
+      y: scrollY
+    });
+  };
+
+  commands.add('ruler-visibility', {
+    run(editor) {
+      if (!rulers) {
+        rulers = new Ruler({
+          container: editor.Canvas.getCanvasView().el,
+          canvas: editor.Canvas.getFrameEl(),
+          rulerHeight: rulH,
+          strokeStyle: 'white',
+          fillStyle: 'white',
+          cornerIcon: 'fa fa-trash',
+          ...config.rulerOpts
+        });
+        editor.on('canvasScroll frame:scroll change:canvasOffset', () => {
+          setOffset();
+        });
+      }
+      rulers.api.toggleRulerVisibility(true);
+      editor.Canvas.setZoom(zoom);
+      setOffset();
+      rulers.api.setScale(scale);
+    },
+    stop(editor) {
+      if (rulers) {
+        rulers.api.toggleRulerVisibility(false);
+      }
+      editor.Canvas.setZoom(100);
+    }
+  });
+
+  commands.add('set-zoom', (editor: Editor, _sender?: unknown, options: any = {}) => {
+    zoom = options.zoom || 100;
+    scale = 100 / zoom;
+    editor.Canvas.setZoom(zoom);
+    setOffset();
+    if (rulers) {
+      rulers.api.setScale(scale);
+    }
+  });
 
   // Device Commands
   commands.add('set-device-desktop', {
@@ -403,7 +452,6 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
     return confirm(config.textCleanCanvas) && editor.runCommand('core:canvas-clear');
   });
 
-  // --- Panels ---
 
   const iconStyle = 'style="display: block; max-width:22px"';
 

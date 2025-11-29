@@ -5,7 +5,7 @@ import { Footer } from '../components/Footer';
 import { SimpleInput } from '../components/Input';
 import { CreateBookCard, BookItem, TemplateBookCard } from '../components/BookCard';
 import { useBookStore } from '../../core/store/bookStore';
-import { PAGE_TEMPLATES } from '../../plugins/core-setup';
+import { PAGE_TEMPLATES } from '../../core/pageTemplates';
 import '../../styles/book.css';
 
 export const Book: React.FC = () => {
@@ -27,7 +27,7 @@ export const Book: React.FC = () => {
       title,
       author,
       layoutMode,
-      template: layoutMode === 'fixed' ? templateId : undefined,
+      pageSize: layoutMode === 'fixed' ? PAGE_TEMPLATES[templateId] : undefined,
     });
 
     setIsModalOpen(false);

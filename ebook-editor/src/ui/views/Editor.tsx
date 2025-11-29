@@ -5,10 +5,10 @@ import tuiImageEditorPlugin from 'grapesjs-tui-image-editor';
 import coreSetup from '../../plugins/core-setup';
 import bookAdapter from '../../plugins/book-adapter';
 import basicBlocks from '../../plugins/basic-blocks';
-import grapesjsRulers from '../../plugins/rulers';
 import { ExportModal } from '../../features/export/components/ExportModal';
 import { useBookStore } from '../../core/store/bookStore';
 import '../../styles/setup.css';
+import '../../styles/rulers.css';
 
 // Define GrapesJS editor type
 const Editor: React.FC = () => {
@@ -70,7 +70,6 @@ const Editor: React.FC = () => {
           },
           plugins: [
             coreSetup,
-            grapesjsRulers,
             bookAdapter,
             tuiImageEditorPlugin,
             basicBlocks
@@ -106,13 +105,10 @@ const Editor: React.FC = () => {
           pluginsOpts: {
             [coreSetup as any]: { // eslint-disable-line @typescript-eslint/no-explicit-any
               layoutMode: currentBook.layoutMode,
-            },
-            [grapesjsRulers as any]: { // eslint-disable-line @typescript-eslint/no-explicit-any
-              dragMode: 'translate',
-              canvasZoom: 100,
               rulerOpts: {
-                cornerIcon: 'fa fa-trash',
-              }
+                dragMode: 'translate',
+                canvasZoom: 100,
+              },
             },
           }
         });

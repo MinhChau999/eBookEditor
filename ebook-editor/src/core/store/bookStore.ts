@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { BookInfo, PageData, BookState, ReflowSettings } from '../types/book.types';
+import CacheManager from '../utils/cacheManager';
 
 
 interface BookStore extends BookState {
@@ -35,7 +36,6 @@ const MOCK_BOOKS: BookInfo[] = [
     title: 'Thơ ca Đời sống',
     author: 'Nguyễn Văn A',
     layoutMode: 'fixed',
-    template: 'A4_PORTRAIT',
     pageSize: { width: 210, height: 297, unit: 'mm' },
     createdAt: new Date('2023-01-01'),
     updatedAt: new Date('2023-01-02'),
@@ -72,7 +72,6 @@ const MOCK_BOOKS: BookInfo[] = [
     title: 'Tạp chí Thời trang',
     author: 'Le Thi B',
     layoutMode: 'fixed',
-    template: 'A4_PORTRAIT',
     pageSize: { width: 210, height: 297, unit: 'mm' },
     createdAt: new Date('2023-02-01'),
     updatedAt: new Date('2023-02-05'),
@@ -590,7 +589,18 @@ export const useBookStore = create<BookStore>()((set, get) => ({
   setCurrentBook: (id: string) => {
     const book = get().books.find((b) => b.id === id) || null;
     const bookPages = get().pagesByBookId[id] || [];
-    set({ currentBook: book, pages: bookPages, currentPageId: bookPages[0]?.id || null });
+
+    // Get cached page position using CacheManager
+    const cacheManager = CacheManager.getInstance();
+    const positionCache = cacheManager.getBookPosition(id);
+    const targetPageId = positionCache.currentPageId && bookPages.find(p => p.id === positionCache.currentPageId)
+      ? positionCache.currentPageId
+      : bookPages[0]?.id || null;
+
+    set({ currentBook: book, pages: bookPages, currentPageId: targetPageId });
+
+    // Add to recently opened books
+    cacheManager.addToRecentlyOpened(id);
   },
 
   addPage: (page: Omit<PageData, 'id'>) => {
@@ -701,7 +711,20 @@ export const useBookStore = create<BookStore>()((set, get) => ({
       }));
   },
 
-  setCurrentPageId: (id: string | null) => set({ currentPageId: id }),
+  setCurrentPageId: (id: string | null) => {
+    const state = get();
+    if (state.currentBook) {
+      // Cache the current page using CacheManager
+      const cacheManager = CacheManager.getInstance();
+      cacheManager.setBookPosition(state.currentBook.id, {
+        currentPageId: id,
+        lastAccessedAt: Date.now(),
+      });
+      set({ currentPageId: id });
+    } else {
+      set({ currentPageId: id });
+    }
+  },
 
   setPages: (pages: PageData[]) => set({ pages }),
 
@@ -715,5 +738,8 @@ export const useBookStore = create<BookStore>()((set, get) => ({
       isLoading: false,
       error: null,
     });
+
+    // Optionally clear cache on reset
+    // CacheManager.getInstance().clearAllCache();
   },
 }));
