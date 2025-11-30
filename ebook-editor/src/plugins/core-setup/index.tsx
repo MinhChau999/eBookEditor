@@ -6,6 +6,7 @@ import { StructurePanel } from '../../features/page/components/StructurePanel';
 import { PagesPanelFooter } from '../../features/page/components/PagesPanelFooter';
 import { CoreSetupOptions } from '../../core/types/core-setup.types';
 import Ruler from '../rulers/Ruler';
+import parser from '../parser-postcss';
 import {
   ZOOM_CONFIG,
   RULER_CONFIG,
@@ -288,6 +289,8 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
     if (rulers) {
       rulers.api.setScale(scale);
     }
+    // Update zoom display button
+    updateZoomDisplay(zoom);
   });
 
   // ==================== DEVICE COMMANDS ====================
@@ -456,6 +459,19 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
     });
   };
 
+  const updateZoomDisplay = (zoomLevel: number) => {
+    const button = editor.Panels.getButton('options', 'zoom-display');
+    if (!button) return;
+    
+    button.set({
+      label: `<span style="font-size: 12px; font-weight: 500;">${Math.round(zoomLevel)}%</span>`,
+      attributes: {
+        ...button.get('attributes'),
+        title: `Current Zoom: ${Math.round(zoomLevel)}% (Click to reset to 100%)`,
+      }
+    });
+  };
+
   const getNextDragMode = (current: DragMode): DragMode => {
     const currentIndex = DRAG_MODES.indexOf(current);
     const nextIndex = (currentIndex + 1) % DRAG_MODES.length;
@@ -479,11 +495,19 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
     initializeMode(config.layoutMode as 'fixed' | 'reflow');
     initializeLeftPanel();
 
+    // Register PostCSS parser for better CSS parsing
+    editor.setCustomParserCss(parser);
+
     editor.on('dragMode:changed', ({ mode }) => {
       updateDragModeButton(mode);
     });
 
     updateDragModeButton(currentDragMode);
+    
+    // Initialize zoom display
+    if (config.layoutMode === 'fixed') {
+      updateZoomDisplay(zoom);
+    }
 
     if (config.layoutMode === 'fixed') {
       const canvasEl = editor.Canvas.getElement();
@@ -603,6 +627,15 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
 
   const zoomButtons = config.layoutMode === 'fixed' ? [
     {
+      id: 'zoom-display',
+      command: 'zoom-reset',
+      label: '<span style="font-size: 12px; font-weight: 500;">100%</span>',
+      attributes: { 
+        title: 'Current Zoom: 100% (Click to reset to 100%)',
+        class: 'zoom-display-btn'
+      },
+    },
+    {
       id: 'zoom-in',
       command: 'zoom-in',
       label: `<svg ${iconStyle} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -621,12 +654,6 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
   <path fill="currentColor" d="M12 10h-5v-1h5v1z"/>
 </svg>`,
       attributes: { title: 'Zoom Out' },
-    },
-    {
-      id: 'zoom-reset',
-      command: 'zoom-reset',
-      label: `<svg ${iconStyle} viewBox="0 0 24 24"><path fill="currentColor" d="M12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22C6.47,22 2,17.5 2,12A10,10 0 0,1 12,2M13,7H11V13H13V7Z" /></svg>`,
-      attributes: { title: 'Zoom 100%' },
     }
   ] : [];
 
@@ -638,6 +665,7 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
     {
       id: 'options',
       buttons: [
+        ...zoomButtons,
         {
           id: 'toggle-drag-mode',
           command: 'toggle-drag-mode',
@@ -664,7 +692,6 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
           context: 'sw-visibility',
           label: `<svg ${iconStyle} viewBox="0 0 24 24"><path fill="currentColor" d="M15,5H17V3H15M15,21H17V19H15M11,5H13V3H11M19,5H21V3H19M19,9H21V7H19M19,21H21V19H19M19,13H21V11H19M19,17H21V15H19M3,5H5V3H3M3,9H5V7H3M3,13H5V11H3M3,17H5V15H3M3,21H5V19H3M11,21H13V19H11M7,21H9V19H7M7,5H9V3H7V5Z" /></svg>`,
         },
-        ...zoomButtons,
         {
           id: 'preview',
           context: 'preview',
