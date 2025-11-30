@@ -175,7 +175,7 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
 
   // ==================== LAYOUT MODE LOGIC ====================
 
-  const updateCanvasSize = () => {
+  const updateRulerSize = () => {
     const { currentBook } = useBookStore.getState();
     const pageSize = currentBook?.pageSize;
     
@@ -186,31 +186,15 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
         const width = `${pageSize.width}${pageSize.unit}`;
         const height = `${pageSize.height}${pageSize.unit}`;
         
-        const fixedDevice = editor.Devices.get('fixed');
-        if (fixedDevice) {
-          fixedDevice.set('width', width);
-          fixedDevice.set('height', height);
-          fixedDevice.set('widthMedia', width);
-          const wrapper = editor.Canvas.getCanvasView().el.querySelector('.rul_wrapper') as HTMLElement;
-          if (wrapper) {
-            wrapper.style.width = `max(100%, ${width})`;
-            wrapper.style.height = `max(100%, ${height})`;
-          }
+        const wrapper = editor.Canvas.getCanvasView().el.querySelector('.rul_wrapper') as HTMLElement;
+        if (wrapper) {
+          wrapper.style.width = `max(100%, ${width})`;
+          wrapper.style.height = `max(100%, ${height})`;
         }
       }
     }
   };
 
-  const enableReflowMode = () => {
-    const canvas = editor.Canvas;
-    const frameBody = canvas.getBody();
-    if (frameBody) {
-      const pageContainer = frameBody.querySelector('.page-container') as HTMLElement;
-      if (pageContainer) {
-         pageContainer.removeAttribute('style');
-      }
-    }
-  };
   const initializeMode = (mode: 'reflow' | 'fixed') => {
     const container = editor.getContainer();
     if (container) {
@@ -220,11 +204,11 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
     
     if (mode === 'fixed') {
         editor.Devices.select('fixed');
-        updateCanvasSize();
+        updateRulerSize();
         editor.runCommand('ruler-visibility');
     } else {
         editor.Devices.select('desktop');
-        enableReflowMode();
+        // enableReflowMode();
         editor.stopCommand('ruler-visibility');
     }
 
@@ -307,8 +291,6 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
     run: (editor: Editor) => editor.Devices.select('mobile'),
     stop: () => {},
   });
-
-  commands.add('fixed:update-canvas', updateCanvasSize);
 
   // ==================== ZOOM COMMANDS ====================
 
@@ -526,14 +508,6 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
       }
     }
 
-    // Subscribe to store changes for reactive updates
-    storeUnsubscribe = useBookStore.subscribe(
-      (state) => {
-        if (state.currentBook?.pageSize && config.layoutMode === 'fixed') {
-          updateCanvasSize();
-        }
-      }
-    );
   });
 
   // ==================== CLEANUP ====================
@@ -625,38 +599,6 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
       );
   }
 
-  const zoomButtons = config.layoutMode === 'fixed' ? [
-    {
-      id: 'zoom-display',
-      command: 'zoom-reset',
-      label: '<span style="font-size: 12px; font-weight: 500;">100%</span>',
-      attributes: { 
-        title: 'Current Zoom: 100% (Click to reset to 100%)',
-        class: 'zoom-display-btn'
-      },
-    },
-    {
-      id: 'zoom-in',
-      command: 'zoom-in',
-      label: `<svg ${iconStyle} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-  <path fill="currentColor" d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-  <path fill="none" d="M0 0h24v24H0V0z"/>
-  <path fill="currentColor" d="M12 10h-2v2H9v-2H7V9h2V7h1v2h2v1z"/>
-</svg>`,
-      attributes: { title: 'Zoom In' },
-    },
-    {
-      id: 'zoom-out',
-      command: 'zoom-out',
-      label: `<svg ${iconStyle} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-  <path fill="currentColor" d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-  <path fill="none" d="M0 0h24v24H0V0z"/>
-  <path fill="currentColor" d="M12 10h-5v-1h5v1z"/>
-</svg>`,
-      attributes: { title: 'Zoom Out' },
-    }
-  ] : [];
-
   panels.getPanels().reset([
     {
       id: 'devices-c',
@@ -665,7 +607,35 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
     {
       id: 'options',
       buttons: [
-        ...zoomButtons,
+        {
+          id: 'zoom-display',
+          command: 'zoom-reset',
+          label: '<span style="font-size: 12px; font-weight: 500;">100%</span>',
+          attributes: { 
+            title: 'Current Zoom: 100% (Click to reset to 100%)',
+            class: 'zoom-display-btn'
+          },
+        },
+        {
+          id: 'zoom-in',
+          command: 'zoom-in',
+          label: `<svg ${iconStyle} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path fill="currentColor" d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+          <path fill="none" d="M0 0h24v24H0V0z"/>
+          <path fill="currentColor" d="M12 10h-2v2H9v-2H7V9h2V7h1v2h2v1z"/>
+        </svg>`,
+          attributes: { title: 'Zoom In' },
+        },
+        {
+          id: 'zoom-out',
+          command: 'zoom-out',
+          label: `<svg ${iconStyle} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path fill="currentColor" d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+          <path fill="none" d="M0 0h24v24H0V0z"/>
+          <path fill="currentColor" d="M12 10h-5v-1h5v1z"/>
+        </svg>`,
+          attributes: { title: 'Zoom Out' },
+        },
         {
           id: 'toggle-drag-mode',
           command: 'toggle-drag-mode',

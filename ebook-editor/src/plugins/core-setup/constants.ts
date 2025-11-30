@@ -9,7 +9,7 @@ export const ZOOM_CONFIG = {
   MIN: 25,
   MAX: 200,
   STEP: 5,
-  DEFAULT: 100,
+  DEFAULT: 95,
 } as const;
 
 // ==================== RULER CONFIGURATION ====================
