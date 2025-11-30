@@ -7,7 +7,6 @@ import { PagesPanelFooter } from '../../features/page/components/PagesPanelFoote
 import { CoreSetupOptions } from '../../core/types/core-setup.types';
 import Ruler from '../rulers/Ruler';
 
-// Type for editor with left panel extensions
 type EditorWithLeftPanel = Editor & {
   leftPanelElements?: {
     header: HTMLElement;
@@ -17,6 +16,10 @@ type EditorWithLeftPanel = Editor & {
   adjustLeftPanelLayout?: (visible: boolean) => void;
   leftSidebarVisible?: boolean;
 };
+
+interface SetZoomOptions {
+  zoom?: number;
+}
 
 
 const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, options: CoreSetupOptions = {}) => {
@@ -34,16 +37,17 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
   const commands = editor.Commands;
   const panels = editor.Panels;
 
-  // Current drag mode state
+  // ==================== STATE VARIABLES ====================
+
   let currentDragMode: 'translate' | 'absolute' | '' = config.dragMode;
 
-  // --- Rulers Setup ---
   const rulH = config.rulerOpts?.rulerHeight || 15;
   let zoom = config.rulerOpts?.canvasZoom || 100;
   let scale = 100 / zoom;
   let rulers: Ruler | null = null;
 
-  // --- Left Panel Logic ---
+  // ==================== LEFT PANEL SETUP ====================
+
   let structurePanelRoot: ReturnType<typeof createRoot> | null = null;
   let footerPanelRoot: ReturnType<typeof createRoot> | null = null;
 
@@ -94,7 +98,6 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
     const editorContent = editorContainer.querySelector('.gjs-editor');
     if (!editorContent) return;
 
-    // Create left panel containers
     const headerLeftSidebar = document.createElement('div');
     headerLeftSidebar.className = 'gjs-pn-header-left-sidebar gjs-pn-panel gjs-one-bg gjs-two-color';
 
@@ -104,13 +107,11 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
     const footerLeftSidebar = document.createElement('div');
     footerLeftSidebar.className = 'gjs-pn-footer-left-sidebar gjs-pn-panel gjs-one-bg gjs-two-color';
 
-    // Tab configuration
     const leftSidebarTabs = [
       { id: 'book-structure', label: 'Structure', icon: '<svg style="display:block;max-width:18px" viewBox="0 0 24 24"><path fill="currentColor" d="M21,5C19.89,4.65 18.67,4.5 17.5,4.5C15.55,4.5 13.45,4.9 12,6C10.55,4.9 8.45,4.5 6.5,4.5C4.55,4.5 2.45,4.9 1,6V20.65C1,20.9 1.25,21.15 1.5,21.15C1.6,21.15 1.65,21.1 1.75,21.1C3.1,20.45 5.05,20 6.5,20C8.45,20 10.55,20.4 12,21.5C13.35,20.65 15.8,20 17.5,20C19.15,20 20.85,20.3 22.25,21.05C22.35,21.1 22.4,21.1 22.5,21.1C22.75,21.1 23,20.85 23,20.6V6C22.4,5.55 21.75,5.25 21,5M21,18.5C19.9,18.15 18.7,18 17.5,18C15.8,18 13.35,18.65 12,19.5V8C13.35,7.15 15.8,6.5 17.5,6.5C18.7,6.5 19.9,6.65 21,7V18.5Z" /></svg>' },
       { id: 'assets', label: 'Assets', icon: '<svg style="display:block;max-width:18px" viewBox="0 0 24 24"><path fill="currentColor" d="M5,1C3.89,1 3,1.89 3,3V7H5V5H19V19H5V17H3V21A2,2 0 0,0 5,23H19A2,2 0 0,0 21,21V3A2,2 0 0,0 19,1H5M7,9V11H9V9H7M11,9V11H13V9H11M15,9V11H17V9H15M7,13V15H9V13H7M11,13V15H13V13H11M15,13V15H17V13H15Z" /></svg>' }
     ];
 
-    // Store references for toggle command
     const editorWithExtensions = editor as EditorWithLeftPanel;
 
     editorWithExtensions.leftPanelElements = {
@@ -119,7 +120,6 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
       footer: footerLeftSidebar
     };
 
-    // Create tab buttons
     leftSidebarTabs.forEach((tab, index) => {
       const tabButton = document.createElement('div');
       tabButton.className = `gjs-pn-tab-btn ${index === 0 ? 'gjs-pn-tab-active' : ''}`;
@@ -136,7 +136,6 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
       headerLeftSidebar.appendChild(tabButton);
     });
 
-    // Append to editor
     editorContent.appendChild(headerLeftSidebar);
     editorContent.appendChild(contentLeftSidebar);
     editorContent.appendChild(footerLeftSidebar);
@@ -159,10 +158,10 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
 
     adjustLayout(true);
     editorWithExtensions.adjustLeftPanelLayout = adjustLayout;
-    editorWithExtensions.leftSidebarVisible = true; // Set initial state
+    editorWithExtensions.leftSidebarVisible = true;
   };
 
-  // --- Fixed Layout Logic ---
+  // ==================== LAYOUT MODE LOGIC ====================
 
   const updateCanvasSize = () => {
     const { currentBook } = useBookStore.getState();
@@ -189,7 +188,6 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
     }
   };
 
-  // --- Reflow Logic ---
   const enableReflowMode = () => {
     const canvas = editor.Canvas;
     const frameBody = canvas.getBody();
@@ -200,7 +198,6 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
       }
     }
   };
-  // Layout Mode Initialization (Internal, not exposed as commands anymore)
   const initializeMode = (mode: 'reflow' | 'fixed') => {
     const container = editor.getContainer();
     if (container) {
@@ -213,7 +210,7 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
         updateCanvasSize();
         editor.runCommand('ruler-visibility');
     } else {
-        editor.Devices.select('desktop'); // Default to desktop for reflow
+        editor.Devices.select('desktop');
         enableReflowMode();
         editor.stopCommand('ruler-visibility');
     }
@@ -221,13 +218,14 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
     editor.trigger('mode:change', { mode });
   };
 
+  // ==================== RULERS SETUP ====================
+
   const setOffset = () => {
     if (!rulers) return;
     
     const frameWindow = editor.Canvas.getWindow();
     const { top, left } = editor.Canvas.getOffset();
     
-    // Use window scroll instead of body scroll (for reflow mode compatibility)
     const scrollX = frameWindow?.scrollX || 0;
     const scrollY = frameWindow?.scrollY || 0;
     
@@ -270,7 +268,7 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
     }
   });
 
-  commands.add('set-zoom', (editor: Editor, _sender?: unknown, options: any = {}) => {
+  commands.add('set-zoom', (editor: Editor, _sender?: unknown, options: SetZoomOptions = {}) => {
     zoom = options.zoom || 100;
     scale = 100 / zoom;
     editor.Canvas.setZoom(zoom);
@@ -280,7 +278,8 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
     }
   });
 
-  // Device Commands
+  // ==================== DEVICE COMMANDS ====================
+
   commands.add('set-device-desktop', {
     run: (editor: Editor) => editor.Devices.select('desktop'),
     stop: () => {},
@@ -296,18 +295,19 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
 
   commands.add('fixed:update-canvas', updateCanvasSize);
 
-  // Zoom commands - only work in fixed mode
+  // ==================== ZOOM COMMANDS ====================
+
   commands.add('zoom-in', (editor: Editor) => {
     if (config.layoutMode !== 'fixed') return;
     const currentZoom = editor.Canvas.getZoom();
-    const newZoom = Math.min(currentZoom + 5, 200); // Max 200%, 5% steps
+    const newZoom = Math.min(currentZoom + 5, 200);
     editor.runCommand('set-zoom', { zoom: newZoom });
   });
 
   commands.add('zoom-out', (editor: Editor) => {
     if (config.layoutMode !== 'fixed') return;
     const currentZoom = editor.Canvas.getZoom();
-    const newZoom = Math.max(currentZoom - 5, 25); // Min 25%, 5% steps
+    const newZoom = Math.max(currentZoom - 5, 25);
     editor.runCommand('set-zoom', { zoom: newZoom });
   });
 
@@ -316,7 +316,8 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
     editor.runCommand('set-zoom', { zoom: 100 });
   });
 
-  // Left Panel Toggle Command (using GrapesJS pattern)
+  // ==================== LEFT PANEL COMMANDS ====================
+
   commands.add('left-panel-toggle', {
     run: (editor: Editor) => {
       const editorWithExtensions = editor as EditorWithLeftPanel;
@@ -326,7 +327,6 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
 
       if (!elements || !adjustLayout) return;
 
-      // Toggle visibility
       const newVisibility = !isVisible;
       const displayStyle = newVisibility ? 'block' : 'none';
 
@@ -340,7 +340,6 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
     stop: () => {},
   });
 
-  // Left Panel Show Command (kept for manual control)
   commands.add('left-panel-show', {
     run: (editor: Editor) => {
       const editorWithExtensions = editor as EditorWithLeftPanel;
@@ -349,7 +348,6 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
 
       if (!elements || !adjustLayout) return;
 
-      // Remove display style to restore default (flex for header)
       elements.header.style.removeProperty('display');
       elements.content.style.removeProperty('display');
       elements.footer.style.removeProperty('display');
@@ -360,7 +358,6 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
     stop: () => {},
   });
 
-  // Left Panel Hide Command (kept for manual control)
   commands.add('left-panel-hide', {
     run: (editor: Editor) => {
       const editorWithExtensions = editor as EditorWithLeftPanel;
@@ -379,22 +376,18 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
     stop: () => {},
   });
 
-  // Modify existing preview command to hide/show left panel
   editor.on('load', () => {
-    // Get the existing preview command
     const previewCommand = commands.get('preview');
 
     if (previewCommand) {
       const originalRun = previewCommand.run;
       const originalStop = previewCommand.stop;
 
-      // Override run method to hide left panel
       previewCommand.run = (ed: Editor, sender?: unknown) => {
         const editorWithExtensions = ed as EditorWithLeftPanel;
         const elements = editorWithExtensions.leftPanelElements;
         const adjustLayout = editorWithExtensions.adjustLeftPanelLayout;
 
-        // Hide left panel before running preview
         if (elements && adjustLayout && editorWithExtensions.leftSidebarVisible !== false) {
           elements.header.style.display = 'none';
           elements.content.style.display = 'none';
@@ -403,21 +396,17 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
           editorWithExtensions.leftSidebarVisible = false;
         }
 
-        // Run original preview logic if it exists
         if (originalRun) {
           return originalRun.call(previewCommand, ed, sender, {});
         }
       };
 
-      // Override stop method to show left panel
       previewCommand.stop = (ed: Editor, sender?: unknown) => {
         const editorWithExtensions = ed as EditorWithLeftPanel;
         const elements = editorWithExtensions.leftPanelElements;
         const adjustLayout = editorWithExtensions.adjustLeftPanelLayout;
 
-        // Show left panel after stopping preview
         if (elements && adjustLayout && editorWithExtensions.leftSidebarVisible === false) {
-          // Remove display style to restore default (flex for header)
           elements.header.style.removeProperty('display');
           elements.content.style.removeProperty('display');
           elements.footer.style.removeProperty('display');
@@ -425,55 +414,92 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
           editorWithExtensions.leftSidebarVisible = true;
         }
 
-        // Run original stop logic if it exists
         if (originalStop) {
           return originalStop.call(previewCommand, ed, sender, {});
         }
       };
     }
   });
+  const iconStyle = 'style="display: block; max-width:22px"';
+  // ==================== DRAG MODE CONFIGURATION ====================
+  
+  type DragMode = '' | 'translate' | 'absolute';
+  const DRAG_MODES: DragMode[] = ['', 'translate', 'absolute'];
+  
+  const DRAG_MODE_ICONS = {
+    select: `<svg ${iconStyle} viewBox="0 0 24 24"><path fill="currentColor" d="M13.64,21.97C13.14,22.21 12.54,22 12.31,21.5L10.13,16.76L7.62,18.78C7.45,18.92 7.24,19 7,19A1,1 0 0,1 6,18V3A1,1 0 0,1 7,2C7.24,2 7.47,2.09 7.64,2.23L7.65,2.22L19.14,11.86C19.57,12.22 19.62,12.85 19.27,13.27C19.12,13.45 18.91,13.57 18.7,13.61L13.97,14.5L16.15,19.29C16.38,19.78 16.13,20.38 15.64,20.61L13.64,21.97Z" /></svg>`,
+    
+    move: `<svg ${iconStyle} viewBox="0 0 24 24"><path fill="currentColor" d="M13,6V11H18V7.75L22.25,12L18,16.25V13H13V18H16.25L12,22.25L7.75,18H11V13H6V16.25L1.75,12L6,7.75V11H11V6H7.75L12,1.75L16.25,6H13Z" /></svg>`,
+    
+    absolute: `<svg ${iconStyle} viewBox="0 0 24 24"><path fill="currentColor" d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,6A6,6 0 0,0 6,12A6,6 0 0,0 12,18A6,6 0 0,0 18,12A6,6 0 0,0 12,6M12,8A4,4 0 0,1 16,12A4,4 0 0,1 12,16A4,4 0 0,1 8,12A4,4 0 0,1 12,8M12,10A2,2 0 0,0 10,12A2,2 0 0,0 12,14A2,2 0 0,0 14,12A2,2 0 0,0 12,10Z" /></svg>`
+  };
+  
+  const DRAG_MODE_CONFIG: Record<DragMode, { icon: string; title: string; tooltip: string }> = {
+    '': { 
+      icon: DRAG_MODE_ICONS.select,
+      title: 'Select',
+      tooltip: 'Select Mode - Click to select elements'
+    },
+    'translate': { 
+      icon: DRAG_MODE_ICONS.move,
+      title: 'Move',
+      tooltip: 'Move Mode - Drag to move elements freely'
+    },
+    'absolute': { 
+      icon: DRAG_MODE_ICONS.absolute,
+      title: 'Absolute',
+      tooltip: 'Absolute Mode - Position elements with absolute positioning'
+    }
+  };
 
-  // Drag Mode Toggle Command
-  commands.add('toggle-drag-mode', {
-    run(editor) {
-      if (currentDragMode === '') {
-        currentDragMode = 'translate';
-      } else {
-        currentDragMode = '';
+  const getDragModeLabel = (mode: DragMode) => {
+    const config = DRAG_MODE_CONFIG[mode];
+    return config.icon;
+  };
+
+  const updateDragModeButton = (mode: DragMode) => {
+    const button = editor.Panels.getButton('options', 'toggle-drag-mode');
+    if (!button) return;
+    
+    const config = DRAG_MODE_CONFIG[mode];
+    button.set({
+      label: getDragModeLabel(mode),
+      attributes: {
+        ...button.get('attributes'),
+        title: config.tooltip,
+        'data-mode': mode
       }
+    });
+  };
+
+  const getNextDragMode = (current: DragMode): DragMode => {
+    const currentIndex = DRAG_MODES.indexOf(current);
+    const nextIndex = (currentIndex + 1) % DRAG_MODES.length;
+    return DRAG_MODES[nextIndex];
+  };
+
+  commands.add('toggle-drag-mode', {
+    noStop: true,
+    run(editor) {
+      currentDragMode = getNextDragMode(currentDragMode);
       editor.setDragMode(currentDragMode);
       editor.trigger('dragMode:changed', { mode: currentDragMode });
     },
     stop() {},
   });
 
+  // ==================== EDITOR EVENT HANDLERS ====================
+
   editor.on('load', () => {
-    // Set initial drag mode
     editor.setDragMode(currentDragMode);
     initializeMode(config.layoutMode as 'fixed' | 'reflow');
     initializeLeftPanel();
 
-    // Listen for drag mode changes to update UI
     editor.on('dragMode:changed', ({ mode }) => {
-      const button = editor.Panels.getButton('options', 'toggle-drag-mode');
-      if (button) {
-        button.set('attributes', {
-          ...button.get('attributes'),
-          title: `Drag Mode: ${mode} (Click to switch)`,
-          'data-mode': mode
-        });
-      }
+      updateDragModeButton(mode);
     });
 
-    // Initialize button with current mode
-    const button = editor.Panels.getButton('options', 'toggle-drag-mode');
-    if (button) {
-      button.set('attributes', {
-        ...button.get('attributes'),
-        title: `Drag Mode: ${currentDragMode} (Click to switch)`,
-        'data-mode': currentDragMode
-      });
-    }
+    updateDragModeButton(currentDragMode);
 
     if (config.layoutMode === 'fixed') {
       const canvasEl = editor.Canvas.getElement();
@@ -484,7 +510,7 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
             e.stopPropagation();
             const currentZoom = editor.Canvas.getZoom();
             const delta = e.deltaY > 0 ? -1 : 1;
-            const newZoom = Math.max(25, Math.min(200, currentZoom + (delta * 5))); // 5% steps
+            const newZoom = Math.max(25, Math.min(200, currentZoom + (delta * 5)));
             editor.runCommand('set-zoom', { zoom: newZoom });
           }
         });
@@ -492,18 +518,17 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
     }
   });
 
-  // Canvas clear
+  // ==================== CANVAS COMMANDS ====================
+
   commands.add('canvas-clear', (editor: Editor) => {
     return confirm(config.textCleanCanvas) && editor.runCommand('core:canvas-clear');
   });
 
-
-  const iconStyle = 'style="display: block; max-width:22px"';
+  // ==================== PANELS CONFIGURATION ====================
 
   const editorConfig = editor.getConfig();
   editorConfig.showDevices = false;
 
-  // Determine which device buttons to show based on initial mode
   const deviceButtons = [];
 
   if (config.layoutMode === 'reflow') {
@@ -536,13 +561,12 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
           command: 'set-view-single',
           label: `<svg ${iconStyle} viewBox="0 0 24 24"><path fill="currentColor" d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" /></svg>`,
           attributes: { title: 'Single Page View' },
-          active: true, // Default
+          active: true,
           className: 'gjs-four-color'
         }
       );
   }
 
-  // Zoom buttons - only show in fixed mode
   const zoomButtons = config.layoutMode === 'fixed' ? [
     {
       id: 'zoom-in',
@@ -581,23 +605,23 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
       id: 'options',
       buttons: [
         {
+          id: 'toggle-drag-mode',
+          command: 'toggle-drag-mode',
+          togglable: false,
+          label: getDragModeLabel(currentDragMode),
+          attributes: {
+            title: DRAG_MODE_CONFIG[currentDragMode].tooltip,
+            'data-mode': currentDragMode
+          },
+        },
+        {
           id: 'ruler-toggle',
           className: 'btn-toggle-ruler',
           command: 'ruler-visibility',
           context: 'ruler-visibility',
-          active: config.layoutMode === 'fixed', // Active by default in fixed mode
+          active: config.layoutMode === 'fixed',
           label: `<svg ${iconStyle} viewBox="0 0 24 24"><path fill="currentColor" d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1 .9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 10H3V8h2v4h2V8h2v4h2V8h2v4h2V8h2v4h2V8h2v8z" /></svg>`,
           attributes: { title: 'Toggle Rulers' },
-        },
-        {
-          id: 'toggle-drag-mode',
-          command: 'toggle-drag-mode',
-          context: 'drag-mode',
-          label: `<svg ${iconStyle} viewBox="0 0 24 24"><path fill="currentColor" d="M13,6V11H18V7.75L22.25,12L18,16.25V13H13V18H16.25L12,22.25L7.75,18H11V13H6V16.25L1.75,12L6,7.75V11H11V6H7.75L12,1.75L16.25,6H13Z" /></svg>`,
-          attributes: {
-            title: 'Toggle Drag Mode (Default/Translate/Absolute)',
-            'data-mode': currentDragMode
-          },
         },
         {
           id: 'sw-visibility',
@@ -606,7 +630,7 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
           context: 'sw-visibility',
           label: `<svg ${iconStyle} viewBox="0 0 24 24"><path fill="currentColor" d="M15,5H17V3H15M15,21H17V19H15M11,5H13V3H11M19,5H21V3H19M19,9H21V7H19M19,21H21V19H19M19,13H21V11H19M19,17H21V15H19M3,5H5V3H3M3,9H5V7H3M3,13H5V11H3M3,17H5V15H3M3,21H5V19H3M11,21H13V19H11M7,21H9V19H7M7,5H9V3H7V5Z" /></svg>`,
         },
-        ...zoomButtons, // Only show zoom buttons in fixed mode
+        ...zoomButtons,
         {
           id: 'preview',
           context: 'preview',

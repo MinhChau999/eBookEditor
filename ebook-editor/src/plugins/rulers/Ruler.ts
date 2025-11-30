@@ -476,7 +476,7 @@ export default class Ruler {
 
         const drawRuler = (_rulerLength: number, _rulerThickness: number, _rulerScale?: number) => {
             const dpr = window.devicePixelRatio || 1;
-            rulLength = _rulerLength * 4;
+            rulLength = _rulerLength * 24;
             rulThickness = _rulerThickness;
             rulScale = _rulerScale || rulScale;
 
