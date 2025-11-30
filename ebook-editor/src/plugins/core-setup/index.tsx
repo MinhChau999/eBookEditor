@@ -176,13 +176,18 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
         
         const fixedDevice = editor.Devices.get('fixed');
         if (fixedDevice) {
-            fixedDevice.set('width', width);
-            fixedDevice.set('height', height);
-            fixedDevice.set('widthMedia', width);
-            
-            if (editor.Devices.getSelected()?.id === 'fixed') {
-                editor.refresh();
-            }
+          fixedDevice.set('width', width);
+          fixedDevice.set('height', height);
+          fixedDevice.set('widthMedia', width);
+          
+          if (editor.Devices.getSelected()?.id === 'fixed') {
+              editor.refresh();
+          }
+          const wrapper = editor.Canvas.getCanvasView().el.querySelector('.rul_wrapper') as HTMLElement;
+          if (wrapper) {
+            wrapper.style.width = `max(100%, ${width})`;
+            wrapper.style.height = `max(100%, ${height})`;
+          }
         }
       }
     }
@@ -222,7 +227,7 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
 
   const setOffset = () => {
     if (!rulers) return;
-    
+
     const frameWindow = editor.Canvas.getWindow();
     const { top, left } = editor.Canvas.getOffset();
     
@@ -251,7 +256,7 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
           cornerIcon: 'fa fa-trash',
           ...config.rulerOpts
         });
-        editor.on('canvasScroll frame:scroll change:canvasOffset', () => {
+        editor.on('canvasScroll frame:scroll', () => {
           setOffset();
         });
       }
