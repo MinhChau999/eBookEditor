@@ -6,6 +6,15 @@ import { StructurePanel } from '../../features/page/components/StructurePanel';
 import { PagesPanelFooter } from '../../features/page/components/PagesPanelFooter';
 import { CoreSetupOptions } from '../../core/types/core-setup.types';
 import Ruler from '../rulers/Ruler';
+import {
+  ZOOM_CONFIG,
+  RULER_CONFIG,
+  DRAG_MODES,
+  DRAG_MODE_CONFIG,
+  PANEL_CLASS_NAMES,
+  LAYOUT_MODE_CLASSES,
+  type DragMode,
+} from './constants';
 
 type EditorWithLeftPanel = Editor & {
   leftPanelElements?: {
@@ -26,10 +35,10 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
   const config = {
     textCleanCanvas: 'Are you sure you want to clear the canvas?',
     layoutMode: 'fixed',
-    dragMode: '' as 'translate' | 'absolute' | '',
+    dragMode: '' as DragMode,
     rulerOpts: {
-      rulerHeight: 15,
-      canvasZoom: 100,
+      rulerHeight: RULER_CONFIG.DEFAULT_HEIGHT,
+      canvasZoom: ZOOM_CONFIG.DEFAULT,
     },
     ...options,
   };
@@ -39,12 +48,14 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
 
   // ==================== STATE VARIABLES ====================
 
-  let currentDragMode: 'translate' | 'absolute' | '' = config.dragMode;
+  let currentDragMode: DragMode = config.dragMode;
 
-  const rulH = config.rulerOpts?.rulerHeight || 15;
-  let zoom = config.rulerOpts?.canvasZoom || 100;
-  let scale = 100 / zoom;
+  const rulH = config.rulerOpts?.rulerHeight || RULER_CONFIG.DEFAULT_HEIGHT;
+  let zoom = config.rulerOpts?.canvasZoom || ZOOM_CONFIG.DEFAULT;
+  let scale = ZOOM_CONFIG.DEFAULT / zoom;
   let rulers: Ruler | null = null;
+  let wheelEventListener: ((e: WheelEvent) => void) | null = null;
+  let storeUnsubscribe: (() => void) | null = null;
 
   // ==================== LEFT PANEL SETUP ====================
 
@@ -99,13 +110,13 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
     if (!editorContent) return;
 
     const headerLeftSidebar = document.createElement('div');
-    headerLeftSidebar.className = 'gjs-pn-header-left-sidebar gjs-pn-panel gjs-one-bg gjs-two-color';
+    headerLeftSidebar.className = PANEL_CLASS_NAMES.HEADER_LEFT_SIDEBAR;
 
     const contentLeftSidebar = document.createElement('div');
-    contentLeftSidebar.className = 'gjs-pn-content-left-sidebar gjs-one-bg gjs-two-color left-sidebar-content';
+    contentLeftSidebar.className = PANEL_CLASS_NAMES.CONTENT_LEFT_SIDEBAR;
 
     const footerLeftSidebar = document.createElement('div');
-    footerLeftSidebar.className = 'gjs-pn-footer-left-sidebar gjs-pn-panel gjs-one-bg gjs-two-color';
+    footerLeftSidebar.className = PANEL_CLASS_NAMES.FOOTER_LEFT_SIDEBAR;
 
     const leftSidebarTabs = [
       { id: 'book-structure', label: 'Structure', icon: '<svg style="display:block;max-width:18px" viewBox="0 0 24 24"><path fill="currentColor" d="M21,5C19.89,4.65 18.67,4.5 17.5,4.5C15.55,4.5 13.45,4.9 12,6C10.55,4.9 8.45,4.5 6.5,4.5C4.55,4.5 2.45,4.9 1,6V20.65C1,20.9 1.25,21.15 1.5,21.15C1.6,21.15 1.65,21.1 1.75,21.1C3.1,20.45 5.05,20 6.5,20C8.45,20 10.55,20.4 12,21.5C13.35,20.65 15.8,20 17.5,20C19.15,20 20.85,20.3 22.25,21.05C22.35,21.1 22.4,21.1 22.5,21.1C22.75,21.1 23,20.85 23,20.6V6C22.4,5.55 21.75,5.25 21,5M21,18.5C19.9,18.15 18.7,18 17.5,18C15.8,18 13.35,18.65 12,19.5V8C13.35,7.15 15.8,6.5 17.5,6.5C18.7,6.5 19.9,6.65 21,7V18.5Z" /></svg>' },
@@ -122,14 +133,14 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
 
     leftSidebarTabs.forEach((tab, index) => {
       const tabButton = document.createElement('div');
-      tabButton.className = `gjs-pn-tab-btn ${index === 0 ? 'gjs-pn-tab-active' : ''}`;
+      tabButton.className = `${PANEL_CLASS_NAMES.TAB_BUTTON} ${index === 0 ? PANEL_CLASS_NAMES.TAB_ACTIVE : ''}`;
       tabButton.setAttribute('data-tab', tab.id);
       tabButton.title = tab.label;
       tabButton.innerHTML = `<div class="gjs-pn-tab-label">${tab.label}</div>`;
 
       tabButton.addEventListener('click', () => {
-        headerLeftSidebar.querySelectorAll('.gjs-pn-tab-btn').forEach(btn => btn.classList.remove('gjs-pn-tab-active'));
-        tabButton.classList.add('gjs-pn-tab-active');
+        headerLeftSidebar.querySelectorAll(`.${PANEL_CLASS_NAMES.TAB_BUTTON}`).forEach(btn => btn.classList.remove(PANEL_CLASS_NAMES.TAB_ACTIVE));
+        tabButton.classList.add(PANEL_CLASS_NAMES.TAB_ACTIVE);
         switchLeftSidebarContent(tab.id, contentLeftSidebar);
       });
 
@@ -179,10 +190,6 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
           fixedDevice.set('width', width);
           fixedDevice.set('height', height);
           fixedDevice.set('widthMedia', width);
-          
-          if (editor.Devices.getSelected()?.id === 'fixed') {
-              editor.refresh();
-          }
           const wrapper = editor.Canvas.getCanvasView().el.querySelector('.rul_wrapper') as HTMLElement;
           if (wrapper) {
             wrapper.style.width = `max(100%, ${width})`;
@@ -206,7 +213,7 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
   const initializeMode = (mode: 'reflow' | 'fixed') => {
     const container = editor.getContainer();
     if (container) {
-      container.classList.remove('gjs-mode-reflow', 'gjs-mode-fixed');
+      container.classList.remove(LAYOUT_MODE_CLASSES.REFLOW, LAYOUT_MODE_CLASSES.FIXED);
       container.classList.add(`gjs-mode-${mode}`);
     }
     
@@ -269,13 +276,13 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
       if (rulers) {
         rulers.api.toggleRulerVisibility(false);
       }
-      editor.Canvas.setZoom(100);
+      editor.Canvas.setZoom(ZOOM_CONFIG.DEFAULT);
     }
   });
 
   commands.add('set-zoom', (editor: Editor, _sender?: unknown, options: SetZoomOptions = {}) => {
-    zoom = options.zoom || 100;
-    scale = 100 / zoom;
+    zoom = options.zoom || ZOOM_CONFIG.DEFAULT;
+    scale = ZOOM_CONFIG.DEFAULT / zoom;
     editor.Canvas.setZoom(zoom);
     setOffset();
     if (rulers) {
@@ -305,20 +312,20 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
   commands.add('zoom-in', (editor: Editor) => {
     if (config.layoutMode !== 'fixed') return;
     const currentZoom = editor.Canvas.getZoom();
-    const newZoom = Math.min(currentZoom + 5, 200);
+    const newZoom = Math.min(currentZoom + ZOOM_CONFIG.STEP, ZOOM_CONFIG.MAX);
     editor.runCommand('set-zoom', { zoom: newZoom });
   });
 
   commands.add('zoom-out', (editor: Editor) => {
     if (config.layoutMode !== 'fixed') return;
     const currentZoom = editor.Canvas.getZoom();
-    const newZoom = Math.max(currentZoom - 5, 25);
+    const newZoom = Math.max(currentZoom - ZOOM_CONFIG.STEP, ZOOM_CONFIG.MIN);
     editor.runCommand('set-zoom', { zoom: newZoom });
   });
 
   commands.add('zoom-reset', (editor: Editor) => {
     if (config.layoutMode !== 'fixed') return;
-    editor.runCommand('set-zoom', { zoom: 100 });
+    editor.runCommand('set-zoom', { zoom: ZOOM_CONFIG.DEFAULT });
   });
 
   // ==================== LEFT PANEL COMMANDS ====================
@@ -428,34 +435,6 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
   const iconStyle = 'style="display: block; max-width:22px"';
   // ==================== DRAG MODE CONFIGURATION ====================
   
-  type DragMode = '' | 'translate' | 'absolute';
-  const DRAG_MODES: DragMode[] = ['', 'translate', 'absolute'];
-  
-  const DRAG_MODE_ICONS = {
-    select: `<svg ${iconStyle} viewBox="0 0 24 24"><path fill="currentColor" d="M13.64,21.97C13.14,22.21 12.54,22 12.31,21.5L10.13,16.76L7.62,18.78C7.45,18.92 7.24,19 7,19A1,1 0 0,1 6,18V3A1,1 0 0,1 7,2C7.24,2 7.47,2.09 7.64,2.23L7.65,2.22L19.14,11.86C19.57,12.22 19.62,12.85 19.27,13.27C19.12,13.45 18.91,13.57 18.7,13.61L13.97,14.5L16.15,19.29C16.38,19.78 16.13,20.38 15.64,20.61L13.64,21.97Z" /></svg>`,
-    
-    move: `<svg ${iconStyle} viewBox="0 0 24 24"><path fill="currentColor" d="M13,6V11H18V7.75L22.25,12L18,16.25V13H13V18H16.25L12,22.25L7.75,18H11V13H6V16.25L1.75,12L6,7.75V11H11V6H7.75L12,1.75L16.25,6H13Z" /></svg>`,
-    
-    absolute: `<svg ${iconStyle} viewBox="0 0 24 24"><path fill="currentColor" d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,6A6,6 0 0,0 6,12A6,6 0 0,0 12,18A6,6 0 0,0 18,12A6,6 0 0,0 12,6M12,8A4,4 0 0,1 16,12A4,4 0 0,1 12,16A4,4 0 0,1 8,12A4,4 0 0,1 12,8M12,10A2,2 0 0,0 10,12A2,2 0 0,0 12,14A2,2 0 0,0 14,12A2,2 0 0,0 12,10Z" /></svg>`
-  };
-  
-  const DRAG_MODE_CONFIG: Record<DragMode, { icon: string; title: string; tooltip: string }> = {
-    '': { 
-      icon: DRAG_MODE_ICONS.select,
-      title: 'Select',
-      tooltip: 'Select Mode - Click to select elements'
-    },
-    'translate': { 
-      icon: DRAG_MODE_ICONS.move,
-      title: 'Move',
-      tooltip: 'Move Mode - Drag to move elements freely'
-    },
-    'absolute': { 
-      icon: DRAG_MODE_ICONS.absolute,
-      title: 'Absolute',
-      tooltip: 'Absolute Mode - Position elements with absolute positioning'
-    }
-  };
 
   const getDragModeLabel = (mode: DragMode) => {
     const config = DRAG_MODE_CONFIG[mode];
@@ -509,19 +488,69 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
     if (config.layoutMode === 'fixed') {
       const canvasEl = editor.Canvas.getElement();
       if (canvasEl) {
-        canvasEl.addEventListener('wheel', (e: WheelEvent) => {
+        wheelEventListener = (e: WheelEvent) => {
           if (e.ctrlKey || e.metaKey) {
             e.preventDefault();
             e.stopPropagation();
             const currentZoom = editor.Canvas.getZoom();
             const delta = e.deltaY > 0 ? -1 : 1;
-            const newZoom = Math.max(25, Math.min(200, currentZoom + (delta * 5)));
+            const newZoom = Math.max(ZOOM_CONFIG.MIN, Math.min(ZOOM_CONFIG.MAX, currentZoom + (delta * ZOOM_CONFIG.STEP)));
             editor.runCommand('set-zoom', { zoom: newZoom });
           }
-        });
+        };
+        canvasEl.addEventListener('wheel', wheelEventListener);
       }
     }
+
+    // Subscribe to store changes for reactive updates
+    storeUnsubscribe = useBookStore.subscribe(
+      (state) => {
+        if (state.currentBook?.pageSize && config.layoutMode === 'fixed') {
+          updateCanvasSize();
+        }
+      }
+    );
   });
+
+  // ==================== CLEANUP ====================
+
+  /**
+   * Cleanup function to prevent memory leaks
+   * Destroys React roots, removes event listeners, and cleans up resources
+   */
+  const cleanup = () => {
+    // Unmount React roots
+    if (structurePanelRoot) {
+      structurePanelRoot.unmount();
+      structurePanelRoot = null;
+    }
+    if (footerPanelRoot) {
+      footerPanelRoot.unmount();
+      footerPanelRoot = null;
+    }
+
+    // Remove wheel event listener
+    if (wheelEventListener && config.layoutMode === 'fixed') {
+      const canvasEl = editor.Canvas.getElement();
+      if (canvasEl) {
+        canvasEl.removeEventListener('wheel', wheelEventListener);
+      }
+      wheelEventListener = null;
+    }
+
+    if (rulers) {
+      rulers = null;
+    }
+
+    // Unsubscribe from store
+    if (storeUnsubscribe) {
+      storeUnsubscribe();
+      storeUnsubscribe = null;
+    }
+  };
+
+  // Register cleanup on editor destroy
+  editor.on('destroy', cleanup);
 
   // ==================== CANVAS COMMANDS ====================
 

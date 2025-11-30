@@ -79,9 +79,15 @@ const Editor: React.FC = () => {
               {
                 id: 'fixed',
                 name: 'Fixed',
-                width: '210mm',
-                height: '297mm',
-                widthMedia: '210mm',
+                width: currentBook.layoutMode === 'fixed' && currentBook.pageSize
+                  ? `${currentBook.pageSize.width}${currentBook.pageSize.unit}`
+                  : '210mm',
+                height: currentBook.layoutMode === 'fixed' && currentBook.pageSize
+                  ? `${currentBook.pageSize.height}${currentBook.pageSize.unit}`
+                  : '297mm',
+                widthMedia: currentBook.layoutMode === 'fixed' && currentBook.pageSize
+                  ? `${currentBook.pageSize.width}${currentBook.pageSize.unit}`
+                  : '210mm',
               },
               {
                 id: 'desktop',
@@ -106,9 +112,6 @@ const Editor: React.FC = () => {
             [coreSetup as any]: { // eslint-disable-line @typescript-eslint/no-explicit-any
               layoutMode: currentBook.layoutMode,
               dragMode: '', // Default to empty string (Default mode)
-              rulerOpts: {
-                canvasZoom: 100,
-              },
             },
           }
         });
