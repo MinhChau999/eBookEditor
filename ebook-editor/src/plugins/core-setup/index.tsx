@@ -6,7 +6,6 @@ import { StructurePanel } from '../../features/page/components/StructurePanel';
 import { PagesPanelFooter } from '../../features/page/components/PagesPanelFooter';
 import { CoreSetupOptions } from '../../core/types/core-setup.types';
 import Ruler from '../rulers/Ruler';
-import parser from '../parser-postcss';
 import {
   ZOOM_CONFIG,
   RULER_CONFIG,
@@ -31,6 +30,21 @@ interface SetZoomOptions {
   zoom?: number;
 }
 
+interface CodeViewer {
+  getContent(): string;
+  setContent(content: string): void;
+  refresh(): void;
+}
+
+interface CodeManager {
+  createViewer(opts: { label: string; codeName: string; theme: string; readOnly?: boolean }): CodeViewer;
+  EditorView: new (opts: { model: CodeViewer; config: unknown }) => { render(): { el: HTMLElement } };
+  getConfig(): unknown;
+}
+
+interface CommandSender {
+  set(key: string, value: unknown): void;
+}
 
 const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, options: CoreSetupOptions = {}) => {
   const config = {
@@ -87,7 +101,8 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
 
   const switchLeftSidebarContent = (tabId: string, contentLeftSidebar: HTMLElement) => {
     if (tabId !== 'book-structure' && structurePanelRoot) {
-        structurePanelRoot.unmount();
+        const root = structurePanelRoot;
+        setTimeout(() => root.unmount(), 0);
         structurePanelRoot = null;
     }
 
@@ -204,14 +219,12 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
     
     if (mode === 'fixed') {
         editor.Devices.select('fixed');
-        updateRulerSize();
         editor.runCommand('ruler-visibility');
     } else {
         editor.Devices.select('desktop');
         // enableReflowMode();
         editor.stopCommand('ruler-visibility');
     }
-
     editor.trigger('mode:change', { mode });
   };
 
@@ -295,21 +308,18 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
   // ==================== ZOOM COMMANDS ====================
 
   commands.add('zoom-in', (editor: Editor) => {
-    if (config.layoutMode !== 'fixed') return;
     const currentZoom = editor.Canvas.getZoom();
     const newZoom = Math.min(currentZoom + ZOOM_CONFIG.STEP, ZOOM_CONFIG.MAX);
     editor.runCommand('set-zoom', { zoom: newZoom });
   });
 
   commands.add('zoom-out', (editor: Editor) => {
-    if (config.layoutMode !== 'fixed') return;
     const currentZoom = editor.Canvas.getZoom();
     const newZoom = Math.max(currentZoom - ZOOM_CONFIG.STEP, ZOOM_CONFIG.MIN);
     editor.runCommand('set-zoom', { zoom: newZoom });
   });
 
   commands.add('zoom-reset', (editor: Editor) => {
-    if (config.layoutMode !== 'fixed') return;
     editor.runCommand('set-zoom', { zoom: ZOOM_CONFIG.DEFAULT });
   });
 
@@ -373,50 +383,6 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
     stop: () => {},
   });
 
-  editor.on('load', () => {
-    const previewCommand = commands.get('preview');
-
-    if (previewCommand) {
-      const originalRun = previewCommand.run;
-      const originalStop = previewCommand.stop;
-
-      previewCommand.run = (ed: Editor, sender?: unknown) => {
-        const editorWithExtensions = ed as EditorWithLeftPanel;
-        const elements = editorWithExtensions.leftPanelElements;
-        const adjustLayout = editorWithExtensions.adjustLeftPanelLayout;
-
-        if (elements && adjustLayout && editorWithExtensions.leftSidebarVisible !== false) {
-          elements.header.style.display = 'none';
-          elements.content.style.display = 'none';
-          elements.footer.style.display = 'none';
-          adjustLayout(false);
-          editorWithExtensions.leftSidebarVisible = false;
-        }
-
-        if (originalRun) {
-          return originalRun.call(previewCommand, ed, sender, {});
-        }
-      };
-
-      previewCommand.stop = (ed: Editor, sender?: unknown) => {
-        const editorWithExtensions = ed as EditorWithLeftPanel;
-        const elements = editorWithExtensions.leftPanelElements;
-        const adjustLayout = editorWithExtensions.adjustLeftPanelLayout;
-
-        if (elements && adjustLayout && editorWithExtensions.leftSidebarVisible === false) {
-          elements.header.style.removeProperty('display');
-          elements.content.style.removeProperty('display');
-          elements.footer.style.removeProperty('display');
-          adjustLayout(true);
-          editorWithExtensions.leftSidebarVisible = true;
-        }
-
-        if (originalStop) {
-          return originalStop.call(previewCommand, ed, sender, {});
-        }
-      };
-    }
-  });
   const iconStyle = 'style="display: block; max-width:22px"';
   // ==================== DRAG MODE CONFIGURATION ====================
   
@@ -477,37 +443,72 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
     initializeMode(config.layoutMode as 'fixed' | 'reflow');
     initializeLeftPanel();
 
-    // Register PostCSS parser for better CSS parsing
-    editor.setCustomParserCss(parser);
-
     editor.on('dragMode:changed', ({ mode }) => {
       updateDragModeButton(mode);
     });
 
     updateDragModeButton(currentDragMode);
-    
-    // Initialize zoom display
-    if (config.layoutMode === 'fixed') {
-      updateZoomDisplay(zoom);
+    updateZoomDisplay(zoom);
+    editor.runCommand('set-zoom', { zoom });
+    updateRulerSize();
+
+    const canvasEl = editor.Canvas.getElement();
+    if (canvasEl) {
+      wheelEventListener = (e: WheelEvent) => {
+        if (e.ctrlKey || e.metaKey) {
+          e.preventDefault();
+          e.stopPropagation();
+          const currentZoom = editor.Canvas.getZoom();
+          const delta = e.deltaY > 0 ? -1 : 1;
+          const newZoom = Math.max(ZOOM_CONFIG.MIN, Math.min(ZOOM_CONFIG.MAX, currentZoom + (delta * ZOOM_CONFIG.STEP)));
+          editor.runCommand('set-zoom', { zoom: newZoom });
+        }
+      };
+      canvasEl.addEventListener('wheel', wheelEventListener);
     }
 
-    if (config.layoutMode === 'fixed') {
-      const canvasEl = editor.Canvas.getElement();
-      if (canvasEl) {
-        wheelEventListener = (e: WheelEvent) => {
-          if (e.ctrlKey || e.metaKey) {
-            e.preventDefault();
-            e.stopPropagation();
-            const currentZoom = editor.Canvas.getZoom();
-            const delta = e.deltaY > 0 ? -1 : 1;
-            const newZoom = Math.max(ZOOM_CONFIG.MIN, Math.min(ZOOM_CONFIG.MAX, currentZoom + (delta * ZOOM_CONFIG.STEP)));
-            editor.runCommand('set-zoom', { zoom: newZoom });
-          }
-        };
-        canvasEl.addEventListener('wheel', wheelEventListener);
-      }
-    }
+    const previewCommand = commands.get('preview');
 
+    if (previewCommand) {
+      const originalRun = previewCommand.run;
+      const originalStop = previewCommand.stop;
+
+      previewCommand.run = (ed: Editor, sender?: unknown) => {
+        const editorWithExtensions = ed as EditorWithLeftPanel;
+        const elements = editorWithExtensions.leftPanelElements;
+        const adjustLayout = editorWithExtensions.adjustLeftPanelLayout;
+
+        if (elements && adjustLayout && editorWithExtensions.leftSidebarVisible !== false) {
+          elements.header.style.display = 'none';
+          elements.content.style.display = 'none';
+          elements.footer.style.display = 'none';
+          adjustLayout(false);
+          editorWithExtensions.leftSidebarVisible = false;
+        }
+
+        if (originalRun) {
+          return originalRun.call(previewCommand, ed, sender, {});
+        }
+      };
+
+      previewCommand.stop = (ed: Editor, sender?: unknown) => {
+        const editorWithExtensions = ed as EditorWithLeftPanel;
+        const elements = editorWithExtensions.leftPanelElements;
+        const adjustLayout = editorWithExtensions.adjustLeftPanelLayout;
+
+        if (elements && adjustLayout && editorWithExtensions.leftSidebarVisible === false) {
+          elements.header.style.removeProperty('display');
+          elements.content.style.removeProperty('display');
+          elements.footer.style.removeProperty('display');
+          adjustLayout(true);
+          editorWithExtensions.leftSidebarVisible = true;
+        }
+
+        if (originalStop) {
+          return originalStop.call(previewCommand, ed, sender, {});
+        }
+      };
+    }
   });
 
   // ==================== CLEANUP ====================
@@ -519,16 +520,18 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
   const cleanup = () => {
     // Unmount React roots
     if (structurePanelRoot) {
-      structurePanelRoot.unmount();
+      const root = structurePanelRoot;
+      setTimeout(() => root.unmount(), 0);
       structurePanelRoot = null;
     }
     if (footerPanelRoot) {
-      footerPanelRoot.unmount();
+      const root = footerPanelRoot;
+      setTimeout(() => root.unmount(), 0);
       footerPanelRoot = null;
     }
 
     // Remove wheel event listener
-    if (wheelEventListener && config.layoutMode === 'fixed') {
+    if (wheelEventListener) {
       const canvasEl = editor.Canvas.getElement();
       if (canvasEl) {
         canvasEl.removeEventListener('wheel', wheelEventListener);
@@ -549,6 +552,167 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
 
   // Register cleanup on editor destroy
   editor.on('destroy', cleanup);
+
+  // ==================== EXPORT/IMPORT TEMPLATE COMMAND ====================
+
+  commands.add('export-template', {
+    htmlEditor: null as CodeViewer | null,
+    cssEditor: null as CodeViewer | null,
+    editors: null as HTMLElement | null,
+
+    run(editor: Editor, sender?: CommandSender) {
+      if (sender?.set) {
+        sender.set('active', 0);
+      }
+      const config = editor.getConfig();
+      const modal = editor.Modal;
+      const pfx = config.stylePrefix || '';
+      const cmdm = (editor as unknown as { CodeManager: CodeManager }).CodeManager;
+
+      const self = this as {
+        htmlEditor: CodeViewer | null;
+        cssEditor: CodeViewer | null;
+        editors: HTMLElement | null;
+      };
+
+      if (!self.editors) {
+        const htmlModel = cmdm.createViewer({
+          label: 'HTML',
+          codeName: 'htmlmixed',
+          theme: 'hopscotch',
+          readOnly: false,
+        });
+        const cssModel = cmdm.createViewer({
+          label: 'CSS',
+          codeName: 'css',
+          theme: 'hopscotch',
+          readOnly: false,
+        });
+
+        self.htmlEditor = htmlModel;
+        self.cssEditor = cssModel;
+
+        // Create editors container
+        const editorsContainer = document.createElement('div');
+        editorsContainer.className = `${pfx}export-dl export-template-container`;
+
+        // Create HTML editor wrapper
+        const htmlView = new cmdm.EditorView({
+          model: htmlModel,
+          config: cmdm.getConfig(),
+        }).render();
+
+        const htmlCopyBtn = document.createElement('button');
+        htmlCopyBtn.className = 'export-copy-btn';
+        htmlCopyBtn.innerHTML = '<i class="fa fa-copy"></i>';
+        htmlCopyBtn.title = 'Copy HTML';
+        htmlCopyBtn.onclick = async () => {
+          try {
+            if (self.htmlEditor) {
+              const content = self.htmlEditor.getContent();
+              await navigator.clipboard.writeText(content);
+              htmlCopyBtn.classList.add('copied');
+              htmlCopyBtn.innerHTML = '<i class="fa fa-check"></i>';
+              setTimeout(() => {
+              htmlCopyBtn.classList.remove('copied');
+              htmlCopyBtn.innerHTML = '<i class="fa fa-copy"></i>';
+              }, 2000);
+            }
+          } catch {
+            alert('Failed to copy HTML');
+          }
+        };
+
+        htmlView.el.appendChild(htmlCopyBtn);
+
+        // Create CSS editor wrapper
+        const cssView = new cmdm.EditorView({
+          model: cssModel,
+          config: cmdm.getConfig(),
+        }).render();
+
+        const cssCopyBtn = document.createElement('button');
+        cssCopyBtn.className = 'export-copy-btn';
+        cssCopyBtn.innerHTML = '<i class="fa fa-copy"></i>';
+        cssCopyBtn.title = 'Copy CSS';
+        cssCopyBtn.onclick = async () => {
+          try {
+            if (self.cssEditor) {
+                const content = self.cssEditor.getContent();
+                await navigator.clipboard.writeText(content);
+                cssCopyBtn.classList.add('copied');
+                cssCopyBtn.innerHTML = '<i class="fa fa-check"></i>';
+                setTimeout(() => {
+                cssCopyBtn.classList.remove('copied');
+                cssCopyBtn.innerHTML = '<i class="fa fa-copy"></i>';
+                }, 2000);
+            }
+          } catch {
+            alert('Failed to copy CSS');
+          }
+        };
+
+        cssView.el.appendChild(cssCopyBtn);
+
+        // Footer with update button
+
+        const btnUpdate = document.createElement('button');
+        btnUpdate.className = 'export-update-btn';
+        btnUpdate.innerHTML = 'Update';
+        btnUpdate.onclick = () => {
+          if (!self.htmlEditor || !self.cssEditor) return;
+
+          const newHtml = self.htmlEditor.getContent();
+          const newCss = self.cssEditor.getContent();
+          const currentHtml = editor.getHtml();
+          const currentCss = editor.getCss();
+
+          const htmlChanged = newHtml !== currentHtml;
+          const cssChanged = newCss !== currentCss;
+
+          if (!htmlChanged && !cssChanged) {
+            modal.close();
+            return;
+          }
+
+          // Import HTML if changed
+          if (htmlChanged) {
+            editor.setComponents(newHtml);
+          }
+
+          // Import CSS if changed
+          if (cssChanged && newCss) {
+            editor.Css.clear();
+            editor.Css.addRules(newCss);
+          }
+
+          modal.close();
+        };
+
+        editorsContainer.appendChild(htmlView.el);
+        editorsContainer.appendChild(cssView.el);
+        editorsContainer.appendChild(btnUpdate);
+
+        self.editors = editorsContainer;
+      }
+
+      // Show modal
+      modal.open({
+        title: config.textViewCode || 'Export / Import Template',
+        content: self.editors,
+      }).getModel().once('change:open', () => {
+        editor.stopCommand('export-template');
+      });
+
+      // Set content
+      if (self.htmlEditor) self.htmlEditor.setContent(editor.getHtml());
+      if (self.cssEditor) self.cssEditor.setContent(editor.getCss() || '');
+    },
+
+    stop(editor: Editor) {
+      editor.Modal?.close();
+    },
+  });
 
   // ==================== CANVAS COMMANDS ====================
 
@@ -586,7 +750,8 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
         }
       );
   } else {
-      // Fixed Mode
+      /* Fixed Mode
+      
       deviceButtons.push(
         {
           id: 'set-view-single',
@@ -597,6 +762,7 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
           className: 'gjs-four-color'
         }
       );
+      */
   }
 
   panels.getPanels().reset([

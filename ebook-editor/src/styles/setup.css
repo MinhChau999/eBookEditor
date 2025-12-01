@@ -940,6 +940,65 @@
   display: block;
 }
 
+.gjs-pn-btn {
+  line-height: 20px !important;
+}
+
+.gjs-cm-editor-c {
+  position: relative;
+}
+
+.export-copy-btn {
+  position: absolute;
+  top: 30px;
+  right: 15px;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  background: var(--gjs-main-color);
+  border: 1px solid var(--gjs-main-light-color);
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 10px;
+  color: var(--gjs-font-color);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.export-copy-btn:hover {
+  background: var(--gjs-main-light-color);
+  color: var(--gjs-font-color-active);
+  border-color: var(--gjs-font-color);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+.export-update-btn {
+  margin-top: 10px;
+  float: right;
+  background-color: var(--gjs-tertiary-color);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.export-update-btn:hover {
+  background-color: var(--gjs-tertiary-color-active, #2a85e8);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+
 /* Table of Contents Professional Styles */
 .toc-list {
   display: flex;

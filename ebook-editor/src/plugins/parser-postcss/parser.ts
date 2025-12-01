@@ -16,7 +16,7 @@ const isDev = process.env.NODE_ENV !== 'production';
  * @param  {Editor} editor
  * @param  {*} msg
  */
-export const log = (editor?: Editor, msg?: any) => {
+export const log = (editor?: Editor, msg?: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
   if (isDev && editor) {
     editor.log(msg, { ns: 'parser-postcss' });
   }

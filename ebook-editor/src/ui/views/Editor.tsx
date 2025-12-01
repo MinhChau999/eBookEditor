@@ -112,6 +112,9 @@ const Editor: React.FC = () => {
             [coreSetup as any]: { // eslint-disable-line @typescript-eslint/no-explicit-any
               layoutMode: currentBook.layoutMode,
               dragMode: '', // Default to empty string (Default mode)
+              rulerOpts: {
+                canvasZoom: currentBook.layoutMode === 'fixed' ? 95 : 100,
+              }
             },
           }
         });
