@@ -436,6 +436,40 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
     stop() {},
   });
 
+  // ==================== COMPONENT TYPE CUSTOMIZATION ====================
+  
+  // Add tagName trait to text components
+  // This must be done BEFORE editor loads to ensure all text components get this trait
+  editor.DomComponents.addType('text', {
+    extend: 'text',
+    model: {
+      defaults: {
+        traits: [
+          'id',
+          'title',
+          {
+            type: 'select',
+            name: 'tagName',
+            label: 'Tag',
+            changeProp: true,
+            options: [
+              { id: 'h1', label: 'Heading 1 (H1)' },
+              { id: 'h2', label: 'Heading 2 (H2)' },
+              { id: 'h3', label: 'Heading 3 (H3)' },
+              { id: 'h4', label: 'Heading 4 (H4)' },
+              { id: 'h5', label: 'Heading 5 (H5)' },
+              { id: 'h6', label: 'Heading 6 (H6)' },
+              { id: 'p', label: 'Paragraph (P)' },
+              { id: 'div', label: 'Div' },
+              { id: 'span', label: 'Span' },
+              { id: 'label', label: 'Label' },
+            ]
+          }
+        ]
+      }
+    }
+  });
+
   // ==================== EDITOR EVENT HANDLERS ====================
 
   editor.on('load', () => {
@@ -466,7 +500,7 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
       };
       canvasEl.addEventListener('wheel', wheelEventListener);
     }
-
+    
     const previewCommand = commands.get('preview');
 
     if (previewCommand) {
@@ -674,13 +708,11 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
             modal.close();
             return;
           }
-
-          // Import HTML if changed
+          
           if (htmlChanged) {
             editor.setComponents(newHtml);
           }
 
-          // Import CSS if changed
           if (cssChanged && newCss) {
             editor.Css.clear();
             editor.Css.addRules(newCss);
