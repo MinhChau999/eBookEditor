@@ -1078,3 +1078,42 @@
 .cm-s-hopscotch .CodeMirror-gutters {
   background-color: #1E1E20;
 }
+
+/* Class Autocomplete Dropdown */
+.gjs-clm-autocomplete {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--gjs-primary-color);
+  border: 1px solid var(--gjs-main-light-color);
+  border-radius: 2px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  margin-top: 2px;
+}
+
+.gjs-clm-autocomplete-item {
+  padding: 6px 10px;
+  cursor: pointer;
+  color: var(--gjs-font-color);
+  font-size: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background-color 0.15s ease;
+}
+
+.gjs-clm-autocomplete-item:last-child {
+  border-bottom: none;
+}
+
+.gjs-clm-autocomplete-item:hover,
+.gjs-clm-autocomplete-item.selected {
+  background: var(--gjs-main-light-color);
+  color: var(--gjs-font-color-active);
+}
+
+.gjs-clm-autocomplete-item.selected {
+  background: var(--gjs-tertiary-color);
+}
