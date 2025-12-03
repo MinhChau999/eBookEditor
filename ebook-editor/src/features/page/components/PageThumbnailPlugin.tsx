@@ -32,12 +32,16 @@ export const PageThumbnailPlugin: React.FC<PageThumbnailPluginProps> = ({
   minimal
 }) => {
   const containerRef = React.useRef<HTMLDivElement>(null);
-  const wrapperRef = React.useRef<HTMLDivElement>(null);
+  const timeoutRef = React.useRef<NodeJS.Timeout | undefined>(undefined);
   const [isUpdating, setIsUpdating] = React.useState(false);
-  const [isVisible, setIsVisible] = React.useState(false);
+  const [shouldLoad, setShouldLoad] = React.useState(false);
   const currentBook = useBookStore((state: { currentBook?: { styles?: string } | null }) => state.currentBook);
 
-  // Update thumbnail function - REMOVED isActive dependency
+  // Batch loading configuration
+  const BATCH_SIZE = 5; // Load 5 thumbnails per batch
+  const BATCH_DELAY = 150; // 150ms delay between batches
+
+  // Update thumbnail function
   const updateThumbnail = React.useCallback(() => {
     if (!containerRef.current || !page?.id) return;
 
@@ -59,47 +63,40 @@ export const PageThumbnailPlugin: React.FC<PageThumbnailPluginProps> = ({
     }
   }, [editor, page.id]);
 
-  // Intersection Observer for lazy rendering (performance optimization)
+  // Batch Loading: Schedule thumbnail load based on page index
   React.useEffect(() => {
-    if (!wrapperRef.current) return;
+    if (!page?.id) return;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && !isVisible) {
-            setIsVisible(true);
-          }
-        });
-      },
-      {
-        root: null,
-        rootMargin: '50px', // Load slightly before visible
-        threshold: 0.01
-      }
-    );
+    // Calculate batch index and delay
+    const pageIndex = typeof pageNumber === 'number' ? pageNumber - 1 : 0;
+    const batchIndex = Math.floor(pageIndex / BATCH_SIZE);
+    const loadDelay = batchIndex * BATCH_DELAY;
 
-    observer.observe(wrapperRef.current);
+    // Schedule the load
+    timeoutRef.current = setTimeout(() => {
+      setShouldLoad(true);
+    }, loadDelay);
 
     return () => {
-      observer.disconnect();
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
     };
-  }, [isVisible]);
+  }, [page?.id, pageNumber, BATCH_SIZE, BATCH_DELAY]);
 
-  // Initialize thumbnail on mount OR when becomes visible
+  // Load thumbnail when scheduled
   React.useEffect(() => {
-    if (page?.id && containerRef.current && isVisible) {
+    if (shouldLoad && page?.id && containerRef.current) {
       updateThumbnail();
     }
-  }, [page?.id, isVisible, updateThumbnail]);
+  }, [shouldLoad, page?.id, updateThumbnail]);
 
-  // Listen to thumbnail update events - REMOVED isActive dependency
+  // Listen to thumbnail update events
   React.useEffect(() => {
     const handleThumbnailUpdate = (data: { pageIds?: string[] }) => {
-      if (!data?.pageIds || data.pageIds.includes(page.id)) {
-        // Only update if already visible (to avoid unnecessary work)
-        if (isVisible) {
-          updateThumbnail();
-        }
+      // Only update if already loaded (to avoid unnecessary work)
+      if (shouldLoad && (!data?.pageIds || data.pageIds.includes(page.id))) {
+        updateThumbnail();
       }
     };
 
@@ -108,7 +105,7 @@ export const PageThumbnailPlugin: React.FC<PageThumbnailPluginProps> = ({
     return () => {
       editor.off('thumbpage:updated', handleThumbnailUpdate);
     };
-  }, [editor, page.id, isVisible, updateThumbnail]);
+  }, [editor, page.id, shouldLoad, updateThumbnail]);
 
   // Update global styles when book changes
   React.useEffect(() => {
@@ -119,7 +116,6 @@ export const PageThumbnailPlugin: React.FC<PageThumbnailPluginProps> = ({
 
   return (
     <div
-      ref={wrapperRef}
       className={`page-item ${isActive ? 'page-active' : ''} ${isUpdating ? 'page-updating' : ''}`}
       onClick={onSelect}
     >
