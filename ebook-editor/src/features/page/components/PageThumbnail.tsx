@@ -1,9 +1,11 @@
 import React from 'react';
 import { useBookStore } from '../../../core/store/bookStore';
+import { PageThumbnailPlugin } from './PageThumbnailPlugin';
 
 interface PageThumbnailProps {
   page: {
-    getMainComponent: () => {
+    id: string;
+    getMainComponent?: () => {
       toHTML: () => string;
     };
   };
@@ -12,44 +14,77 @@ interface PageThumbnailProps {
   onSelect: () => void;
   onDelete: (e: React.MouseEvent) => void;
   editor: {
-    getCss: () => string;
-    on: (event: string, callback: () => void) => void;
-    off: (event: string, callback: () => void) => void;
+    getCss?: () => string;
+    runCommand: (command: string, options?: any) => any;
+    on: (event: string, callback: (data?: any) => void) => void;
+    off: (event: string, callback: (data?: any) => void) => void;
   };
   hideMasterIndicator?: boolean;
   minimal?: boolean;
+  usePlugin?: boolean; // New flag to enable plugin usage
 }
 
-export const PageThumbnail: React.FC<PageThumbnailProps> = ({ 
-  page, 
-  pageNumber, 
-  isActive, 
-  onSelect, 
+export const PageThumbnail: React.FC<PageThumbnailProps> = ({
+  page,
+  pageNumber,
+  isActive,
+  onSelect,
   onDelete,
   editor,
   hideMasterIndicator,
-  minimal
+  minimal,
+  usePlugin = true // Default to true for new plugin-based approach
 }) => {
+
+  // Use the new plugin-based component if enabled
+  if (usePlugin && typeof editor?.runCommand === 'function' && page?.id) {
+    return (
+      <PageThumbnailPlugin
+        page={page}
+        pageNumber={pageNumber}
+        isActive={isActive}
+        onSelect={onSelect}
+        onDelete={onDelete}
+        editor={editor}
+        hideMasterIndicator={hideMasterIndicator}
+        minimal={minimal}
+      />
+    );
+  }
   const [html, setHtml] = React.useState('');
   const [css, setCss] = React.useState('');
   const currentBook = useBookStore((state: { currentBook?: { styles?: string } | null }) => state.currentBook);
 
   React.useEffect(() => {
-    if (page && editor) {
+    if (page && editor && page.getMainComponent && editor.getCss) {
       let timeoutId: NodeJS.Timeout;
 
       // Debounced update function - only update after 300ms of inactivity
       const debouncedUpdate = () => {
         clearTimeout(timeoutId);
         timeoutId = setTimeout(() => {
-          setHtml(page.getMainComponent().toHTML());
-          setCss(editor.getCss());
+          const mainComponent = page.getMainComponent();
+          if (mainComponent && typeof mainComponent.toHTML === 'function') {
+            setHtml(mainComponent.toHTML());
+          }
+          if (typeof editor.getCss === 'function') {
+            setCss(editor.getCss());
+          }
         }, 300); // 300ms debounce
       };
 
       // Initial update (no debounce)
-      setHtml(page.getMainComponent().toHTML());
-      setCss(editor.getCss());
+      try {
+        const mainComponent = page.getMainComponent();
+        if (mainComponent && typeof mainComponent.toHTML === 'function') {
+          setHtml(mainComponent.toHTML());
+        }
+        if (typeof editor.getCss === 'function') {
+          setCss(editor.getCss());
+        }
+      } catch (error) {
+        console.error('Error in initial thumbnail update:', error);
+      }
 
       let listeners: string[] = [];
 

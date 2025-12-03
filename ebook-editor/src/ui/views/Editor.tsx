@@ -6,6 +6,7 @@ import coreSetup from '../../plugins/core-setup';
 import bookAdapter from '../../plugins/book-adapter';
 import basicBlocks from '../../plugins/basic-blocks';
 import styleManagerTabs from '../../plugins/style-manager-tabs';
+import thumbPagePlugin from '../../plugins/thumbpage';
 import { ExportModal } from '../../features/export/components/ExportModal';
 import { useBookStore } from '../../core/store/bookStore';
 import '../../styles/setup.css';
@@ -82,7 +83,8 @@ const Editor: React.FC = () => {
             bookAdapter,
             tuiImageEditorPlugin,
             basicBlocks,
-            styleManagerTabs
+            styleManagerTabs,
+            thumbPagePlugin
           ],
           deviceManager: {
             devices: [
@@ -125,6 +127,13 @@ const Editor: React.FC = () => {
               rulerOpts: {
                 canvasZoom: currentBook.layoutMode === 'fixed' ? 95 : 100,
               }
+            },
+            [thumbPagePlugin as any]: { // eslint-disable-line @typescript-eslint/no-explicit-any
+              thumbnailScale: 0.07,
+              thumbnailWidth: 1000,
+              thumbnailHeight: 1414,
+              debounceTime: 300,
+              customStyles: currentBook?.styles || '',
             },
           }
         });
