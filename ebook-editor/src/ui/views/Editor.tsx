@@ -5,6 +5,7 @@ import tuiImageEditorPlugin from 'grapesjs-tui-image-editor';
 import coreSetup from '../../plugins/core-setup';
 import bookAdapter from '../../plugins/book-adapter';
 import basicBlocks from '../../plugins/basic-blocks';
+import styleManagerTabs from '../../plugins/style-manager-tabs';
 import { ExportModal } from '../../features/export/components/ExportModal';
 import { useBookStore } from '../../core/store/bookStore';
 import '../../styles/setup.css';
@@ -68,11 +69,20 @@ const Editor: React.FC = () => {
               }
             ]
           },
+          selectorManager: {
+            states: [
+              { name: 'hover', label: 'Hover' },
+              { name: 'before', label: 'Before' },
+              { name: 'after', label: 'After' },
+              { name: 'nth-of-type(2n)', label: 'Even/Odd' }
+            ]
+          },
           plugins: [
             coreSetup,
             bookAdapter,
             tuiImageEditorPlugin,
-            basicBlocks
+            basicBlocks,
+            styleManagerTabs
           ],
           deviceManager: {
             devices: [
