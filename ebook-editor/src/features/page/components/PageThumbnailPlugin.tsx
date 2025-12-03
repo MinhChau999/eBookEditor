@@ -32,12 +32,14 @@ export const PageThumbnailPlugin: React.FC<PageThumbnailPluginProps> = ({
   minimal
 }) => {
   const containerRef = React.useRef<HTMLDivElement>(null);
+  const wrapperRef = React.useRef<HTMLDivElement>(null);
   const [isUpdating, setIsUpdating] = React.useState(false);
+  const [isVisible, setIsVisible] = React.useState(false);
   const currentBook = useBookStore((state: { currentBook?: { styles?: string } | null }) => state.currentBook);
 
-  // Update thumbnail function
+  // Update thumbnail function - REMOVED isActive dependency
   const updateThumbnail = React.useCallback(() => {
-    if (!containerRef.current || !page?.id || !isActive) return;
+    if (!containerRef.current || !page?.id) return;
 
     setIsUpdating(true);
 
@@ -48,29 +50,56 @@ export const PageThumbnailPlugin: React.FC<PageThumbnailPluginProps> = ({
       });
 
       if (thumbnail) {
-        console.log(`Thumbnail updated for page ${page.id}`);
+        console.log(`Thumbnail loaded for page ${page.id}`);
       }
     } catch (error) {
       console.error('Error updating thumbnail:', error);
     } finally {
       setIsUpdating(false);
     }
-  }, [editor, page.id, isActive]);
+  }, [editor, page.id]);
 
-  // Initialize thumbnail on mount
+  // Intersection Observer for lazy rendering (performance optimization)
   React.useEffect(() => {
-    if (page?.id && containerRef.current) {
+    if (!wrapperRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !isVisible) {
+            setIsVisible(true);
+          }
+        });
+      },
+      {
+        root: null,
+        rootMargin: '50px', // Load slightly before visible
+        threshold: 0.01
+      }
+    );
+
+    observer.observe(wrapperRef.current);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [isVisible]);
+
+  // Initialize thumbnail on mount OR when becomes visible
+  React.useEffect(() => {
+    if (page?.id && containerRef.current && isVisible) {
       updateThumbnail();
     }
-  }, [page?.id, updateThumbnail]);
+  }, [page?.id, isVisible, updateThumbnail]);
 
-  // Listen to thumbnail update events
+  // Listen to thumbnail update events - REMOVED isActive dependency
   React.useEffect(() => {
-    if (!isActive) return;
-
     const handleThumbnailUpdate = (data: { pageIds?: string[] }) => {
       if (!data?.pageIds || data.pageIds.includes(page.id)) {
-        updateThumbnail();
+        // Only update if already visible (to avoid unnecessary work)
+        if (isVisible) {
+          updateThumbnail();
+        }
       }
     };
 
@@ -79,7 +108,7 @@ export const PageThumbnailPlugin: React.FC<PageThumbnailPluginProps> = ({
     return () => {
       editor.off('thumbpage:updated', handleThumbnailUpdate);
     };
-  }, [editor, page.id, isActive, updateThumbnail]);
+  }, [editor, page.id, isVisible, updateThumbnail]);
 
   // Update global styles when book changes
   React.useEffect(() => {
@@ -90,6 +119,7 @@ export const PageThumbnailPlugin: React.FC<PageThumbnailPluginProps> = ({
 
   return (
     <div
+      ref={wrapperRef}
       className={`page-item ${isActive ? 'page-active' : ''} ${isUpdating ? 'page-updating' : ''}`}
       onClick={onSelect}
     >
