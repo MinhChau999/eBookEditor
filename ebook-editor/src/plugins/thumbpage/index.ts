@@ -56,7 +56,6 @@ const thumbPagePlugin = grapesjs.plugins.add('thumbpage', (editor: Editor, optio
     if (options?.pageId) {
       queueThumbnailUpdate(options.pageId);
     } else {
-      // Update all page thumbnails
       const pages = editor.Pages.getAll();
       pages.forEach(page => queueThumbnailUpdate(String(page.id)));
     }
@@ -82,7 +81,6 @@ const thumbPagePlugin = grapesjs.plugins.add('thumbpage', (editor: Editor, optio
       thumbnails.thumbnails.delete(options.pageId);
       thumbnails.updateQueue.delete(options.pageId);
     } else {
-      // Clear all thumbnails
       thumbnails.thumbnails.forEach((thumbnail) => {
         if (thumbnail.element) {
           thumbnail.element.remove();
@@ -95,13 +93,12 @@ const thumbPagePlugin = grapesjs.plugins.add('thumbpage', (editor: Editor, optio
 
   // ==================== THUMBNAIL GENERATION ====================
 
-  // Simple hash function for content comparison
   const simpleHash = (str: string): string => {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i);
       hash = ((hash << 5) - hash) + char;
-      hash = hash & hash; // Convert to 32bit integer
+      hash = hash & hash;
     }
     return hash.toString(36);
   };
@@ -120,7 +117,6 @@ const thumbPagePlugin = grapesjs.plugins.add('thumbpage', (editor: Editor, optio
       const css = editor.getCss() + globalStyles;
       const newHash = simpleHash(html + css);
 
-      // Get existing thumbnail to preserve element reference
       const existingThumbnail = thumbnails.thumbnails.get(pageId);
 
       const thumbnailData: ThumbnailData = {
@@ -128,25 +124,20 @@ const thumbPagePlugin = grapesjs.plugins.add('thumbpage', (editor: Editor, optio
         html,
         css,
         lastUpdated: Date.now(),
-        element: existingThumbnail?.element // CRITICAL: Preserve existing element reference
+        element: existingThumbnail?.element
       };
 
-      // Check if we need to render
       let shouldRender = true;
       
       if (container && thumbnailData.element) {
-        // Check against what is actually RENDERED in the iframe, not what's in the cache
-        // This fixes the issue where cache update prevents render update
         const renderedHash = thumbnailData.element.getAttribute('data-hash');
         if (renderedHash === newHash) {
           shouldRender = false;
         }
       }
 
-      // Always update cache with latest data
       thumbnails.thumbnails.set(pageId, thumbnailData);
 
-      // Only render if content changed or first time
       if (container && shouldRender) {
         renderThumbnailToContainer(thumbnailData, container, newHash);
       }
@@ -166,24 +157,20 @@ const thumbPagePlugin = grapesjs.plugins.add('thumbpage', (editor: Editor, optio
       return styles.replace(/(\d+(?:\.\d+)?)vh/g, `${vhInPixels}px`);
     };
 
-    // Script to handle content updates via postMessage
     const updateScript = `
       <script>
         window.addEventListener('message', function(event) {
           if (event.data.type === 'UPDATE_CONTENT') {
             try {
-              // Temporarily disable animations for smooth update
               const style = document.createElement('style');
               style.id = 'update-helper';
               style.textContent = '* { transition: none !important; animation: none !important; }';
               document.head.appendChild(style);
               
-              // Update body HTML
               if (event.data.html && document.body) {
                 document.body.innerHTML = event.data.html;
               }
               
-              // Update styles
               if (event.data.css) {
                 let styleTag = document.getElementById('dynamic-styles');
                 if (!styleTag) {
@@ -194,7 +181,6 @@ const thumbPagePlugin = grapesjs.plugins.add('thumbpage', (editor: Editor, optio
                 styleTag.textContent = event.data.css;
               }
               
-              // Re-enable animations after a frame
               requestAnimationFrame(function() {
                 const helper = document.getElementById('update-helper');
                 if (helper) helper.remove();
@@ -240,25 +226,20 @@ const thumbPagePlugin = grapesjs.plugins.add('thumbpage', (editor: Editor, optio
     const existingIframe = thumbnail.element as HTMLIFrameElement | undefined;
     
     if (existingIframe && existingIframe.parentElement === container && existingIframe.contentWindow) {
-      // Update existing iframe via postMessage (no reload!)
       try {
-        // Send update message to iframe
         existingIframe.contentWindow.postMessage({
           type: 'UPDATE_CONTENT',
           html: html,
           css: css + '\n' + convertVhToPixels(config.customStyles)
         }, '*');
         
-        // Update rendered hash
         if (hash) existingIframe.setAttribute('data-hash', hash);
         
       } catch (error) {
         console.error('Error sending update to iframe:', error);
-        // Fallback: recreate iframe if postMessage fails
         createNewIframe();
       }
     } else {
-      // Create new iframe for first time
       createNewIframe();
     }
 
@@ -318,7 +299,6 @@ const thumbPagePlugin = grapesjs.plugins.add('thumbpage', (editor: Editor, optio
       editor.trigger('thumbpage:updated', { pageIds });
       thumbnails.isProcessing = false;
 
-      // Process any new updates that came in during processing
       if (thumbnails.updateQueue.size > 0) {
         processUpdateQueue();
       }
@@ -327,12 +307,11 @@ const thumbPagePlugin = grapesjs.plugins.add('thumbpage', (editor: Editor, optio
 
   // ==================== EVENT HANDLERS ====================
 
-  // Throttle helper
   let eventThrottle: NodeJS.Timeout | null = null;
-  const throttleDelay = 50; // ms
+  const throttleDelay = 50;
 
   const throttledUpdate = (pageId: string) => {
-    if (eventThrottle) return; // Skip if already scheduled
+    if (eventThrottle) return;
     
     eventThrottle = setTimeout(() => {
       queueThumbnailUpdate(pageId);
@@ -341,8 +320,6 @@ const thumbPagePlugin = grapesjs.plugins.add('thumbpage', (editor: Editor, optio
   };
 
   editor.on('load', () => {
-
-    // Listen to component changes with throttle
     editor.on('component:update', () => {
       const selectedPage = editor.Pages.getSelected();
       if (selectedPage) {
@@ -364,7 +341,6 @@ const thumbPagePlugin = grapesjs.plugins.add('thumbpage', (editor: Editor, optio
       }
     });
 
-    // Listen to style changes with throttle
     editor.on('style:change', () => {
       const selectedPage = editor.Pages.getSelected();
       if (selectedPage) {
@@ -388,12 +364,10 @@ const thumbPagePlugin = grapesjs.plugins.add('thumbpage', (editor: Editor, optio
 
   const updateGlobalStyles = (styles: string) => {
     globalStyles = styles;
-    // Update all thumbnails when global styles change
     const pages = editor.Pages.getAll();
     pages.forEach(page => queueThumbnailUpdate(String(page.id)));
   };
 
-  // Expose utility functions for external use
   (editor as any).thumbpage = {
     updateGlobalStyles,
     generateThumbnail,
@@ -402,28 +376,23 @@ const thumbPagePlugin = grapesjs.plugins.add('thumbpage', (editor: Editor, optio
     getAllThumbnails: () => Array.from(thumbnails.thumbnails.values()),
   };
 
-  // Cleanup on editor destroy
   editor.on('destroy', () => {
-    // Clear debounce timeout
     if (debounceTimeout) {
       clearTimeout(debounceTimeout);
       debounceTimeout = null;
     }
     
-    // Clear throttle timeout
     if (eventThrottle) {
       clearTimeout(eventThrottle);
       eventThrottle = null;
     }
     
-    // Clear all thumbnail elements
     thumbnails.thumbnails.forEach((thumbnail) => {
       if (thumbnail.element) {
         thumbnail.element.remove();
       }
     });
     
-    // Clear maps
     thumbnails.thumbnails.clear();
     thumbnails.updateQueue.clear();
   });

@@ -7,7 +7,7 @@ interface CoverPageListProps {
 
 // Internal component that re-renders when editor changes
 const CoverPagesContent: React.FC<{ editor: any }> = ({ editor }) => {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   // Get initial cover pages
   const getCoverPages = useCallback(() => {

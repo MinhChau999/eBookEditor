@@ -40,7 +40,6 @@ export const PageThumbnailPlugin: React.FC<PageThumbnailPluginProps> = ({
   const hasLoadedRef = React.useRef<boolean>(false);
   const currentBook = useBookStore((state: { currentBook?: { styles?: string } | null }) => state.currentBook);
 
-  // Update thumbnail function
   const updateThumbnail = React.useCallback(() => {
     if (!containerRef.current || !page?.id) return;
 
@@ -58,7 +57,6 @@ export const PageThumbnailPlugin: React.FC<PageThumbnailPluginProps> = ({
     }
   }, [editor, page.id]);
 
-  // Batch Loading: Render all thumbnails with batch delays
   React.useEffect(() => {
     if (!page?.id || hasLoadedRef.current) return;
 
@@ -77,7 +75,6 @@ export const PageThumbnailPlugin: React.FC<PageThumbnailPluginProps> = ({
     };
   }, [page?.id, pageNumber, updateThumbnail]);
 
-  // Listen to thumbnail update events
   React.useEffect(() => {
     const handleThumbnailUpdate = (data: { pageIds?: string[] }) => {
       if (hasLoadedRef.current && (!data?.pageIds || data.pageIds.includes(page.id))) {
@@ -92,7 +89,6 @@ export const PageThumbnailPlugin: React.FC<PageThumbnailPluginProps> = ({
     };
   }, [editor, page.id, updateThumbnail]);
 
-  // Update global styles once when book changes
   React.useEffect(() => {
     if (currentBook?.styles && (editor as any).thumbpage) {
       (editor as any).thumbpage.updateGlobalStyles(currentBook.styles);

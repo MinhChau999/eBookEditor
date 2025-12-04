@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 
 interface TableOfContentsProps {
   editor: any;
@@ -15,7 +15,7 @@ interface TocItem {
 }
 
 export const TableOfContents: React.FC<TableOfContentsProps> = ({ editor }) => {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [headings, setHeadings] = useState<TocItem[]>([]);
 
   const refreshHeadings = () => {

@@ -5,13 +5,13 @@ import { BookSettingsModal } from './BookSettingsModal';
 export const BookInfoCard: React.FC = () => {
   const { currentBook } = useBookStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isInfoExpanded, setIsInfoExpanded] = useState(true);
+  const [isInfoExpanded, setIsInfoExpanded] = useState(false);
 
   if (!currentBook) return null;
 
   return (
     <>
-      <div className="left-sidebar-title" onClick={() => setIsInfoExpanded(!isInfoExpanded)}>
+      <div className={`left-sidebar-title ${!isInfoExpanded ? 'collapsed' : ''}`} onClick={() => setIsInfoExpanded(!isInfoExpanded)}>
         <i className="fas fa-book"></i>
         <span className="gjs-text-truncate gjs-two-color" title={currentBook.title}>
           {currentBook.title}

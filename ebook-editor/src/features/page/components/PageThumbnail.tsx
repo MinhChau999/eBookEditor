@@ -63,7 +63,7 @@ export const PageThumbnail: React.FC<PageThumbnailProps> = ({
       const debouncedUpdate = () => {
         clearTimeout(timeoutId);
         timeoutId = setTimeout(() => {
-          const mainComponent = page.getMainComponent();
+          const mainComponent = page.getMainComponent?.();
           if (mainComponent && typeof mainComponent.toHTML === 'function') {
             setHtml(mainComponent.toHTML());
           }
