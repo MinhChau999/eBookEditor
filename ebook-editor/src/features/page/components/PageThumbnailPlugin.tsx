@@ -35,20 +35,14 @@ export const PageThumbnailPlugin: React.FC<PageThumbnailPluginProps> = ({
   hideMasterIndicator,
   minimal
 }) => {
-  const wrapperRef = React.useRef<HTMLDivElement>(null);
   const containerRef = React.useRef<HTMLDivElement>(null);
   const timeoutRef = React.useRef<NodeJS.Timeout | undefined>(undefined);
   const hasLoadedRef = React.useRef<boolean>(false);
-  const observerRef = React.useRef<IntersectionObserver | null>(null);
-  const [isUpdating, setIsUpdating] = React.useState(false);
-  const [isVisible, setIsVisible] = React.useState(false);
   const currentBook = useBookStore((state: { currentBook?: { styles?: string } | null }) => state.currentBook);
 
   // Update thumbnail function
   const updateThumbnail = React.useCallback(() => {
-    if (!containerRef.current || !page?.id || !isVisible) return;
-
-    setIsUpdating(true);
+    if (!containerRef.current || !page?.id) return;
 
     try {
       const thumbnail = editor.runCommand('thumbpage:generate', {
@@ -61,42 +55,12 @@ export const PageThumbnailPlugin: React.FC<PageThumbnailPluginProps> = ({
       }
     } catch (error) {
       console.error('Error updating thumbnail:', error);
-    } finally {
-      setIsUpdating(false);
     }
-  }, [editor, page.id, isVisible]);
+  }, [editor, page.id]);
 
-  // Intersection Observer for lazy loading
+  // Batch Loading: Render all thumbnails with batch delays
   React.useEffect(() => {
-    if (!wrapperRef.current) return;
-
-    observerRef.current = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setIsVisible(true);
-          }
-        });
-      },
-      {
-        root: null,
-        rootMargin: '200px', // Load 200px before entering viewport
-        threshold: 0
-      }
-    );
-
-    observerRef.current.observe(wrapperRef.current);
-
-    return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
-    };
-  }, []);
-
-  // Batch Loading: Schedule thumbnail load when visible
-  React.useEffect(() => {
-    if (!page?.id || !isVisible || hasLoadedRef.current) return;
+    if (!page?.id || hasLoadedRef.current) return;
 
     const pageIndex = typeof pageNumber === 'number' ? pageNumber - 1 : 0;
     const batchIndex = Math.floor(pageIndex / BATCH_SIZE);
@@ -111,12 +75,12 @@ export const PageThumbnailPlugin: React.FC<PageThumbnailPluginProps> = ({
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [page?.id, pageNumber, isVisible, updateThumbnail]);
+  }, [page?.id, pageNumber, updateThumbnail]);
 
   // Listen to thumbnail update events
   React.useEffect(() => {
     const handleThumbnailUpdate = (data: { pageIds?: string[] }) => {
-      if (hasLoadedRef.current && isVisible && (!data?.pageIds || data.pageIds.includes(page.id))) {
+      if (hasLoadedRef.current && (!data?.pageIds || data.pageIds.includes(page.id))) {
         updateThumbnail();
       }
     };
@@ -126,7 +90,7 @@ export const PageThumbnailPlugin: React.FC<PageThumbnailPluginProps> = ({
     return () => {
       editor.off('thumbpage:updated', handleThumbnailUpdate);
     };
-  }, [editor, page.id, isVisible, updateThumbnail]);
+  }, [editor, page.id, updateThumbnail]);
 
   // Update global styles once when book changes
   React.useEffect(() => {
@@ -137,8 +101,7 @@ export const PageThumbnailPlugin: React.FC<PageThumbnailPluginProps> = ({
 
   return (
     <div
-      ref={wrapperRef}
-      className={`page-item ${isActive ? 'page-active' : ''} ${isUpdating ? 'page-updating' : ''}`}
+      className={`page-item ${isActive ? 'page-active' : ''}`}
       onClick={onSelect}
     >
       {!minimal && (
@@ -166,19 +129,6 @@ export const PageThumbnailPlugin: React.FC<PageThumbnailPluginProps> = ({
 
       <div className="page">
         <div className="page-content" style={{ padding: 0, overflow: 'hidden' }}>
-          {isUpdating && (
-            <div style={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              fontSize: '12px',
-              color: '#666',
-              zIndex: 1
-            }}>
-              Updating...
-            </div>
-          )}
           <div
             ref={containerRef}
             style={{

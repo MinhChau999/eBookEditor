@@ -27,7 +27,7 @@ const thumbPagePlugin = grapesjs.plugins.add('thumbpage', (editor: Editor, optio
     thumbnailScale: 0.07,
     thumbnailWidth: 1000,
     thumbnailHeight: 1414,
-    debounceTime: 300,
+    debounceTime: 100, // Reduced for realtime feel
     customStyles: '',
     ...options,
   };
@@ -118,31 +118,39 @@ const thumbPagePlugin = grapesjs.plugins.add('thumbpage', (editor: Editor, optio
 
       const html = mainComponent.toHTML();
       const css = editor.getCss() + globalStyles;
-      
-      // Check if content has changed using hash
-      const contentHash = simpleHash(html + css);
+      const newHash = simpleHash(html + css);
+
+      // Get existing thumbnail to preserve element reference
       const existingThumbnail = thumbnails.thumbnails.get(pageId);
-      
-      if (existingThumbnail) {
-        const existingHash = simpleHash(existingThumbnail.html + existingThumbnail.css);
-        if (contentHash === existingHash && !container) {
-          // Content hasn't changed, return existing thumbnail
-          return existingThumbnail;
-        }
-      }
 
       const thumbnailData: ThumbnailData = {
         pageId,
         html,
         css,
         lastUpdated: Date.now(),
+        element: existingThumbnail?.element // CRITICAL: Preserve existing element reference
       };
 
-      if (container) {
-        renderThumbnailToContainer(thumbnailData, container);
+      // Check if we need to render
+      let shouldRender = true;
+      
+      if (container && thumbnailData.element) {
+        // Check against what is actually RENDERED in the iframe, not what's in the cache
+        // This fixes the issue where cache update prevents render update
+        const renderedHash = thumbnailData.element.getAttribute('data-hash');
+        if (renderedHash === newHash) {
+          shouldRender = false;
+        }
       }
 
+      // Always update cache with latest data
       thumbnails.thumbnails.set(pageId, thumbnailData);
+
+      // Only render if content changed or first time
+      if (container && shouldRender) {
+        renderThumbnailToContainer(thumbnailData, container, newHash);
+      }
+
       return thumbnailData;
     } catch (error) {
       console.error('Error generating thumbnail:', error);
@@ -150,21 +158,64 @@ const thumbPagePlugin = grapesjs.plugins.add('thumbpage', (editor: Editor, optio
     }
   };
 
-  const renderThumbnailToContainer = (thumbnail: ThumbnailData, container: HTMLElement) => {
-    const { html, css } = thumbnail;
+  const renderThumbnailToContainer = (thumbnail: ThumbnailData, container: HTMLElement, hash?: string) => {
+    const { html, css, pageId } = thumbnail;
 
     const convertVhToPixels = (styles: string) => {
       const vhInPixels = 1414;
       return styles.replace(/(\d+(?:\.\d+)?)vh/g, `${vhInPixels}px`);
     };
 
+    // Script to handle content updates via postMessage
+    const updateScript = `
+      <script>
+        window.addEventListener('message', function(event) {
+          if (event.data.type === 'UPDATE_CONTENT') {
+            try {
+              // Temporarily disable animations for smooth update
+              const style = document.createElement('style');
+              style.id = 'update-helper';
+              style.textContent = '* { transition: none !important; animation: none !important; }';
+              document.head.appendChild(style);
+              
+              // Update body HTML
+              if (event.data.html && document.body) {
+                document.body.innerHTML = event.data.html;
+              }
+              
+              // Update styles
+              if (event.data.css) {
+                let styleTag = document.getElementById('dynamic-styles');
+                if (!styleTag) {
+                  styleTag = document.createElement('style');
+                  styleTag.id = 'dynamic-styles';
+                  document.head.appendChild(styleTag);
+                }
+                styleTag.textContent = event.data.css;
+              }
+              
+              // Re-enable animations after a frame
+              requestAnimationFrame(function() {
+                const helper = document.getElementById('update-helper');
+                if (helper) helper.remove();
+              });
+            } catch (e) {
+              console.error('Error updating thumbnail:', e);
+            }
+          }
+        });
+      </script>
+    `;
+
     const srcDoc = `
       <!DOCTYPE html>
       <html>
         <head>
-          <style>
+          <style id="dynamic-styles">
             ${css}
             ${convertVhToPixels(config.customStyles)}
+          </style>
+          <style>
             body {
               overflow: hidden;
               background-color: white;
@@ -174,27 +225,60 @@ const thumbPagePlugin = grapesjs.plugins.add('thumbpage', (editor: Editor, optio
               min-height: ${config.thumbnailHeight}px;
               margin: 0;
               padding: 0;
+              will-change: contents;
+              contain: layout style paint;
             }
           </style>
+          ${updateScript}
         </head>
-        ${html}
+        <body>
+          ${html}
+        </body>
       </html>
     `;
 
-    const iframe = document.createElement('iframe');
-    iframe.srcdoc = srcDoc;
-    iframe.style.cssText = `
-      width: 100%;
-      height: 100%;
-      border: none;
-      pointer-events: none;
-      background-color: #fff;
-    `;
-    iframe.title = `Page ${thumbnail.pageId}`;
+    const existingIframe = thumbnail.element as HTMLIFrameElement | undefined;
+    
+    if (existingIframe && existingIframe.parentElement === container && existingIframe.contentWindow) {
+      // Update existing iframe via postMessage (no reload!)
+      try {
+        // Send update message to iframe
+        existingIframe.contentWindow.postMessage({
+          type: 'UPDATE_CONTENT',
+          html: html,
+          css: css + '\n' + convertVhToPixels(config.customStyles)
+        }, '*');
+        
+        // Update rendered hash
+        if (hash) existingIframe.setAttribute('data-hash', hash);
+        
+      } catch (error) {
+        console.error('Error sending update to iframe:', error);
+        // Fallback: recreate iframe if postMessage fails
+        createNewIframe();
+      }
+    } else {
+      // Create new iframe for first time
+      createNewIframe();
+    }
 
-    container.innerHTML = '';
-    container.appendChild(iframe);
-    thumbnail.element = iframe;
+    function createNewIframe() {
+      const newIframe = document.createElement('iframe');
+      newIframe.srcdoc = srcDoc;
+      newIframe.style.cssText = `
+        width: 100%;
+        height: 100%;
+        border: none;
+        pointer-events: none;
+        background-color: #fff;
+      `;
+      newIframe.title = `Page ${pageId}`;
+      if (hash) newIframe.setAttribute('data-hash', hash);
+
+      container.innerHTML = '';
+      container.appendChild(newIframe);
+      thumbnail.element = newIframe;
+    }
   };
 
   // ==================== UPDATE QUEUE MANAGEMENT ====================
@@ -245,7 +329,7 @@ const thumbPagePlugin = grapesjs.plugins.add('thumbpage', (editor: Editor, optio
 
   // Throttle helper
   let eventThrottle: NodeJS.Timeout | null = null;
-  const throttleDelay = 100; // ms
+  const throttleDelay = 50; // ms
 
   const throttledUpdate = (pageId: string) => {
     if (eventThrottle) return; // Skip if already scheduled
