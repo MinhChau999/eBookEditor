@@ -71,8 +71,7 @@ const CoverPagesContent: React.FC<{ editor: any }> = ({ editor }) => {
         <span>Cover Pages</span>
       </div>
 
-      {isExpanded && (
-        <div className="cover-pages-list">
+      <div className="cover-pages-list" style={{ display: isExpanded ? 'block' : 'none' }}>
           {coverPages.map((page: any) => {
             const isActive = editor.Pages.getSelected()?.getId() === page.getId();
             const pageName = page.get('name') || 'Cover';
@@ -91,8 +90,7 @@ const CoverPagesContent: React.FC<{ editor: any }> = ({ editor }) => {
               </div>
             );
           })}
-        </div>
-      )}
+      </div>
     </div>
   );
 };

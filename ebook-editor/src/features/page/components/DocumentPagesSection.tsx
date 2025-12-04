@@ -19,9 +19,9 @@ export const DocumentPagesSection: React.FC<DocumentPagesSectionProps> = ({ edit
         <span>Document Pages</span>
       </div>
       
-      {isExpanded && (
+      <div style={{ display: isExpanded ? 'block' : 'none' }}>
         <PageList editor={editor} viewMode={viewMode} />
-      )}
+      </div>
     </div>
   );
 };
