@@ -95,6 +95,17 @@ const thumbPagePlugin = grapesjs.plugins.add('thumbpage', (editor: Editor, optio
 
   // ==================== THUMBNAIL GENERATION ====================
 
+  // Simple hash function for content comparison
+  const simpleHash = (str: string): string => {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    return hash.toString(36);
+  };
+
   const generateThumbnail = (page: any, container?: HTMLElement): ThumbnailData | null => {
     try {
       const pageId = String(page.id);
@@ -107,6 +118,18 @@ const thumbPagePlugin = grapesjs.plugins.add('thumbpage', (editor: Editor, optio
 
       const html = mainComponent.toHTML();
       const css = editor.getCss() + globalStyles;
+      
+      // Check if content has changed using hash
+      const contentHash = simpleHash(html + css);
+      const existingThumbnail = thumbnails.thumbnails.get(pageId);
+      
+      if (existingThumbnail) {
+        const existingHash = simpleHash(existingThumbnail.html + existingThumbnail.css);
+        if (contentHash === existingHash && !container) {
+          // Content hasn't changed, return existing thumbnail
+          return existingThumbnail;
+        }
+      }
 
       const thumbnailData: ThumbnailData = {
         pageId,
@@ -201,7 +224,8 @@ const thumbPagePlugin = grapesjs.plugins.add('thumbpage', (editor: Editor, optio
       thumbnails.updateQueue.clear();
 
       pageIds.forEach(pageId => {
-        const page = editor.Pages.getPage(pageId);
+        const pages = editor.Pages.getAll();
+        const page = pages.find(p => String(p.id) === pageId);
         if (page) {
           generateThumbnail(page);
         }
@@ -219,60 +243,56 @@ const thumbPagePlugin = grapesjs.plugins.add('thumbpage', (editor: Editor, optio
 
   // ==================== EVENT HANDLERS ====================
 
+  // Throttle helper
+  let eventThrottle: NodeJS.Timeout | null = null;
+  const throttleDelay = 100; // ms
+
+  const throttledUpdate = (pageId: string) => {
+    if (eventThrottle) return; // Skip if already scheduled
+    
+    eventThrottle = setTimeout(() => {
+      queueThumbnailUpdate(pageId);
+      eventThrottle = null;
+    }, throttleDelay);
+  };
+
   editor.on('load', () => {
-    // Initialize thumbnails for existing pages
-    const pages = editor.Pages.getAll();
-    pages.forEach(page => {
-      generateThumbnail(page);
-    });
 
-    // Listen to global style changes
-    editor.on('style:change', () => {
-      const selectedPage = editor.Pages.getSelected();
-      if (selectedPage) {
-        queueThumbnailUpdate(String(selectedPage.id));
-      }
-    });
-
-    editor.on('style:update', () => {
-      const selectedPage = editor.Pages.getSelected();
-      if (selectedPage) {
-        queueThumbnailUpdate(String(selectedPage.id));
-      }
-    });
-
-    // Listen to component changes
+    // Listen to component changes with throttle
     editor.on('component:update', () => {
       const selectedPage = editor.Pages.getSelected();
       if (selectedPage) {
-        queueThumbnailUpdate(String(selectedPage.id));
+        throttledUpdate(String(selectedPage.id));
       }
     });
 
     editor.on('component:add', () => {
       const selectedPage = editor.Pages.getSelected();
       if (selectedPage) {
-        queueThumbnailUpdate(String(selectedPage.id));
+        throttledUpdate(String(selectedPage.id));
       }
     });
 
     editor.on('component:remove', () => {
       const selectedPage = editor.Pages.getSelected();
       if (selectedPage) {
-        queueThumbnailUpdate(String(selectedPage.id));
+        throttledUpdate(String(selectedPage.id));
       }
     });
 
-    // Listen to page changes
-    editor.on('page:select', () => {
+    // Listen to style changes with throttle
+    editor.on('style:change', () => {
       const selectedPage = editor.Pages.getSelected();
       if (selectedPage) {
-        queueThumbnailUpdate(String(selectedPage.id));
+        throttledUpdate(String(selectedPage.id));
       }
     });
 
-    editor.on('page:add', (page: any) => {
-      generateThumbnail(page);
+    editor.on('style:update', () => {
+      const selectedPage = editor.Pages.getSelected();
+      if (selectedPage) {
+        throttledUpdate(String(selectedPage.id));
+      }
     });
 
     editor.on('page:remove', (page: any) => {
@@ -300,9 +320,26 @@ const thumbPagePlugin = grapesjs.plugins.add('thumbpage', (editor: Editor, optio
 
   // Cleanup on editor destroy
   editor.on('destroy', () => {
+    // Clear debounce timeout
     if (debounceTimeout) {
       clearTimeout(debounceTimeout);
+      debounceTimeout = null;
     }
+    
+    // Clear throttle timeout
+    if (eventThrottle) {
+      clearTimeout(eventThrottle);
+      eventThrottle = null;
+    }
+    
+    // Clear all thumbnail elements
+    thumbnails.thumbnails.forEach((thumbnail) => {
+      if (thumbnail.element) {
+        thumbnail.element.remove();
+      }
+    });
+    
+    // Clear maps
     thumbnails.thumbnails.clear();
     thumbnails.updateQueue.clear();
   });

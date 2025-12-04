@@ -21,6 +21,10 @@ interface PageThumbnailPluginProps {
   minimal?: boolean;
 }
 
+// Constants outside component to avoid recreation
+const BATCH_SIZE = 5;
+const BATCH_DELAY = 150;
+
 export const PageThumbnailPlugin: React.FC<PageThumbnailPluginProps> = ({
   page,
   pageNumber,
@@ -31,19 +35,18 @@ export const PageThumbnailPlugin: React.FC<PageThumbnailPluginProps> = ({
   hideMasterIndicator,
   minimal
 }) => {
+  const wrapperRef = React.useRef<HTMLDivElement>(null);
   const containerRef = React.useRef<HTMLDivElement>(null);
   const timeoutRef = React.useRef<NodeJS.Timeout | undefined>(undefined);
+  const hasLoadedRef = React.useRef<boolean>(false);
+  const observerRef = React.useRef<IntersectionObserver | null>(null);
   const [isUpdating, setIsUpdating] = React.useState(false);
-  const [shouldLoad, setShouldLoad] = React.useState(false);
+  const [isVisible, setIsVisible] = React.useState(false);
   const currentBook = useBookStore((state: { currentBook?: { styles?: string } | null }) => state.currentBook);
-
-  // Batch loading configuration
-  const BATCH_SIZE = 5; // Load 5 thumbnails per batch
-  const BATCH_DELAY = 150; // 150ms delay between batches
 
   // Update thumbnail function
   const updateThumbnail = React.useCallback(() => {
-    if (!containerRef.current || !page?.id) return;
+    if (!containerRef.current || !page?.id || !isVisible) return;
 
     setIsUpdating(true);
 
@@ -54,27 +57,53 @@ export const PageThumbnailPlugin: React.FC<PageThumbnailPluginProps> = ({
       });
 
       if (thumbnail) {
-        console.log(`Thumbnail loaded for page ${page.id}`);
+        hasLoadedRef.current = true;
       }
     } catch (error) {
       console.error('Error updating thumbnail:', error);
     } finally {
       setIsUpdating(false);
     }
-  }, [editor, page.id]);
+  }, [editor, page.id, isVisible]);
 
-  // Batch Loading: Schedule thumbnail load based on page index
+  // Intersection Observer for lazy loading
   React.useEffect(() => {
-    if (!page?.id) return;
+    if (!wrapperRef.current) return;
 
-    // Calculate batch index and delay
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsVisible(true);
+          }
+        });
+      },
+      {
+        root: null,
+        rootMargin: '200px', // Load 200px before entering viewport
+        threshold: 0
+      }
+    );
+
+    observerRef.current.observe(wrapperRef.current);
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, []);
+
+  // Batch Loading: Schedule thumbnail load when visible
+  React.useEffect(() => {
+    if (!page?.id || !isVisible || hasLoadedRef.current) return;
+
     const pageIndex = typeof pageNumber === 'number' ? pageNumber - 1 : 0;
     const batchIndex = Math.floor(pageIndex / BATCH_SIZE);
     const loadDelay = batchIndex * BATCH_DELAY;
 
-    // Schedule the load
     timeoutRef.current = setTimeout(() => {
-      setShouldLoad(true);
+      updateThumbnail();
     }, loadDelay);
 
     return () => {
@@ -82,20 +111,12 @@ export const PageThumbnailPlugin: React.FC<PageThumbnailPluginProps> = ({
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [page?.id, pageNumber, BATCH_SIZE, BATCH_DELAY]);
-
-  // Load thumbnail when scheduled
-  React.useEffect(() => {
-    if (shouldLoad && page?.id && containerRef.current) {
-      updateThumbnail();
-    }
-  }, [shouldLoad, page?.id, updateThumbnail]);
+  }, [page?.id, pageNumber, isVisible, updateThumbnail]);
 
   // Listen to thumbnail update events
   React.useEffect(() => {
     const handleThumbnailUpdate = (data: { pageIds?: string[] }) => {
-      // Only update if already loaded (to avoid unnecessary work)
-      if (shouldLoad && (!data?.pageIds || data.pageIds.includes(page.id))) {
+      if (hasLoadedRef.current && isVisible && (!data?.pageIds || data.pageIds.includes(page.id))) {
         updateThumbnail();
       }
     };
@@ -105,9 +126,9 @@ export const PageThumbnailPlugin: React.FC<PageThumbnailPluginProps> = ({
     return () => {
       editor.off('thumbpage:updated', handleThumbnailUpdate);
     };
-  }, [editor, page.id, shouldLoad, updateThumbnail]);
+  }, [editor, page.id, isVisible, updateThumbnail]);
 
-  // Update global styles when book changes
+  // Update global styles once when book changes
   React.useEffect(() => {
     if (currentBook?.styles && (editor as any).thumbpage) {
       (editor as any).thumbpage.updateGlobalStyles(currentBook.styles);
@@ -116,6 +137,7 @@ export const PageThumbnailPlugin: React.FC<PageThumbnailPluginProps> = ({
 
   return (
     <div
+      ref={wrapperRef}
       className={`page-item ${isActive ? 'page-active' : ''} ${isUpdating ? 'page-updating' : ''}`}
       onClick={onSelect}
     >

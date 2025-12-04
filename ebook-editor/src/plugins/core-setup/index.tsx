@@ -81,8 +81,9 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
   const createBookStructureView = (container: HTMLElement) => {
     if (!structurePanelRoot) {
       structurePanelRoot = createRoot(container);
+      structurePanelRoot.render(<StructurePanel editor={editor} />);
     }
-    structurePanelRoot.render(<StructurePanel editor={editor} />);
+    // If root already exists, don't re-render to preserve component state
   };
 
   const createAssetsView = (container: HTMLElement) => {
@@ -92,19 +93,30 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
   const createFooterView = (footerLeftSidebar: HTMLElement) => {
     if (!footerPanelRoot) {
       footerPanelRoot = createRoot(footerLeftSidebar);
+      footerPanelRoot.render(
+        <>
+          <PagesPanelFooter editor={editor} />
+        </>
+      );
     }
-    footerPanelRoot.render(
-      <>
-        <PagesPanelFooter editor={editor} />
-      </>
-    );
   };
 
   const switchLeftSidebarContent = (tabId: string, contentLeftSidebar: HTMLElement) => {
     if (tabId !== 'book-structure' && structurePanelRoot) {
         const root = structurePanelRoot;
-        setTimeout(() => root.unmount(), 0);
         structurePanelRoot = null;
+        
+        setTimeout(() => {
+          root.unmount();
+          contentLeftSidebar.innerHTML = '';
+          
+          switch (tabId) {
+            case 'assets':
+              createAssetsView(contentLeftSidebar);
+              break;
+          }
+        }, 0);
+        return;
     }
 
     contentLeftSidebar.innerHTML = '';
