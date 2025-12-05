@@ -1,81 +1,137 @@
-import grapesjs, { Editor } from 'grapesjs';
-import { createRoot, Root } from 'react-dom/client';
-import { ClassManagerPanel } from './ClassManagerPanel';
+import type { Editor } from 'grapesjs';
+import { createRoot } from 'react-dom/client';
+import { ClassManagerPanel } from './components/ClassManagerPanel';
+import type { ClassManagerOptions } from './types';
 
 /**
- * Class Manager Plugin for GrapesJS
+ * Global Class Manager Plugin for GrapesJS
  * 
- * Provides a centralized panel to manage all CSS classes in the project.
- * Features:
- * - View all classes with usage counts
- * - Search and filter classes
+ * Provides a panel to manage all CSS classes in the project with:
+ * - List all classes with usage counts
+ * - Search and filter functionality
  * - Add, edit, and delete classes
  * - Quick apply classes to selected components
  */
-export default grapesjs.plugins.add('class-manager', (editor: Editor) => {
-  // Plugin initialization
+export default function classManager(editor: Editor, opts: ClassManagerOptions = {}) {
+  const options: ClassManagerOptions = {
+    container: '.gjs-pn-views-container',
+    maxVisibleClasses: 100,
+    enableQuickApply: true,
+    confirmDelete: true,
+    ...opts,
+  };
+
+  let panelRoot: ReturnType<typeof createRoot> | null = null;
   let panelContainer: HTMLElement | null = null;
-  let reactRoot: Root | null = null;
+  let isVisible = false;
 
   /**
-   * Create and mount the Class Manager panel
+   * Mount the class manager panel
    */
-  const createPanel = () => {
-    // Find or create the panel container
-    const editorContainer = editor.getContainer();
-    if (!editorContainer) return;
+  const mountPanel = () => {
+    if (panelRoot || !editor) return;
 
-    // Create a panel in the right sidebar below the trait manager
-    const rightPanels = editorContainer.querySelector('.gjs-pn-panels-right');
-    if (!rightPanels) return;
-
-    // Create the panel container
-    panelContainer = document.createElement('div');
-    panelContainer.className = 'gjs-pn-panel class-manager-panel-container';
-    panelContainer.style.width = '100%';
-    panelContainer.style.display = 'flex';
-    panelContainer.style.flexDirection = 'column';
-
-    // Insert the panel after finding the trait manager panel or at the end
-    const traitPanel = rightPanels.querySelector('.gjs-pn-panel.gjs-pn-traits');
-    if (traitPanel && traitPanel.nextSibling) {
-      rightPanels.insertBefore(panelContainer, traitPanel.nextSibling);
-    } else {
-      rightPanels.appendChild(panelContainer);
+    // Find or create container
+    const container = document.querySelector(options.container || '.gjs-pn-views-container');
+    if (!container) {
+      console.error('[Class Manager] Container not found:', options.container);
+      return;
     }
+
+    // Create panel container
+    panelContainer = document.createElement('div');
+    panelContainer.className = 'gjs-class-manager-container';
+    panelContainer.style.display = 'none'; // Hidden by default
+    container.appendChild(panelContainer);
 
     // Mount React component
-    reactRoot = createRoot(panelContainer);
-    reactRoot.render(<ClassManagerPanel editor={editor} />);
+    panelRoot = createRoot(panelContainer);
+    panelRoot.render(<ClassManagerPanel editor={editor} />);
   };
 
   /**
-   * Destroy the panel and cleanup
+   * Show the class manager panel
    */
-  const destroyPanel = () => {
-    if (reactRoot) {
-      setTimeout(() => {
-        reactRoot?.unmount();
-        reactRoot = null;
-      }, 0);
-    }
-
-    if (panelContainer && panelContainer.parentNode) {
-      panelContainer.parentNode.removeChild(panelContainer);
-      panelContainer = null;
+  const showPanel = () => {
+    if (panelContainer) {
+      panelContainer.style.display = 'block';
+      isVisible = true;
     }
   };
 
-  // Initialize panel after editor loads
-  editor.on('load', () => {
-    // Small delay to ensure all panels are rendered
-    setTimeout(() => {
-      createPanel();
-    }, 100);
+  /**
+   * Hide the class manager panel
+   */
+  const hidePanel = () => {
+    if (panelContainer) {
+      panelContainer.style.display = 'none';
+      isVisible = false;
+    }
+  };
+
+  /**
+   * Toggle panel visibility
+   */
+  const togglePanel = () => {
+    if (isVisible) {
+      hidePanel();
+    } else {
+      showPanel();
+    }
+  };
+
+  // Add command to toggle class manager
+  editor.Commands.add('open-class-manager', {
+    run: () => {
+      if (!panelRoot) {
+        mountPanel();
+      }
+      showPanel();
+    },
+    stop: () => {
+      hidePanel();
+    },
   });
 
-  // Cleanup on editor destroy
-  editor.on('destroy', () => {
-    destroyPanel();
+  // Initialize on editor load
+  editor.on('load', () => {
+    mountPanel();
+
+    // Add button to panels if desired
+    // You can customize this based on where you want the button
+    const panelManager = editor.Panels;
+    
+    // Option 1: Add to views panel (right sidebar)
+    const viewsPanel = panelManager.getPanel('views');
+    if (viewsPanel) {
+      const buttons = viewsPanel.get('buttons');
+      if (buttons && !panelManager.getButton('views', 'open-class-manager')) {
+        buttons.add([{
+          id: 'open-class-manager',
+          command: 'open-class-manager',
+          label: '<i class="fa fa-css3"></i>',
+          attributes: {
+            title: 'Class Manager',
+          },
+          active: false,
+        }]);
+      }
+    }
+    
+    // Listen to view command events to stop class manager when they run
+    // This ensures mutual exclusivity between panels without modifying original commands
+    const viewCommands = ['core:open-sm', 'core:open-tm', 'core:open-layers', 'core:open-blocks'];
+    viewCommands.forEach(cmdId => {
+      editor.on(`run:${cmdId}`, () => {
+        editor.stopCommand('open-class-manager');
+      });
+    });
   });
-});
+
+  // Return API for external access
+  return {
+    show: showPanel,
+    hide: hidePanel,
+    toggle: togglePanel,
+  };
+}

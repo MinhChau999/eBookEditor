@@ -1,28 +1,56 @@
-import type { Selector } from 'grapesjs';
-
 export interface ClassManagerOptions {
-  // Panel title
-  title?: string;
-  // Container selector where to mount the panel
+  /**
+   * Container selector where the panel should be mounted
+   * @default '.gjs-pn-views-container'
+   */
   container?: string;
-  // Whether to show usage count
-  showUsageCount?: boolean;
-  // Maximum classes to display (pagination)
-  maxDisplay?: number;
+
+  /**
+   * Maximum number of classes to display before virtualization
+   * @default 100
+   */
+  maxVisibleClasses?: number;
+
+  /**
+   * Enable/disable quick apply on click
+   * @default true
+   */
+  enableQuickApply?: boolean;
+
+  /**
+   * Confirmation dialog on delete
+   * @default true
+   */
+  confirmDelete?: boolean;
 }
 
-export interface ClassItemData {
-  selector: Selector;
-  usageCount: number;
+export interface ClassInfo {
+  /**
+   * Class name without the dot prefix
+   */
   name: string;
+
+  /**
+   * Display label (can be customized)
+   */
   label: string;
+
+  /**
+   * Number of components using this class
+   */
+  usageCount: number;
+
+  /**
+   * Reference to the GrapesJS Selector model
+   */
+  selector: any;
 }
 
-export interface ClassManagerState {
-  classes: ClassItemData[];
-  filteredClasses: ClassItemData[];
-  searchQuery: string;
-  selectedClass: Selector | null;
-  isEditing: boolean;
-  hoveredClassId: string | null;
+export type ClassAction = 'create' | 'edit' | 'delete' | 'apply';
+
+export interface ClassEditorState {
+  mode: 'create' | 'edit';
+  className: string;
+  originalClassName?: string;
+  isOpen: boolean;
 }

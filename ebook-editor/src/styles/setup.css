@@ -1202,16 +1202,351 @@
 
 .gjs-sm-apply-btn:active {
   background: #388E3C;
+  transform: translateY(1px);
 }
 
 /* CodeMirror Overrides for Style Manager */
 .gjs-sm-code-container > div {
-  width: 100% !important;
-  height: 100% !important;
-  text-align: left;
+  /* Ensure the CodeMirror fills the container */
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .gjs-sm-code-container .CodeMirror {
+  flex: 1;
   height: 100% !important;
-  text-align: left;
+}
+
+/* ==================== CLASS MANAGER PANEL STYLES ==================== */
+
+.gjs-class-manager-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-background);
+  color: var(--color-text-primary);
+}
+
+.gjs-class-manager-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Header */
+.gjs-class-manager-header {
+  padding: 12px;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gjs-class-manager-search {
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--gjs-main-dark-color);
+  border: 1px solid var(--gjs-main-light-color);
+  border-radius: 3px;
+  color: var(--gjs-font-color);
+  font-size: 12px;
+  font-family: var(--gjs-main-font);
+  transition: all 0.2s ease;
+}
+
+.gjs-class-manager-search:focus {
+  outline: none;
+  border-color: var(--gjs-tertiary-color);
+  background: var(--gjs-main-color);
+}
+
+.gjs-class-manager-search::placeholder {
+  color: var(--gjs-secondary-light-color);
+  opacity: 0.6;
+}
+
+.gjs-class-manager-add-btn {
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--gjs-tertiary-color);
+  border: none;
+  border-radius: 3px;
+  color: var(--gjs-font-color-active);
+  font-size: 12px;
+  font-weight: 500;
+  font-family: var(--gjs-main-font);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.gjs-class-manager-add-btn:hover {
+  background: var(--gjs-quaternary-color);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.gjs-class-manager-add-btn:active {
+  transform: translateY(0);
+}
+
+/* Class List */
+.gjs-class-manager-list {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 8px;
+}
+
+.gjs-class-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  margin-bottom: 4px;
+  background: var(--gjs-main-dark-color);
+  border: 1px solid var(--gjs-main-light-color);
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.gjs-class-item:hover {
+  background: var(--gjs-main-light-color);
+  border-color: var(--gjs-tertiary-color);
+  transform: translateX(2px);
+}
+
+.gjs-class-item-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.gjs-class-item-name {
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  color: var(--gjs-font-color);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gjs-class-usage-badge {
+  background: var(--gjs-secondary-dark-color);
+  color: var(--gjs-secondary-light-color);
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 600;
+  border: 1px solid var(--gjs-main-light-color);
+  white-space: nowrap;
+}
+
+/* Class Item Actions */
+.gjs-class-item-actions {
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.gjs-class-item:hover .gjs-class-item-actions {
+  opacity: 1;
+}
+
+.gjs-class-item-btn {
+  padding: 4px 8px;
+  background: transparent;
+  border: 1px solid var(--gjs-main-light-color);
+  border-radius: 3px;
+  color: var(--gjs-font-color);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.gjs-class-item-btn:hover {
+  background: var(--gjs-tertiary-color);
+  border-color: var(--gjs-tertiary-color);
+  color: var(--gjs-font-color-active);
+}
+
+.gjs-class-item-btn-delete:hover {
+  background: #d32f2f;
+  border-color: #d32f2f;
+  color: white;
+}
+
+/* Empty State */
+.gjs-class-manager-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--gjs-secondary-light-color);
+  height: 100%;
+}
+
+.gjs-class-manager-empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.3;
+}
+
+.gjs-class-manager-empty p {
+  margin: 4px 0;
+  font-size: 13px;
+}
+
+.gjs-class-manager-empty-hint {
+  font-size: 11px;
+  opacity: 0.7;
+  margin-top: 8px;
+}
+
+/* Footer */
+.gjs-class-manager-footer {
+  padding: 8px 12px;
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  font-size: 11px;
+  color: var(--gjs-secondary-light-color);
+  text-align: center;
+}
+
+.gjs-class-manager-footer-text {
+  opacity: 0.8;
+}
+
+/* Class Editor Modal */
+.gjs-class-editor-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.gjs-class-editor-content {
+  background: var(--gjs-main-dark-color);
+  border: 1px solid var(--gjs-main-light-color);
+  border-radius: 6px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  width: 90%;
+  max-width: 400px;
+  padding: 0;
+  overflow: hidden;
+}
+
+.gjs-class-editor-title {
+  margin: 0;
+  padding: 16px 20px;
+  background: var(--gjs-secondary-dark-color);
+  border-bottom: 1px solid var(--gjs-main-light-color);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gjs-font-color-active);
+}
+
+.gjs-class-editor-body {
+  padding: 20px;
+}
+
+.gjs-class-editor-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gjs-class-editor-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--gjs-font-color);
+}
+
+.gjs-class-editor-input {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--gjs-main-color);
+  border: 1px solid var(--gjs-main-light-color);
+  border-radius: 3px;
+  color: var(--gjs-font-color);
+  font-size: 13px;
+  font-family: 'Courier New', monospace;
+  transition: all 0.2s ease;
+}
+
+.gjs-class-editor-input:focus {
+  outline: none;
+  border-color: var(--gjs-tertiary-color);
+  background: var(--gjs-main-dark-color);
+}
+
+.gjs-class-editor-error {
+  color: #ff5252;
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+.gjs-class-editor-actions {
+  display: flex;
+  gap: 8px;
+  padding: 16px 20px;
+  background: var(--gjs-secondary-dark-color);
+  border-top: 1px solid var(--gjs-main-light-color);
+}
+
+.gjs-class-editor-btn {
+  flex: 1;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: var(--gjs-main-font);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.gjs-class-editor-btn-cancel {
+  background: var(--gjs-main-light-color);
+  color: var(--gjs-font-color);
+}
+
+.gjs-class-editor-btn-cancel:hover {
+  background: var(--gjs-main-dark-color);
+}
+
+.gjs-class-editor-btn-save {
+  background: var(--gjs-tertiary-color);
+  color: var(--gjs-font-color-active);
+}
+
+.gjs-class-editor-btn-save:hover {
+  background: var(--gjs-quaternary-color);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.gjs-class-editor-btn-save:active {
+  transform: translateY(0);
 }

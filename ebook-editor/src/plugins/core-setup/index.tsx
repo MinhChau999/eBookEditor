@@ -6,7 +6,6 @@ import { StructurePanel } from '../../features/page/components/StructurePanel';
 import { PagesPanelFooter } from '../../features/page/components/PagesPanelFooter';
 import { CoreSetupOptions } from '../../core/types/core-setup.types';
 import Ruler from '../rulers/Ruler';
-import selectorAutocomplete from '../selector-autocomplete';
 import {
   ZOOM_CONFIG,
   RULER_CONFIG,
@@ -450,7 +449,7 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
   });
 
   // ==================== COMPONENT TYPE CUSTOMIZATION ====================
-  
+
   // Add tagName trait to text components
   // This must be done BEFORE editor loads to ensure all text components get this trait
   editor.DomComponents.addType('text', {
@@ -482,10 +481,6 @@ const coreSetupPlugin = grapesjs.plugins.add('core-setup', (editor: Editor, opti
       }
     }
   });
-
-  // Initialize selector autocomplete plugin
-  selectorAutocomplete(editor);
-
 
   // ==================== EDITOR EVENT HANDLERS ====================
 

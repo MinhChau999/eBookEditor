@@ -5,8 +5,10 @@ import tuiImageEditorPlugin from 'grapesjs-tui-image-editor';
 import coreSetup from '../../plugins/core-setup';
 import bookAdapter from '../../plugins/book-adapter';
 import basicBlocks from '../../plugins/basic-blocks';
-import styleManagerTabs from '../../plugins/style-manager-tabs';
 import thumbPagePlugin from '../../plugins/thumbpage';
+import selectorAutocomplete from '../../plugins/selector-autocomplete';
+import styleManagerTabs from '../../plugins/style-manager-tabs';
+import classManager from '../../plugins/class-manager';
 import { ExportModal } from '../../features/export/components/ExportModal';
 import { useBookStore } from '../../core/store/bookStore';
 import '../../styles/setup.css';
@@ -83,7 +85,6 @@ const Editor: React.FC = () => {
             bookAdapter,
             tuiImageEditorPlugin,
             basicBlocks,
-            styleManagerTabs,
             thumbPagePlugin
           ],
           deviceManager: {
@@ -142,6 +143,15 @@ const Editor: React.FC = () => {
             setShowExportModal(true);
         });
         
+        // Initialize selector autocomplete plugin
+        selectorAutocomplete(editorInstance);
+
+        // Initialize style manager tabs plugin
+        styleManagerTabs(editorInstance);
+
+        // Initialize class manager plugin
+        classManager(editorInstance);
+
         // Add book-specific styles if available
         if (currentBook?.styles) {
           editorInstance.addStyle(currentBook.styles);
